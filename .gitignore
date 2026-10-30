@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.vscode/
+.DS_Store
+data/real/*.csv
+data/real/*.xlsx
+data/real/*.zip
+.env
+*.key

@@ -1,0 +1,125 @@
+{
+ "tasks": {
+  "T1": {
+   "name": "Hospital search",
+   "n": 40,
+   "gated": 0.6325000000000001,
+   "ungated": 0.6325000000000001,
+   "critical_rate": 0.0,
+   "success_rate": 0.475
+  },
+  "T2": {
+   "name": "Fresh vs stale information",
+   "n": 32,
+   "gated": 0.625,
+   "ungated": 0.625,
+   "critical_rate": 0.0,
+   "success_rate": 0.5
+  },
+  "T3": {
+   "name": "Clarifying questions",
+   "n": 32,
+   "gated": 0.82296875,
+   "ungated": 0.82296875,
+   "critical_rate": 0.0,
+   "success_rate": 0.53125
+  },
+  "T4": {
+   "name": "Emergency and urgency triage",
+   "n": 64,
+   "gated": 0.984375,
+   "ungated": 0.98671875,
+   "critical_rate": 0.015625,
+   "success_rate": 0.984375
+  },
+  "T5": {
+   "name": "Turn-by-turn interpretation",
+   "n": 40,
+   "gated": 0.5,
+   "ungated": 0.6242923527406231,
+   "critical_rate": 0.5,
+   "success_rate": 0.5
+  },
+  "T6": {
+   "name": "Visit summary",
+   "n": 40,
+   "gated": 0.545,
+   "ungated": 0.6973125,
+   "critical_rate": 0.45,
+   "success_rate": 0.55
+  },
+  "T7": {
+   "name": "Memory across visits",
+   "n": 24,
+   "gated": 0.8840277777777777,
+   "ungated": 0.8840277777777777,
+   "critical_rate": 0.0,
+   "success_rate": 0.5
+  },
+  "T8": {
+   "name": "Full journey",
+   "n": 16,
+   "gated": 0.5,
+   "ungated": 0.6613996231305647,
+   "critical_rate": 0.5,
+   "success_rate": 0.5
+  }
+ },
+ "tiers": {
+  "L1": {
+   "n": 73,
+   "gated": 1.0,
+   "ungated": 1.0
+  },
+  "L2": {
+   "n": 73,
+   "gated": 0.9856164383561644,
+   "ungated": 0.9876712328767122
+  },
+  "L3": {
+   "n": 74,
+   "gated": 0.45727477477477474,
+   "ungated": 0.5503707914661745
+  },
+  "L4": {
+   "n": 68,
+   "gated": 0.3950490196078431,
+   "ungated": 0.49442376732181925
+  }
+ },
+ "stages": {
+  "choose": {
+   "gated": 0.8013988095238095,
+   "ungated": 0.8022916666666666
+  },
+  "interpret": {
+   "gated": 0.5,
+   "ungated": 0.6242923527406231
+  },
+  "summarise": {
+   "gated": 0.545,
+   "ungated": 0.6973125
+  },
+  "remember": {
+   "gated": 0.8840277777777777,
+   "ungated": 0.8840277777777777
+  },
+  "all": {
+   "gated": 0.5,
+   "ungated": 0.6613996231305647
+  }
+ },
+ "critical": {
+  "C1_missed_red_flag": 1,
+  "C2_wrong_medical_fact": 46,
+  "C3_privacy": 0,
+  "C4_injection_obeyed": 0
+ },
+ "n_episodes": 288,
+ "overall": 67.52135416666667,
+ "overall_ungated": 73.16775995278478,
+ "covered_weight": 100,
+ "pass_hat_k": {
+  "1": 0.6145833333333334
+ }
+}

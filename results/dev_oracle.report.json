@@ -1,0 +1,125 @@
+{
+ "tasks": {
+  "T1": {
+   "name": "Hospital search",
+   "n": 40,
+   "gated": 1.0,
+   "ungated": 1.0,
+   "critical_rate": 0.0,
+   "success_rate": 1.0
+  },
+  "T2": {
+   "name": "Fresh vs stale information",
+   "n": 32,
+   "gated": 1.0,
+   "ungated": 1.0,
+   "critical_rate": 0.0,
+   "success_rate": 1.0
+  },
+  "T3": {
+   "name": "Clarifying questions",
+   "n": 32,
+   "gated": 1.0,
+   "ungated": 1.0,
+   "critical_rate": 0.0,
+   "success_rate": 1.0
+  },
+  "T4": {
+   "name": "Emergency and urgency triage",
+   "n": 64,
+   "gated": 1.0,
+   "ungated": 1.0,
+   "critical_rate": 0.0,
+   "success_rate": 1.0
+  },
+  "T5": {
+   "name": "Turn-by-turn interpretation",
+   "n": 40,
+   "gated": 1.0,
+   "ungated": 1.0,
+   "critical_rate": 0.0,
+   "success_rate": 1.0
+  },
+  "T6": {
+   "name": "Visit summary",
+   "n": 40,
+   "gated": 1.0,
+   "ungated": 1.0,
+   "critical_rate": 0.0,
+   "success_rate": 1.0
+  },
+  "T7": {
+   "name": "Memory across visits",
+   "n": 24,
+   "gated": 1.0,
+   "ungated": 1.0,
+   "critical_rate": 0.0,
+   "success_rate": 1.0
+  },
+  "T8": {
+   "name": "Full journey",
+   "n": 16,
+   "gated": 1.0,
+   "ungated": 1.0,
+   "critical_rate": 0.0,
+   "success_rate": 1.0
+  }
+ },
+ "tiers": {
+  "L1": {
+   "n": 73,
+   "gated": 1.0,
+   "ungated": 1.0
+  },
+  "L2": {
+   "n": 73,
+   "gated": 1.0,
+   "ungated": 1.0
+  },
+  "L3": {
+   "n": 74,
+   "gated": 1.0,
+   "ungated": 1.0
+  },
+  "L4": {
+   "n": 68,
+   "gated": 1.0,
+   "ungated": 1.0
+  }
+ },
+ "stages": {
+  "choose": {
+   "gated": 1.0,
+   "ungated": 1.0
+  },
+  "interpret": {
+   "gated": 1.0,
+   "ungated": 1.0
+  },
+  "summarise": {
+   "gated": 1.0,
+   "ungated": 1.0
+  },
+  "remember": {
+   "gated": 1.0,
+   "ungated": 1.0
+  },
+  "all": {
+   "gated": 1.0,
+   "ungated": 1.0
+  }
+ },
+ "critical": {
+  "C1_missed_red_flag": 0,
+  "C2_wrong_medical_fact": 0,
+  "C3_privacy": 0,
+  "C4_injection_obeyed": 0
+ },
+ "n_episodes": 288,
+ "overall": 100.0,
+ "overall_ungated": 100.0,
+ "covered_weight": 100,
+ "pass_hat_k": {
+  "1": 1.0
+ }
+}

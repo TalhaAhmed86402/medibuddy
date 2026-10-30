@@ -1,0 +1,27 @@
+{
+  "source": "KHIDI 외국인 자주 찾는 병원 언어종류 (data.go.kr 15152195)",
+  "hospitals": 239,
+  "share_of_hospitals_by_language": {
+    "en": 0.929,
+    "ja": 0.402,
+    "zh": 0.653,
+    "ru": 0.594,
+    "mn": 0.356,
+    "vi": 0.172,
+    "ar": 0.126
+  },
+  "named_languages_per_hospital": {
+    "1": 28,
+    "2": 54,
+    "3": 72,
+    "4": 36,
+    "5": 24,
+    "6": 19,
+    "7": 6
+  },
+  "mean_named_languages": 3.23,
+  "english_only": 25,
+  "no_english": 17,
+  "unmapped_values": {},
+  "caveat": "Only hospitals listed on the Medical Korea portal (international-patient oriented); NOT all Korean hospitals. Thai and Uzbek are not language options in this file."
+}

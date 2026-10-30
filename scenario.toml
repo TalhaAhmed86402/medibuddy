@@ -1,0 +1,17 @@
+# AgentBeats-style scenario for MediBuddy-Bench (shape follows the LambdaLabsML/agentbeats-lambda template;
+# adjust keys/ports to the version provided by the course).
+[green_agent]
+endpoint = "http://127.0.0.1:9009"
+# NOTE: no server entry point is implemented yet; wire MediBuddyGreen into the course template's green-agent server.
+cmd = ""
+
+[[participants]]
+role = "purple"
+endpoint = "http://127.0.0.1:9019"
+cmd = "python path/to/your_agent.py --host 127.0.0.1 --port 9019"
+
+[config]
+split = "dev"          # use "test" (hidden, secret seed) only on the organiser's machine
+tasks = ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8"]
+trials = 1
+max_tool_calls = 25

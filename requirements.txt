@@ -1,0 +1,6 @@
+# Core benchmark, generator, scorers, baselines: Python >= 3.10, standard library only.
+# Optional, only for the A2A/AgentBeats adapter:
+# a2a-sdk
+# uvicorn
+# Optional dev: pytest (runs the 34 fact-engine tests in tests/test_facts.py)
+# pytest
