@@ -10,11 +10,27 @@ from __future__ import annotations
 
 import copy
 import datetime as dt
+import difflib
 import re
 
 from medibuddy_bench.knowledge import DISTRICTS, SPECIALTIES
 from medibuddy_bench.rules import get_rules
 from medibuddy_bench.world import World, district_km
+
+def unknown_district(name) -> dict:
+    """Error for a district name the world does not know, with the closest valid names so an agent can recover.
+
+    >>> unknown_district("Gangdong-gu")["error"]
+    "unknown district 'Gangdong-gu'; did you mean 'Gangdong'? exact names come from list_districts"
+    """
+    base = re.sub(r"(-?(gu|si|dong))$", "", str(name).strip(), flags=re.I)
+    names = list(DISTRICTS)
+    exact = [k for k in names if k.lower() == base.lower().replace(" ", "-")]
+    close = exact or difflib.get_close_matches(base, names, n=3, cutoff=0.75) \
+        or [k for k in names if base and base.lower() in k.lower()][:3]
+    hint = f"did you mean {' or '.join(repr(c) for c in close)}? " if close else ""
+    return {"error": f"unknown district '{name}'; {hint}exact names come from list_districts"}
+
 
 TOOL_SPECS = [
     {"name": "search_hospitals",
@@ -117,7 +133,7 @@ class ToolClient:
                 return {"error": f"unknown specialty; valid: {', '.join(SPECIALTIES)}"}
             for k in ("district", "from_district"):
                 if a.get(k) and a[k] not in DISTRICTS:
-                    return {"error": f"unknown district '{a[k]}'; call list_districts"}
+                    return unknown_district(a[k])
             if a.get("open_on"):
                 dt.date.fromisoformat(a["open_on"])
             res = w.search(specialty=a.get("specialty"), district=a.get("district"),
@@ -146,7 +162,7 @@ class ToolClient:
         if name == "distance_km":
             for k in ("from_district", "to_district"):
                 if a[k] not in DISTRICTS:
-                    return {"error": f"unknown district '{a[k]}'"}
+                    return unknown_district(a[k])
             return {"km": round(district_km(a["from_district"], a["to_district"]), 1)}
         if name == "get_rules":
             return get_rules(a.get("topic"))

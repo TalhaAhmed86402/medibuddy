@@ -20,6 +20,7 @@ agent -> benchmark : <tool_call>{"name":"get_live_status","args":{"hospital_id":
 benchmark -> agent : <tool_result name="get_live_status">{…}</tool_result>
 agent -> benchmark : free text, optionally ending with <answer>{json}</answer>
 ```
+The parser is tolerant of sloppy formatting (missing `>`, trailing `;`, a missing close tag, a ```json fence, `arguments` instead of `args`); only the first call in a reply is executed, so wait for the `<tool_result>` before continuing.
 `medibuddy_bench.protocol.RemoteAgent(send)` adapts `send(text, new_conversation) -> text` to the Agent interface.
 `medibuddy_bench/a2a_green.py` holds the framework-independent evaluation loop (`evaluate_remote`).
 

@@ -20,7 +20,8 @@ from typing import Callable
 
 from medibuddy_bench.agents.base import Agent, Message, Reply
 
-_CALL = re.compile(r"<tool_call>\s*(\{.*?\})\s*</tool_call>", re.S)
+_CALL_TAG = re.compile(r"<tool_call\b[^{<]*", re.I)       # "<tool_call>", "<tool_call {", "<tool_call:" ... up to the JSON
+_FENCE = re.compile(r"^\s*```(?:json)?\s*(\{.*\})\s*```\s*$", re.S)
 _ANSWER = re.compile(r"<answer>\s*(\{.*\}|\[.*\])\s*</answer>", re.S)
 
 
@@ -31,17 +32,44 @@ def render_message(m: Message) -> str:
     return f"<message {attrs}>{m.text}</message>"
 
 
+def _as_call(obj) -> dict | None:
+    """{"name": ..., "args"|"arguments"|"parameters": {...}} -> normalised call, else None."""
+    if isinstance(obj, dict) and isinstance(obj.get("name"), str):
+        args = obj.get("args", obj.get("arguments", obj.get("parameters")))
+        return {"name": obj["name"], "args": args if isinstance(args, dict) else {}}
+    return None
+
+
+def extract_tool_call(text: str) -> dict | None:
+    """First tool call in an agent reply.  Deliberately tolerant, because small models mangle the tags
+    (`<tool_call {...};</tool_call>`, missing close tag, trailing `;`, a ```json fence, a bare JSON object).
+    Only the FIRST call is used; anything after it is ignored (the model must wait for the result)."""
+    dec = json.JSONDecoder()
+    for m in _CALL_TAG.finditer(text):
+        start = text.find("{", m.end() - 1) if text[m.end():m.end() + 1] != "{" else m.end()
+        if start < 0:
+            continue
+        try:
+            call = _as_call(dec.raw_decode(text[start:])[0])
+        except json.JSONDecodeError:
+            continue
+        if call:
+            return call
+    fenced = _FENCE.match(text) or (re.match(r"^\s*(\{.*\})\s*$", text, re.S))
+    if fenced:                                     # reply is nothing but a call object
+        try:
+            return _as_call(json.loads(fenced.group(1)))
+        except json.JSONDecodeError:
+            return None
+    return None
+
+
 def parse_agent_reply(text: str) -> tuple[str, dict | None, dict | None]:
     """-> (clean_text, answer_json_or_None, tool_call_or_None)."""
     text = text or ""
-    m = _CALL.search(text)
-    if m:
-        try:
-            call = json.loads(m.group(1))
-            if isinstance(call, dict) and "name" in call:
-                return "", None, {"name": call["name"], "args": call.get("args") or {}}
-        except json.JSONDecodeError:
-            pass
+    call = extract_tool_call(text)
+    if call:
+        return "", None, call
     data = None
     a = _ANSWER.search(text)
     clean = text
@@ -70,10 +98,13 @@ class RemoteAgent(Agent):
         prefix = ""
         new = False
         if self._first:
-            prefix = (self._card + "\n\nTool protocol: to call a tool reply with ONLY "
-                      '<tool_call>{"name": "...", "args": {...}}</tool_call>; you will get '
-                      "<tool_result>...</tool_result> back. To finish, reply normally"
-                      " (optionally ending with <answer>{json}</answer>).\n\n")
+            prefix = (self._card + "\n\nTool protocol (follow exactly):\n"
+                      "- To use a tool, reply with ONE call and nothing else, e.g.\n"
+                      '  <tool_call>{"name": "get_live_status", "args": {"hospital_id": "H0042", "date": "2027-01-12"}}</tool_call>\n'
+                      "- Then STOP and wait: the result arrives as <tool_result name=\"...\">...</tool_result>. "
+                      "Never write a tool result yourself.\n"
+                      "- Use as many calls as you need (one per reply), then give your final reply as normal text, "
+                      "optionally ending with <answer>{json}</answer>.\n\n")
             new, self._first = True, False
         out = self._send(prefix + render_message(message), new)
         for _ in range(self.max_rounds + 1):
