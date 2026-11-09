@@ -32,5 +32,35 @@ class ToolCallParsing(unittest.TestCase):
         self.assertIsNone(self.call("<tool_call>not json</tool_call>"))
 
 
+class ToolBehaviour(unittest.TestCase):
+    def setUp(self):
+        import os
+        from medibuddy_bench.tools import ToolClient
+        from medibuddy_bench.world import load_world
+        here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.t = ToolClient(load_world(os.path.join(here, "data", "lite", "world.json")))
+
+    def test_list_districts_is_compact_and_filterable(self):
+        import json
+        full = self.t.call("list_districts")
+        self.assertLess(len(json.dumps(full)), 1200)
+        self.assertIn("Gangdong", full["districts"])
+        self.assertTrue(all(d.startswith("Busan") for d in self.t.call("list_districts", {"region": "Busan"})["districts"]))
+        self.assertIn("error", self.t.call("list_districts", {"region": "Atlantis"}))
+
+    def test_repeated_identical_call_is_flagged_but_still_logged(self):
+        a = self.t.call("distance_km", {"from_district": "Gangdong", "to_district": "Gangnam"})
+        b = self.t.call("distance_km", {"from_district": "Gangdong", "to_district": "Gangnam"})
+        self.assertIn("km", a)
+        self.assertIn("note", b)
+        self.assertEqual(len(self.t.log), 2)
+        self.assertTrue(self.t.log[1].get("repeat"))
+
+    def test_failed_calls_may_be_retried_and_memory_is_exempt(self):
+        bad = self.t.call("distance_km", {"from_district": "Gangdong-gu", "to_district": "Gangnam"})
+        self.assertIn("did you mean", bad["error"])
+        self.assertIn("error", self.t.call("distance_km", {"from_district": "Gangdong-gu", "to_district": "Gangnam"}))
+
+
 if __name__ == "__main__":
     unittest.main()

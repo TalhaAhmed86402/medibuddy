@@ -159,5 +159,5 @@ server URL, machine and commit; use `--trials 3` (pass^3) to measure consistency
 Read `DESIGN.md` §8 and "Scope decisions" before quoting numbers. Korean text and clinical content are template-generated and **not yet
 reviewed by a native speaker or clinician** (`docs/REVIEW_GUIDE.md`); the template-based `rule` agent shows that L1–L2 can be solved
 without a model (L3–L4 are designed to separate real agents); patients write English only; the A2A service is tested locally with
-a2a-sdk 0.3.26 but not on any external platform; closed-model adapters are untested against live APIs; the Docker image has not yet been built by
-the authors (the build was impossible in their environment); the CI workflow builds and tests it on every push.
+a2a-sdk 0.3.26 but not on any external platform; closed-model adapters are untested against live APIs; the Docker image and the test suite are built and run by CI on every push (Linux, macOS and Windows; Python 3.10, 3.12 and 3.13; the first green run is
+recorded in `docs/BUILD_LOG.md`), but the image has not been exercised against an external purple agent.

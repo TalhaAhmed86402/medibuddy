@@ -9,9 +9,11 @@ A **fresh agent instance** is created per episode, and per session in T7. T7's o
 
 ## Tools (25 calls per episode; every call is logged)
 `search_hospitals(specialty, district, ...)` (static index – may be stale) · `get_hospital(hospital_id)` ·
-`get_live_status(hospital_id, date)` (**authoritative**) · `list_districts()` · `distance_km(from_district, to_district)` ·
+`get_live_status(hospital_id, date)` (**authoritative**) · `list_districts(region?, korean?)` (compact; call once) · `distance_km(from_district, to_district)` ·
 `get_rules(section?)` · `memory_put / memory_get / memory_list / memory_search / memory_delete` (T7, T8).
 T4–T6 provide no tools.
+
+World tools are deterministic: repeating an identical call returns a short "already called" note (and still uses budget). Failed calls may be retried.
 
 ## Text wire protocol (any A2A / text agent)
 ```

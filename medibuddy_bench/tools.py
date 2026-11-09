@@ -32,6 +32,22 @@ def unknown_district(name) -> dict:
     return {"error": f"unknown district '{name}'; {hint}exact names come from list_districts"}
 
 
+def _list_districts(region=None, korean: bool = False) -> dict:
+    """Compact district list (about 5x fewer tokens than names + Korean + region for every entry).
+
+    >>> r = _list_districts(); "Gangdong" in r["districts"] and "ko" not in str(r)
+    True
+    >>> _list_districts("Busan")["districts"]
+    ['Busan-Haeundae', 'Busan-Busanjin', 'Busan-Nam']
+    >>> _list_districts("Busan", korean=True)["districts"][0]
+    {'name': 'Busan-Haeundae', 'ko': '부산 해운대구'}
+    """
+    items = [(k, v) for k, v in DISTRICTS.items() if not region or v[3].lower() == str(region).lower()]
+    if not items:
+        return {"error": f"unknown region '{region}'; valid: {', '.join(sorted({v[3] for v in DISTRICTS.values()}))}"}
+    return {"districts": [{"name": k, "ko": v[0]} if korean else k for k, v in items]}
+
+
 TOOL_SPECS = [
     {"name": "search_hospitals",
      "description": "Search the static hospital index (may be out of date; see last_verified). "
@@ -47,7 +63,10 @@ TOOL_SPECS = [
     {"name": "get_live_status",
      "description": "AUTHORITATIVE status of a hospital on a date: open/closed/limited, hours, suspended "
                     "departments, notices.", "parameters": {"hospital_id": "e.g. H0042", "date": "YYYY-MM-DD"}},
-    {"name": "list_districts", "description": "Valid district names (Seoul gu and Suwon gu).", "parameters": {}},
+    {"name": "list_districts",
+     "description": "Valid district names, compact (call it once; the list does not change). Optional filters keep it short.",
+     "parameters": {"region": "optional: Seoul|Suwon|Seongnam|Goyang|Bucheon|Ansan|Yongin|Anyang|Incheon|Busan|Daegu|Daejeon",
+                    "korean": "optional true: also return the Korean names"}},
     {"name": "distance_km", "description": "Approximate distance between two districts in km.",
      "parameters": {"from_district": "name", "to_district": "name"}},
     {"name": "get_rules",
@@ -106,6 +125,7 @@ class ToolClient:
     def __init__(self, world: World, memory: MemoryStore | None = None, max_calls: int = 25):
         self.world, self.memory, self.max_calls = world, memory, max_calls
         self.log: list[dict] = []
+        self._seen: set = set()          # (tool, args) of successful world-tool calls, for the repeat guard
 
     def specs(self) -> list[dict]:
         return TOOL_SPECS + (MEMORY_TOOL_SPECS if self.memory is not None else [])
@@ -118,12 +138,20 @@ class ToolClient:
         if len(self.log) > self.max_calls:
             entry["error"] = "budget"
             return {"error": f"tool budget of {self.max_calls} calls exhausted"}
+        key = (name, repr(sorted(args.items(), key=lambda kv: kv[0])))
+        if not name.startswith("memory_") and key in self._seen:
+            # world tools are deterministic: repeating a call cannot teach anything new (it still costs budget)
+            entry["repeat"] = True
+            return {"note": "identical to an earlier call in this conversation; the result has not changed. "
+                            "Use the earlier result or try something different."}
         try:
             res = self._dispatch(name, args)
         except (KeyError, ValueError, TypeError) as e:
             res = {"error": f"bad arguments: {e}"}
         if "error" in res:
             entry["error"] = res["error"]
+        elif not name.startswith("memory_"):
+            self._seen.add(key)
         return res
 
     def _dispatch(self, name: str, a: dict) -> dict:
@@ -158,7 +186,7 @@ class ToolClient:
                 return {"error": "unknown hospital_id"}
             return copy.deepcopy(w.live_status(a["hospital_id"], dt.date.fromisoformat(a["date"])))
         if name == "list_districts":
-            return {"districts": [{"name": k, "ko": v[0], "region": v[3]} for k, v in DISTRICTS.items()]}
+            return _list_districts(a.get("region"), str(a.get("korean", "")).lower() in ("true", "1", "yes"))
         if name == "distance_km":
             for k in ("from_district", "to_district"):
                 if a[k] not in DISTRICTS:
