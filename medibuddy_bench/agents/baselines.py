@@ -27,10 +27,10 @@ from medibuddy_bench.gen.choice import SOFT_MARK
 
 
 def _loc_to_district(m: re.Match) -> str:
-    return f"Suwon-{m.group(1)}" if m.group(2) else m.group(1)
+    return f"{m.group(2)}-{m.group(1)}" if m.group(2) else m.group(1)
 
 
-LOC_RE = r"([A-Za-z]+)-gu(?:, (Suwon))?"
+LOC_RE = r"([A-Za-z]+)-gu(?:, ([A-Za-z]+))?"
 
 
 def to_hhmm(h: str, m: str | None, ap: str) -> str:
@@ -232,7 +232,7 @@ class RuleAgent(Agent):
             self._mem_put("home", [_loc_to_district(m), int(km.group(1)) if km else 5])
         m = re.search(r"(?:I'm|I am) staying in " + LOC_RE + r" until (\d{4}-\d{2}-\d{2})", text)
         if m:
-            self._mem_put("temp", [f"Suwon-{m.group(1)}" if m.group(2) else m.group(1), m.group(3)])
+            self._mem_put("temp", [_loc_to_district(m), m.group(3)])
         m = re.search(r"speak (\w+)", text)
         if m and m.group(1).lower() in LANG_BY_NAME:
             self._mem_put("language", LANG_BY_NAME[m.group(1).lower()])

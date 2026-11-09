@@ -82,7 +82,7 @@ class World:
     `data` is the dict stored in world.json:  {"hospitals": [...], "notices": [...], "meta": {...}}.
 
     >>> len(w.hospitals), len(w.notices) >= 186
-    (320, True)
+    (1200, True)
     """
 
     def __init__(self, data: dict):
@@ -141,7 +141,7 @@ class World:
         How: holiday -> closed unless the hospital is open_on_holidays (then its weekday hours, or a
         short 09:00-13:00 default); otherwise the weekday's hours.
 
-        >>> w.static_hours(w.hospitals["H0008"], dt.date(2027, 1, 30))   # a Saturday
+        >>> w.static_hours(w.hospitals["H0020"], dt.date(2027, 1, 30))   # a Saturday
         ['08:30', '12:30']
         """
         if self.is_holiday(date) and not h.get("open_on_holidays"):
@@ -158,8 +158,8 @@ class World:
         Keys: status ('open' | 'closed' | 'limited'), hours, lunch_break, suspended_specialties,
         reason, notices, as_of.  See `_live_status` for how it is computed.
 
-        H0008's Saturday service ended in 2026, though the static index still lists Saturday hours:
-        >>> ls = w.live_status("H0008", dt.date(2027, 1, 30))
+        H0020's Saturday service ended in 2026, though the static index still lists Saturday hours:
+        >>> ls = w.live_status("H0020", dt.date(2027, 1, 30))
         >>> ls["status"], ls["hours"]
         ('closed', None)
         >>> ls["reason"]
@@ -181,12 +181,12 @@ class World:
            the suspended specialties.
         3. Open but with suspended specialties -> status 'limited'.
 
-        >>> ls = w.live_status("H0006", dt.date(2027, 5, 12))      # staff-training closure
+        >>> ls = w.live_status("H0033", dt.date(2026, 12, 17))      # staff-training closure
         >>> ls["status"], ls["reason"]
         ('closed', 'Closed for staff training.')
-        >>> ls = w.live_status("H0245", dt.date(2027, 2, 15))      # departments suspended
+        >>> ls = w.live_status("H0001", dt.date(2027, 3, 10))      # departments suspended
         >>> ls["status"], ls["suspended_specialties"]
-        ('limited', ['family_medicine', 'orthopedics'])
+        ('limited', ['neurology'])
         """
         h = self.hospitals[hospital_id]
         hours = self.static_hours(h, date)
@@ -226,7 +226,7 @@ class World:
         `live=False` ignores notices = what the stale index claims.
 
         >>> d = dt.date(2027, 1, 30)
-        >>> w.is_open_at("H0008", d, "10:00"), w.is_open_at("H0008", d, "10:00", live=False)
+        >>> w.is_open_at("H0020", d, "10:00"), w.is_open_at("H0020", d, "10:00", live=False)
         (False, True)
         """
         h = self.hospitals[hospital_id]
@@ -482,7 +482,7 @@ def load_world(path: str) -> World:
     """Read a world.json file and build a `World`.
 
     >>> len(load_world("data/dev/world.json").hospitals)
-    320
+    1200
     """
     import json
     with open(path, encoding="utf-8") as f:

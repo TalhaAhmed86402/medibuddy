@@ -36,3 +36,14 @@ LLM baselines; native-speaker and clinician review; paraphrase augmentation; a r
 world.py rewritten with docstrings and runnable examples (52 doctests); soft preferences added to generator, scorer, task card,
 rule and oracle agents; dev regenerated (soft: T1 17/40, T2 15/32, T3 6/32). Oracle 1.00 everywhere; rule T1 .65, T2 .63, T3 .81,
 pass^1 .61; 46 pytest checks pass. Saboteurs not rerun after this change. Not yet soft: memory (T7), journey (T8).
+
+
+## v1.0.0 (2026-11-09) final-submission build
+- World 320 -> 1,200 hospitals; 47 districts in 12 regions (Seoul, Gyeonggi cities, Incheon, Busan, Daegu, Daejeon).
+- Languages 6 -> 9 (ar, th, uz). Hospital languages follow a two-population model calibrated on the KHIDI list (see DATA_CARD).
+- Patients: 25 nationalities drawn with resident-mix weights; 60 first names; 10 more complaints (22 total); 8 more triage cases (29 total).
+- Splits: dev 832 scenarios, lite 108, test = organiser-built with a secret seed (not in the repo).
+- New scripts: `dataset_stats.py` (-> docs/DATASET_STATS.md), `fairness_twins.py` (name/nationality swap; gap 0.0000 for the scripted agents).
+- Docstring examples now run in `tests/test_doctests.py` against `data/dev`; hospital ids in them were re-pinned to the new world.
+- Baselines on dev: null 1.0, naive 15.0, rule 65.8, oracle 100.0; 46 tests + 25 doctest blocks pass; rebuild is byte-identical.
+- Checked: unique ids, no gold in public view, determinism. Saboteur gates covered by the test suite (mini split).

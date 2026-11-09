@@ -26,8 +26,9 @@ from medibuddy_bench.gen.triage import CASES, gen_triage
 from medibuddy_bench.world import World
 
 SIZES = {
-    "dev": {"T1": 40, "T2": 32, "T3": 32, "T4": 64, "T5": 40, "T6": 40, "T7": 24, "T8": 16},
-    "test": {"T1": 60, "T2": 48, "T3": 48, "T4": 84, "T5": 60, "T6": 60, "T7": 36, "T8": 24},
+    "dev": {"T1": 120, "T2": 96, "T3": 96, "T4": 160, "T5": 120, "T6": 120, "T7": 72, "T8": 48},
+    "test": {"T1": 160, "T2": 128, "T3": 128, "T4": 200, "T5": 160, "T6": 160, "T7": 96, "T8": 64},
+    "lite": {"T1": 16, "T2": 12, "T3": 12, "T4": 24, "T5": 16, "T6": 16, "T7": 12, "T8": 8},  # fast subset for CI / first runs
     "mini": {"T1": 8, "T2": 8, "T3": 8, "T4": 8, "T5": 8, "T6": 8, "T7": 8, "T8": 8},  # for tests / smoke runs
 }
 TIERS = ["L1", "L2", "L3", "L4"]
@@ -40,7 +41,7 @@ def _tier(i: int) -> str:
 def build(split: str, seed: int, sizes: dict | None = None) -> dict:
     sizes = sizes or SIZES[split]
     rng = random.Random(seed)
-    hospitals = gen_hospitals(random.Random(rng.random()), 320)
+    hospitals = gen_hospitals(random.Random(rng.random()), 1200)
     notices = gen_background_notices(random.Random(rng.random()), hospitals, WORLD_START, WORLD_END)
     world = World({"meta": {"as_of": "2026-10-29", "split": split, "seed_hash": stable_hash(seed),
                             "version": VERSION, "synthetic": True},

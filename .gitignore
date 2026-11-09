@@ -3,8 +3,11 @@ __pycache__/
 .pytest_cache/
 .vscode/
 .DS_Store
+# raw government downloads: re-download from the links in docs/DATA_CARD.md; keep only the derived summaries
 data/real/*.csv
 data/real/*.xlsx
 data/real/*.zip
+# run outputs and any API keys
+results/*.jsonl
 .env
 *.key

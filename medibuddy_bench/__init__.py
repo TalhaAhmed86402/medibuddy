@@ -2,4 +2,4 @@
 healthcare in Korea (choose a hospital -> interpret the visit -> summarise -> remember).
 
 All data is synthetic. See DESIGN.md for the what/why/how."""
-VERSION = "0.1.0"
+VERSION = "1.0.0"

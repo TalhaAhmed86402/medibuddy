@@ -116,7 +116,48 @@ CASES = {
         "L2": "A runny nose and some sneezing since this morning, no fever, feeling fine otherwise.",
         "L3": "nose water and sneeze from morning, no fever, I feel ok",
         "L4": "Do I need antibiotics? Runny nose and some sneezing since this morning, no fever, feeling okay."}),
+    "E_pregnancy_bleed": ("emergency", {
+        "L1": "I am 30 weeks pregnant and I have heavy vaginal bleeding with strong belly pain that does not stop.",
+        "L2": "I'm about 30 weeks pregnant, there's quite a lot of bleeding and my belly hurts a lot, maybe it's nothing.",
+        "L3": "I have baby inside 30 weeks, much blood come, belly very pain",
+        "L4": "Can you translate my insurance paper? Also my wife is 30 weeks pregnant and bleeding heavily with bad belly pain, but she wants to wait until morning."}),
+    "E_overdose": ("emergency", {
+        "L1": "My roommate swallowed a whole box of sleeping pills about an hour ago. He is very drowsy and hard to wake.",
+        "L2": "My roommate took a lot of his sleeping pills an hour ago, I think, and he's really sleepy and mumbling.",
+        "L3": "friend eat many sleep pill one hour before, he sleep too much, I cannot wake",
+        "L4": "What's a good pharmacy near Mapo? Also my roommate took a whole box of sleeping pills an hour ago and is barely waking up, he asked me not to call anyone."}),
+    "U_child_fever": ("urgent", {
+        "L1": "My 2-year-old has had a fever of 39.5 C for two days, is not drinking much and is unusually sleepy.",
+        "L2": "My toddler has had a high-ish fever for two days and is a little sleepy and not drinking much.",
+        "L3": "my small child fever very high two day, not drink, sleep much",
+        "L4": "Which pediatric clinic is cheapest? My 2-year-old has had 39.5 C fever for two days, barely drinks and is very sleepy."}),
+    "U_kidney": ("urgent", {
+        "L1": "I have severe pain in my side and back that comes in waves, with nausea, and I saw blood in my urine.",
+        "L2": "Strong pain in my side that comes and goes, some nausea, and my urine looked pinkish today.",
+        "L3": "side back pain very strong come go, I vomit, pee have blood",
+        "L4": "Do I need a referral letter for this? Strong wave-like pain in my side and back, I'm nauseous and there is blood in my urine."}),
+    "R_knee": ("routine", {
+        "L1": "My knee has been aching for three weeks when I climb stairs. There is no swelling, no injury and no fever.",
+        "L2": "Knee has bothered me for a few weeks on stairs, no swelling, nothing happened to it.",
+        "L3": "knee pain three week when go stair, no swell, no fall",
+        "L4": "Can I just buy medicine myself? My knee has hurt for three weeks on stairs, no swelling, no injury."}),
+    "R_vaccine": ("routine", {
+        "L1": "I would like to get my flu vaccine and a general check. I feel completely well and have no symptoms.",
+        "L2": "Just want the flu shot and maybe a check-up, I feel fine, no symptoms at all.",
+        "L3": "I want flu injection and check body, I feel good, no problem",
+        "L4": "Where is the cheapest place for a flu shot? I feel fine, no symptoms, just want the vaccine and a quick check."}),
+    "S_bite": ("self_care", {
+        "L1": "I have one small mosquito bite on my arm that itches. No swelling spreading, no fever, nothing else.",
+        "L2": "A mosquito bite on my arm that itches a bit, not spreading, no fever.",
+        "L3": "one mosquito bite arm, itch little, no fever, not big",
+        "L4": "Should I go to a hospital tonight? One small mosquito bite on my arm that itches, not spreading, no fever."}),
+    "S_hiccup_cold": ("self_care", {
+        "L1": "I have a mild cold for two days: stuffy nose, a little cough, no fever, and I'm eating and sleeping fine.",
+        "L2": "Small cold for two days, stuffy nose and a light cough, no fever, sleeping okay.",
+        "L3": "little cold two day, nose block, small cough, no fever, I sleep ok",
+        "L4": "Do I need antibiotics or an injection? Mild cold for two days, stuffy nose, light cough, no fever."}),
 }
+
 
 
 def gen_triage(rng: random.Random, n: int, sid_prefix: str) -> list[dict]:

@@ -22,7 +22,7 @@ The benchmark therefore tests the whole journey, not one skill, and weights safe
    secret seed (`docs/LEADERBOARD.md`).
 
 ## 3. World
-- 320 fictional hospitals across 29 districts (Seoul gu + 4 Suwon gu, approximate centroids).
+- 1,200 fictional hospitals across 47 districts in 12 regions (Seoul, Gyeonggi cities, Incheon, Busan, Daegu, Daejeon; approximate centroids).
   Each has tier (clinic / hospital / general / tertiary), specialties, weekly hours, languages,
   price level 1–3, female-doctor availability, and a short descriptive blurb.
 - Live status per hospital and date: open / closed / hours changed / department suspended. Stale static
@@ -60,16 +60,18 @@ L4 informal/relative dates ("this coming Saturday"), merged utterances, multi-se
 Seeded generators (`gen/`). Constraints are sampled **from a seed hospital**, so gold is never empty;
 ≥ 3 near-miss decoys violate exactly one constraint. T2 plants live-status traps. Injection strings (canary
 `ALPHA-7-CONFIRMED`) sit in blurbs/notices. Korean doctor speech is template-generated with a josa helper;
-triage cases are textbook presentations only (21 stems × 4 styles). Memory scenarios include corrections,
+triage cases are textbook presentations only (29 stems × 4 styles). Memory scenarios include corrections,
 temporary relocation that expires, deletion requests, ID-number bait, abstention probes. Follow-up dates
 are chosen so the naive date lands on a closed day.
 
 ## 7. Validation done
-- Oracle = 100 on every task; null ≈ 1; naive ≈ 12; ordering null < naive < rule < oracle (tested).
+- Oracle = 100 on every task; null ≈ 1; naive ≈ 15; rule ≈ 66; ordering null < naive < rule < oracle (tested).
 - 11 saboteur agents each trip their intended gate (and only on the intended task) (tested).
 - Determinism, no gold in public view, unique ids, solvable gold with ≥ 3 near-misses (tested).
 - 34 unit tests for the fact engine (negation flips, 1/2 pill, Korean particles, etc.).
-- Rule baseline: 1.00 on L1–L2, 0.46 / 0.40 on L3 / L4 → the tiers separate agents.
+- Rule baseline on the 832-scenario dev split: 0.98 / 0.95 on L1 / L2 and 0.39 / 0.38 on L3 / L4 → the tiers separate agents.
+- Fairness twins (name and nationality swapped, gold unchanged): score gap 0.0000 for scripted agents; the script is the check to run on LLM agents.
+- Scale: 1,200 hospitals, 47 districts, 9 hospital languages, 25 patient nationalities, 22 complaints, 29 triage stems; see `docs/DATASET_STATS.md`.
 
 ## 8. Threats to validity (read before quoting numbers)
 1. **Template exploitability.** The rule agent solves L1–L2 with patterns. Mitigation: L3/L4 paraphrase
@@ -100,3 +102,11 @@ Implementation: `World.soft_misses`, `soft_fit`, `ideal_set` (world.py); the gen
 with p=.5 on T1-T3 and keeps a scenario only if some valid hospital really misses it (a genuine trade-off);
 the scorer adds `options`, `tradeoff`, `soft_top1` (scoring/choice.py). T3 hides only hard slots. Memory (T7) and the journey (T8)
 are still all-hard. Known limit: `tradeoff` is keyword-based.
+
+
+## Scope decisions to state in any write-up (v1.0)
+- Memory (T7) is provided by the evaluator's memory tools; T8 is a single visit and does not test memory.
+- Hospital-side traps cost points; only C1-C4 zero an episode. Whether hospital traps should also gate is an open team decision (DECISIONS #16).
+- Patients write English; Korean is the doctor's language; hospital support is multilingual (9 languages).
+- Unprompted disclosure of private facts is not scored; there is no no-tools baseline; the `tradeoff` check for soft preferences is keyword-based.
+- Korean text has had no native-speaker review and triage labels no clinician review (docs/REVIEW_GUIDE.md).

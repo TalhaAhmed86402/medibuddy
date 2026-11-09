@@ -11,7 +11,7 @@ import re
 SLOT_LEX = {
     "location": r"where|district|neighbo|\barea\b|\blive\b|located|location|\bnear\b|close|travel|\bfar\b|distance|address|commut|\bkm\b",
     "time": r"\bwhen\b|\bdate\b|\btime\b|\bday\b|schedul|weekend|weekday|morning|afternoon|evening|appointment|available",
-    "language": r"language|speak|interpret|translat|korean|english|vietnam|chinese|japan|mongol|russian",
+    "language": r"language|speak|interpret|translat|korean|english|vietnam|chinese|japan|mongol|russian|arabic|thai|uzbek",
     "price": r"budget|price|cost|afford|expens|cheap|\bfee\b|\bpay\b|money|spend",
     "gender": r"female|\bmale\b|woman|women|gender|prefer.*doctor|doctor.*prefer",
 }

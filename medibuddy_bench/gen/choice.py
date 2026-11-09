@@ -13,7 +13,7 @@ import re
 import random
 
 from medibuddy_bench.common import CANARY, WEEKDAYS, iso
-from medibuddy_bench.knowledge import (COMPLAINTS, DISTRICTS, FIRST_NAMES, LANGUAGE_NAMES, NATIONALITIES,
+from medibuddy_bench.knowledge import (COMPLAINTS, DISTRICTS, FIRST_NAMES, LANGUAGE_NAMES, NATIONALITY_WEIGHTED,
                                        VISAS)
 from medibuddy_bench.world import DAY_KEYS, World, district_km
 
@@ -28,7 +28,7 @@ SLOTS = ["location", "time", "language", "price", "gender"]
 
 
 def place_phrase(d: str) -> str:
-    return f"{d}-gu" if DISTRICTS[d][3] == "Seoul" else f"{d.split('-')[1]}-gu, Suwon"
+    return f"{d}-gu" if DISTRICTS[d][3] == "Seoul" else f"{d.split('-', 1)[1]}-gu, {DISTRICTS[d][3]}"
 
 
 def fmt_time(hhmm: str) -> str:
@@ -39,7 +39,7 @@ def fmt_time(hhmm: str) -> str:
 
 
 def gen_persona(rng: random.Random, idx: int) -> dict:
-    nat, lang = rng.choice(NATIONALITIES)
+    nat, lang, _ = rng.choices(NATIONALITY_WEIGHTED, weights=[w for *_, w in NATIONALITY_WEIGHTED], k=1)[0]
     return {"id": f"P{idx:04d}", "name": rng.choice(FIRST_NAMES), "nationality": nat,
             "native_language": lang, "visa": rng.choice(VISAS)}
 

@@ -2,124 +2,124 @@
  "tasks": {
   "T1": {
    "name": "Hospital search",
-   "n": 40,
-   "gated": 0.6325000000000001,
-   "ungated": 0.6325000000000001,
+   "n": 120,
+   "gated": 0.64,
+   "ungated": 0.64,
    "critical_rate": 0.0,
-   "success_rate": 0.475
+   "success_rate": 0.48333333333333334
   },
   "T2": {
    "name": "Fresh vs stale information",
-   "n": 32,
-   "gated": 0.625,
-   "ungated": 0.625,
+   "n": 96,
+   "gated": 0.6270833333333333,
+   "ungated": 0.6270833333333333,
    "critical_rate": 0.0,
    "success_rate": 0.5
   },
   "T3": {
    "name": "Clarifying questions",
-   "n": 32,
-   "gated": 0.82296875,
-   "ungated": 0.82296875,
+   "n": 96,
+   "gated": 0.8034895833333334,
+   "ungated": 0.8034895833333334,
    "critical_rate": 0.0,
-   "success_rate": 0.53125
+   "success_rate": 0.4895833333333333
   },
   "T4": {
    "name": "Emergency and urgency triage",
-   "n": 64,
-   "gated": 0.984375,
-   "ungated": 0.98671875,
-   "critical_rate": 0.015625,
-   "success_rate": 0.984375
+   "n": 160,
+   "gated": 0.8634375000000001,
+   "ungated": 0.87375,
+   "critical_rate": 0.06875,
+   "success_rate": 0.80625
   },
   "T5": {
    "name": "Turn-by-turn interpretation",
-   "n": 40,
+   "n": 120,
    "gated": 0.5,
-   "ungated": 0.6242923527406231,
+   "ungated": 0.6049278934334201,
    "critical_rate": 0.5,
    "success_rate": 0.5
   },
   "T6": {
    "name": "Visit summary",
-   "n": 40,
-   "gated": 0.545,
-   "ungated": 0.6973125,
-   "critical_rate": 0.45,
-   "success_rate": 0.55
+   "n": 120,
+   "gated": 0.53,
+   "ungated": 0.6545833333333333,
+   "critical_rate": 0.4666666666666667,
+   "success_rate": 0.5333333333333333
   },
   "T7": {
    "name": "Memory across visits",
-   "n": 24,
-   "gated": 0.8840277777777777,
-   "ungated": 0.8840277777777777,
+   "n": 72,
+   "gated": 0.8613425925925926,
+   "ungated": 0.8613425925925926,
    "critical_rate": 0.0,
-   "success_rate": 0.5
+   "success_rate": 0.4444444444444444
   },
   "T8": {
    "name": "Full journey",
-   "n": 16,
+   "n": 48,
    "gated": 0.5,
-   "ungated": 0.6613996231305647,
+   "ungated": 0.6563685264618965,
    "critical_rate": 0.5,
    "success_rate": 0.5
   }
  },
  "tiers": {
   "L1": {
-   "n": 73,
-   "gated": 1.0,
-   "ungated": 1.0
+   "n": 203,
+   "gated": 0.9838916256157635,
+   "ungated": 0.9846305418719211
   },
   "L2": {
-   "n": 73,
-   "gated": 0.9856164383561644,
-   "ungated": 0.9876712328767122
+   "n": 212,
+   "gated": 0.9521698113207547,
+   "ungated": 0.9557075471698114
   },
   "L3": {
-   "n": 74,
-   "gated": 0.45727477477477474,
-   "ungated": 0.5503707914661745
+   "n": 209,
+   "gated": 0.3926475279106858,
+   "ungated": 0.4838962906302298
   },
   "L4": {
-   "n": 68,
-   "gated": 0.3950490196078431,
-   "ungated": 0.49442376732181925
+   "n": 208,
+   "gated": 0.37619391025641025,
+   "ungated": 0.4566075884958177
   }
  },
  "stages": {
   "choose": {
-   "gated": 0.8013988095238095,
-   "ungated": 0.8022916666666666
+   "gated": 0.7463665254237288,
+   "ungated": 0.7498622881355932
   },
   "interpret": {
    "gated": 0.5,
-   "ungated": 0.6242923527406231
+   "ungated": 0.6049278934334201
   },
   "summarise": {
-   "gated": 0.545,
-   "ungated": 0.6973125
+   "gated": 0.53,
+   "ungated": 0.6545833333333333
   },
   "remember": {
-   "gated": 0.8840277777777777,
-   "ungated": 0.8840277777777777
+   "gated": 0.8613425925925926,
+   "ungated": 0.8613425925925926
   },
   "all": {
    "gated": 0.5,
-   "ungated": 0.6613996231305647
+   "ungated": 0.6563685264618965
   }
  },
  "critical": {
-  "C1_missed_red_flag": 1,
-  "C2_wrong_medical_fact": 46,
+  "C1_missed_red_flag": 11,
+  "C2_wrong_medical_fact": 140,
   "C3_privacy": 0,
   "C4_injection_obeyed": 0
  },
- "n_episodes": 288,
- "overall": 67.52135416666667,
- "overall_ungated": 73.16775995278478,
+ "n_episodes": 832,
+ "overall": 65.76024305555555,
+ "overall_ungated": 70.77144452217627,
  "covered_weight": 100,
  "pass_hat_k": {
-  "1": 0.6145833333333334
+  "1": 0.5552884615384616
  }
 }

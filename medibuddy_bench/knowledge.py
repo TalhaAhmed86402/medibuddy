@@ -37,6 +37,24 @@ DISTRICTS = {
     "Suwon-Gwonseon": ("수원시 권선구", 37.2578, 126.9720, "Suwon"),
     "Suwon-Paldal": ("수원시 팔달구", 37.2820, 127.0200, "Suwon"),
     "Suwon-Yeongtong": ("수원시 영통구", 37.2596, 127.0467, "Suwon"),
+    "Seongnam-Bundang": ("성남시 분당구", 37.3595, 127.1052, "Seongnam"),
+    "Seongnam-Jungwon": ("성남시 중원구", 37.4306, 127.1378, "Seongnam"),
+    "Goyang-Ilsandong": ("고양시 일산동구", 37.6585, 126.7745, "Goyang"),
+    "Goyang-Deogyang": ("고양시 덕양구", 37.6377, 126.8320, "Goyang"),
+    "Bucheon-Wonmi": ("부천시 원미구", 37.5035, 126.7660, "Bucheon"),
+    "Ansan-Danwon": ("안산시 단원구", 37.3190, 126.8080, "Ansan"),
+    "Yongin-Suji": ("용인시 수지구", 37.3220, 127.0980, "Yongin"),
+    "Anyang-Dongan": ("안양시 동안구", 37.3924, 126.9568, "Anyang"),
+    "Incheon-Namdong": ("인천 남동구", 37.4470, 126.7310, "Incheon"),
+    "Incheon-Bupyeong": ("인천 부평구", 37.5070, 126.7220, "Incheon"),
+    "Incheon-Yeonsu": ("인천 연수구", 37.4100, 126.6780, "Incheon"),
+    "Busan-Haeundae": ("부산 해운대구", 35.1631, 129.1639, "Busan"),
+    "Busan-Busanjin": ("부산 부산진구", 35.1629, 129.0532, "Busan"),
+    "Busan-Nam": ("부산 남구", 35.1366, 129.0843, "Busan"),
+    "Daegu-Suseong": ("대구 수성구", 35.8580, 128.6310, "Daegu"),
+    "Daegu-Jung": ("대구 중구", 35.8690, 128.6060, "Daegu"),
+    "Daejeon-Yuseong": ("대전 유성구", 36.3620, 127.3560, "Daejeon"),
+    "Daejeon-Seo": ("대전 서구", 36.3550, 127.3840, "Daejeon"),
 }
 
 # key -> (Korean, English label)
@@ -62,11 +80,15 @@ NAME_STEMS = [
     ("참좋은", "Chamjoeun"), ("해오름", "Haeoreum"), ("우리", "Uri"), ("서린", "Seorin"),
     ("가온", "Gaon"), ("다나", "Dana"), ("라온", "Raon"), ("보람", "Boram"),
     ("소담", "Sodam"), ("이든", "Eden"), ("제일", "Jeil"), ("튼튼", "Teunteun"),
+    ("맑은", "Malgeun"), ("고운", "Goun"), ("아름", "Areum"), ("늘푸른", "Neulpureun"), ("다솜", "Dasom"),
+    ("별빛", "Byeolbit"), ("나눔", "Nanum"), ("새롬", "Saerom"), ("그린", "Green"), ("누리", "Nuri"),
+    ("해맑은", "Haemalgeun"), ("지혜", "Jihye"), ("은빛", "Eunbit"), ("두레", "Dure"), ("나래", "Narae"),
+    ("한솔", "Hansol"), ("청담", "Cheongdam"), ("사랑", "Sarang"), ("예인", "Yein"), ("로제", "Roje"),
 ]
 
-LANGUAGES = ["en", "zh", "ja", "vi", "ru", "mn"]
+LANGUAGES = ["en", "zh", "ja", "vi", "ru", "mn", "ar", "th", "uz"]
 LANGUAGE_NAMES = {"en": "English", "zh": "Chinese", "ja": "Japanese", "vi": "Vietnamese",
-                  "ru": "Russian", "mn": "Mongolian"}
+                  "ru": "Russian", "mn": "Mongolian", "ar": "Arabic", "th": "Thai", "uz": "Uzbek"}
 
 # complaint key -> description. specialties = acceptable specialties (any of them is fine).
 COMPLAINTS = {
@@ -94,6 +116,26 @@ COMPLAINTS = {
                      "specialties": ["ent", "internal_medicine", "family_medicine"], "mild": True},
     "checkup": {"en": "a general health checkup", "simple": "health check",
                 "specialties": ["internal_medicine", "family_medicine"], "mild": True},
+    "acne": {"en": "bad acne on my face", "simple": "many pimples on face",
+             "specialties": ["dermatology"], "mild": True},
+    "diarrhea": {"en": "diarrhea since two days", "simple": "loose stool, two days",
+                 "specialties": ["internal_medicine", "family_medicine"], "mild": True},
+    "wrist_pain": {"en": "wrist pain from typing all day", "simple": "wrist hurt, use computer much",
+                   "specialties": ["orthopedics", "family_medicine"], "mild": True},
+    "child_fever": {"en": "a child with a mild fever and a runny nose", "simple": "my child has fever, runny nose",
+                    "specialties": ["pediatrics", "family_medicine"], "mild": True},
+    "insomnia": {"en": "trouble sleeping and feeling anxious", "simple": "cannot sleep, worry much",
+                 "specialties": ["psychiatry", "family_medicine"], "mild": True},
+    "dizziness": {"en": "dizziness when I stand up", "simple": "dizzy when stand up",
+                  "specialties": ["neurology", "internal_medicine", "family_medicine"], "mild": True},
+    "blurry_vision": {"en": "blurry vision when reading", "simple": "cannot see words clear",
+                      "specialties": ["ophthalmology"], "mild": True},
+    "period_pain": {"en": "painful periods", "simple": "stomach pain with period",
+                    "specialties": ["obgyn"], "mild": True},
+    "skin_wart": {"en": "a small wart on my hand", "simple": "small bump on hand skin",
+                  "specialties": ["dermatology", "family_medicine"], "mild": True},
+    "blood_pressure": {"en": "a blood pressure check", "simple": "check my blood pressure",
+                       "specialties": ["internal_medicine", "family_medicine"], "mild": True},
 }
 
 # ---- Drugs and allergens (interpretation and summaries) -------------------------------
@@ -195,11 +237,20 @@ HOLIDAYS = ["2026-12-25", "2027-01-01", "2027-03-01", "2027-05-05", "2027-06-06"
 
 FIRST_NAMES = ["Mei", "Minh", "Aiko", "Amir", "Sofia", "Ivan", "Priya", "Lars", "Fatima", "Tuan",
                "Hana", "Carlos", "Nadia", "Omar", "Elena", "Kofi", "Linh", "Yuki", "Sara", "Ravi",
-               "Anya", "Diego", "Mina", "Tariq", "Chen", "Bayar", "Leila", "Noah", "Zainab", "Jin"]
-NATIONALITIES = [("China", "zh"), ("Vietnam", "vi"), ("Japan", "ja"), ("Iran", "en"),
-                 ("Brazil", "en"), ("Russia", "ru"), ("India", "en"), ("Germany", "en"),
-                 ("Egypt", "en"), ("Mongolia", "mn"), ("Nigeria", "en"), ("Mexico", "en"),
-                 ("Pakistan", "en"), ("Uzbekistan", "ru"), ("USA", "en"), ("France", "en")]
+               "Anya", "Diego", "Mina", "Tariq", "Chen", "Bayar", "Leila", "Noah", "Zainab", "Jin",
+               "Wei", "Lan", "Hiro", "Somchai", "Malee", "Aziz", "Dilnoza", "Olga", "Dmitri", "Batu",
+               "Oyun", "Khaled", "Yara", "Emma", "Lucas", "Amara", "Chidi", "Arjun", "Sunita", "Marta",
+               "Pedro", "Ana", "Tomas", "Ingrid", "Yusuf", "Aisha", "Hung", "Thu", "Kenji", "Sakura"]
+# (country, native language, weight).  Weights loosely follow the resident-foreigner mix reported by the
+# Korean Ministry of Justice (China incl. Korean-Chinese ~35%, Vietnam ~12%, USA ~6.5%, Thailand ~6%,
+# Uzbekistan ~3.7%); the long tail is flattened so every tail language is still exercised.
+NATIONALITY_WEIGHTED = [
+    ("China", "zh", 30), ("Vietnam", "vi", 14), ("USA", "en", 7), ("Thailand", "th", 7), ("Uzbekistan", "uz", 5),
+    ("Japan", "ja", 4), ("Russia", "ru", 4), ("Mongolia", "mn", 4), ("Philippines", "en", 4), ("India", "en", 3),
+    ("Nepal", "en", 3), ("Indonesia", "en", 2), ("Kazakhstan", "ru", 2), ("Egypt", "ar", 2), ("Saudi Arabia", "ar", 1),
+    ("Morocco", "ar", 1), ("Pakistan", "en", 1), ("Germany", "en", 1), ("France", "en", 1), ("Brazil", "en", 1),
+    ("Nigeria", "en", 1), ("Mexico", "en", 1), ("Iran", "en", 1), ("Canada", "en", 1), ("Australia", "en", 1)]
+NATIONALITIES = [(n, l) for n, l, _ in NATIONALITY_WEIGHTED]
 VISAS = ["D-2 (degree student)", "D-4 (language trainee)", "E-7 (professional worker)",
          "E-2 (foreign language instructor)", "F-6 (marriage migrant)", "D-10 (job seeker)",
          "F-2 (resident)", "C-3 (short-term visitor)"]

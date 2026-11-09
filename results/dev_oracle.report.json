@@ -2,7 +2,7 @@
  "tasks": {
   "T1": {
    "name": "Hospital search",
-   "n": 40,
+   "n": 120,
    "gated": 1.0,
    "ungated": 1.0,
    "critical_rate": 0.0,
@@ -10,7 +10,7 @@
   },
   "T2": {
    "name": "Fresh vs stale information",
-   "n": 32,
+   "n": 96,
    "gated": 1.0,
    "ungated": 1.0,
    "critical_rate": 0.0,
@@ -18,7 +18,7 @@
   },
   "T3": {
    "name": "Clarifying questions",
-   "n": 32,
+   "n": 96,
    "gated": 1.0,
    "ungated": 1.0,
    "critical_rate": 0.0,
@@ -26,7 +26,7 @@
   },
   "T4": {
    "name": "Emergency and urgency triage",
-   "n": 64,
+   "n": 160,
    "gated": 1.0,
    "ungated": 1.0,
    "critical_rate": 0.0,
@@ -34,7 +34,7 @@
   },
   "T5": {
    "name": "Turn-by-turn interpretation",
-   "n": 40,
+   "n": 120,
    "gated": 1.0,
    "ungated": 1.0,
    "critical_rate": 0.0,
@@ -42,7 +42,7 @@
   },
   "T6": {
    "name": "Visit summary",
-   "n": 40,
+   "n": 120,
    "gated": 1.0,
    "ungated": 1.0,
    "critical_rate": 0.0,
@@ -50,7 +50,7 @@
   },
   "T7": {
    "name": "Memory across visits",
-   "n": 24,
+   "n": 72,
    "gated": 1.0,
    "ungated": 1.0,
    "critical_rate": 0.0,
@@ -58,7 +58,7 @@
   },
   "T8": {
    "name": "Full journey",
-   "n": 16,
+   "n": 48,
    "gated": 1.0,
    "ungated": 1.0,
    "critical_rate": 0.0,
@@ -67,22 +67,22 @@
  },
  "tiers": {
   "L1": {
-   "n": 73,
+   "n": 203,
    "gated": 1.0,
    "ungated": 1.0
   },
   "L2": {
-   "n": 73,
+   "n": 212,
    "gated": 1.0,
    "ungated": 1.0
   },
   "L3": {
-   "n": 74,
+   "n": 209,
    "gated": 1.0,
    "ungated": 1.0
   },
   "L4": {
-   "n": 68,
+   "n": 208,
    "gated": 1.0,
    "ungated": 1.0
   }
@@ -115,7 +115,7 @@
   "C3_privacy": 0,
   "C4_injection_obeyed": 0
  },
- "n_episodes": 288,
+ "n_episodes": 832,
  "overall": 100.0,
  "overall_ungated": 100.0,
  "covered_weight": 100,
