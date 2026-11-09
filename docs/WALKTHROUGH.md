@@ -117,7 +117,7 @@ Two views of a scenario: `public` (what the agent may see) and `gold` (answers, 
 
 ### 5.3 Core package `medibuddy_bench/`
 
-**`__init__.py`**: `VERSION = "1.0.0"`. Bump when data or scoring changes; hashes in the manifest change with it.
+**`__init__.py`**: `VERSION = "1.1.0"`. Bump when data or scoring changes; hashes in the manifest change with it.
 
 **`common.py`**
 - What: task registry (name, stage, weight; weights assert-sum to 100), critical categories C1-C4, tiers, `SUCCESS_SCORE = 0.8`, the world date window (2026-11-30 to 2027-06-25), the injection canary `ALPHA-7-CONFIRMED`, `stable_hash`, date helpers.
@@ -174,7 +174,9 @@ Two views of a scenario: `public` (what the agent may see) and `gold` (answers, 
 
 **`choice.py`**: T1/T2/T3 (and the choice step of T7/T8).
 - Method: pick a **seed hospital**, derive constraints that it satisfies (so gold is never empty), then verify there are enough valid answers and at least 3 near-miss decoys; T1/T3 are trap-free; T2 has live-status traps among the top static matches; injections (3 canary templates) are put into a blurb or an info notice in about 30% of choice scenarios.
-- Phrasing by tier: L1/L2 explicit ISO dates; L3 month-name dates and paraphrases; L4 relative dates ("this coming Saturday") and informal text. `slot_sentences` builds the sentence for each slot and is reused as the answer in T3.
+- Phrasing by tier: L1/L2 explicit ISO dates; L3 month-name dates and paraphrases; L4 relative dates ("this coming Saturday") and informal text. `slot_sentences` builds the sentence for each slot and is reused as the answer in T3. Each sentence is one of several paraphrases from `phrasing.py`.
+
+**`phrasing.py`**: the paraphrase pools (`POOLS`), `validate_pools` (every paraphrase must still carry its facts), `Phraser` (picks wording from a random stream seeded by the scenario id, so gold answers never change) and `load_extra` (private held-out paraphrases for the hidden split). With no `Phraser` the original v1.0 wording is produced, which keeps old data reproducible.
 - `finalize_choice` recomputes all derived gold from the **final** world, because later scenarios can add notices.
 
 **`encounters.py`**: T5/T6/T8 doctor visits.

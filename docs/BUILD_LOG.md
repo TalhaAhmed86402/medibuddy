@@ -42,7 +42,7 @@ pass^1 .61; 46 pytest checks pass. Saboteurs not rerun after this change. Not ye
 - World 320 -> 1,200 hospitals; 47 districts in 12 regions (Seoul, Gyeonggi cities, Incheon, Busan, Daegu, Daejeon).
 - Languages 6 -> 9 (ar, th, uz). Hospital languages follow a two-population model calibrated on the KHIDI list (see DATA_CARD).
 - Patients: 25 nationalities drawn with resident-mix weights; 60 first names; 10 more complaints (22 total); 8 more triage cases (29 total).
-- Splits: dev 832 scenarios, lite 108, test = organiser-built with a secret seed (not in the repo).
+- Splits: dev 832 scenarios, lite 116, test = organiser-built with a secret seed (not in the repo).
 - New scripts: `dataset_stats.py` (-> docs/DATASET_STATS.md), `fairness_twins.py` (name/nationality swap; gap 0.0000 for the scripted agents).
 - Docstring examples now run in `tests/test_doctests.py` against `data/dev`; hospital ids in them were re-pinned to the new world.
 - Baselines on dev: null 1.0, naive 15.0, rule 65.8, oracle 100.0; 46 tests + 25 doctest blocks pass; rebuild is byte-identical.
@@ -58,3 +58,15 @@ pass^1 .61; 46 pytest checks pass. Saboteurs not rerun after this change. Not ye
 - Verified here: tests on Python 3.11/3.12/3.13, dev rebuild identical after a lint cleanup, image contents simulated from the lock file in a clean venv. Not runnable in the authoring sandbox (Docker Hub unreachable; no Python 3.10; Linux only) but verified by CI on 2026-11-09 (run #3, all green): Docker build with the build-time data check, Linux/macOS/Windows x Python 3.10/3.12/3.13, and the A2A job.
 - Small-model robustness (found with llama3.2:3b via Ollama): tolerant tool-call parser, stop sequences after a tool call, `MEDIBUDDY_TRACE=1`, did-you-mean district errors, compact `list_districts`, repeat-call guard. Tool output only; scenarios, scoring and dataset hashes unchanged.
 - Lint cleanup: unused imports and dead locals removed (no data change: dev rebuilt, hashes equal).
+
+## v1.1.0 (2026-11-09) wording variety
+- Patient wording is paraphrased: `medibuddy_bench/gen/phrasing.py` holds pools of 3-7 paraphrases per sentence and style (plain L1-L2, formal L3,
+  terse L4) for location, date and time, language, price, doctor gender, greeting, introduction, complaint, closing question, referral, avoid-list,
+  and the T7 opener and allergy statement. Detail order also varies.
+- Words only: the choice is drawn from a separate random stream seeded by the scenario id. Verified: world identical, every gold answer, trap, date
+  and constraint identical, all T4-T6 scenarios untouched; `build(..., phrasing=False)` reproduces the v1.0.0 files hash for hash.
+- Held-out wording for the hidden split: `--phrases` / `$MEDIBUDDY_PHRASES` (test split only; validated; `docs/HELDOUT_PHRASES.md`).
+- Dataset version 1.1.0 (world hash `d7e96d2e8cc4d5b7`, because the version is stored in the world); older run records are listed as stale.
+- Dev baselines: null 1.0, naive 15.0, rule 47.1 (was 65.8), oracle 100.0; fairness twins gap 0.0000.
+- Tests: `tests/test_phrasing.py` (pool validation, original wording preserved, invariants, every scenario states its facts, variety, held-out rules).
+- Not changed (needs human review before editing): T4 triage texts, T5/T6 encounter turns, the Korean phrasebook.

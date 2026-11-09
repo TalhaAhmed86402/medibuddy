@@ -69,13 +69,16 @@ are chosen so the naive date lands on a closed day.
 - 11 saboteur agents each trip their intended gate (and only on the intended task) (tested).
 - Determinism, no gold in public view, unique ids, solvable gold with ≥ 3 near-misses (tested).
 - 34 unit tests for the fact engine (negation flips, 1/2 pill, Korean particles, etc.).
-- Rule baseline on the 832-scenario dev split: 0.98 / 0.95 on L1 / L2 and 0.39 / 0.38 on L3 / L4 → the tiers separate agents.
+- Rule baseline on the 832-scenario dev split (data v1.1.0, paraphrased wording): 0.72 / 0.68 on L1 / L2 and 0.36 / 0.34 on L3 / L4 → the tiers still separate agents. (Before paraphrasing, v1.0.0: 0.98 / 0.95 / 0.39 / 0.38, and overall 65.8 versus 47.1 now.)
 - Fairness twins (name and nationality swapped, gold unchanged): score gap 0.0000 for scripted agents; the script is the check to run on LLM agents.
 - Scale: 1,200 hospitals, 47 districts, 9 hospital languages, 25 patient nationalities, 22 complaints, 29 triage stems; see `docs/DATASET_STATS.md`.
 
 ## 8. Threats to validity (read before quoting numbers)
-1. **Template exploitability.** The rule agent solves L1–L2 with patterns. Mitigation: L3/L4 paraphrase
-   tiers, hidden test split, planned LLM paraphrase augmentation (not done).
+1. **Template exploitability.** A pattern-matching agent can read templated wording. Mitigations in place: every patient sentence is
+   drawn from a pool of 3-7 paraphrases per style (`gen/phrasing.py`; v1.1.0 cut the model-free rule agent from 65.8 to 47.1 on dev),
+   word order varies, and the hidden test split can use private held-out paraphrases (`docs/HELDOUT_PHRASES.md`). Still open:
+   the pools are written by us, so they share our style; real patients write more variably; T4 triage texts and the T5/T6 doctor
+   and patient turns are still single-wording templates (changing them needs clinician and native-speaker review).
 2. **Synthetic language.** Korean utterances are templated and **unreviewed by a native speaker**; real
    clinicians speak more variably. `data/review/korean_phrasebook.csv` (213 rows) is for that review.
 3. **Clinical content.** Triage labels (`data/review/triage_labels.csv`) are textbook cases but **not

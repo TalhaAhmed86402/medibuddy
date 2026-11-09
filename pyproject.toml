@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "medibuddy-bench"
-version = "1.0.0"          # keep equal to medibuddy_bench.VERSION (tests/test_packaging.py checks it)
+version = "1.1.0"          # keep equal to medibuddy_bench.VERSION (tests/test_packaging.py checks it)
 description = "Benchmark for agents that help international residents of Korea choose a hospital, interpret a visit, summarise it and remember preferences."
 readme = "README.md"
 requires-python = ">=3.10"

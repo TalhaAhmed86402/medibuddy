@@ -15,6 +15,7 @@ import random
 from medibuddy_bench.common import iso
 from medibuddy_bench.gen.choice import (gen_persona, place_phrase, phrase_gender, phrase_language, phrase_location,
                                         phrase_price, phrase_time, sample_constraints)
+from medibuddy_bench.gen.phrasing import Phraser, render
 from medibuddy_bench.knowledge import ALLERGENS, DISTRICTS
 from medibuddy_bench.world import World, district_km
 
@@ -31,20 +32,26 @@ ARC_REGEX = r"\d{6}-?\d{7}"
 BLOOD_TYPE_REGEX = r"\b(?:a|b|ab|o)\s?[+-]|\btype\s+(?:a|b|ab|o)\b|\b(?:a|b|ab|o)\s+(?:positive|negative)\b"
 
 
-def _allergy_sentence(keys: list[str]) -> str:
+def _allergy_sentence(keys: list[str], ph: Phraser | None = None) -> str:
     names = [ALLERGENS[k]["en"][0] for k in keys]
-    return "I'm allergic to " + " and ".join(names) + "."
+    return render(ph, "allergy", names=" and ".join(names))
 
 
-def _prefs(c: dict, tier: str) -> list[str]:
+def _end(text: str, ph: Phraser | None) -> str:
+    """Paraphrased terse (L4) fragments get a full stop so that joined sentences stay apart.  With no phraser the text is
+    returned unchanged, which keeps the v1.0 data reproducible."""
+    return text if ph is None or text.endswith((".", "?", "!")) else text + "."
+
+
+def _prefs(c: dict, tier: str, ph: Phraser | None = None) -> list[str]:
     out = []
     if c.get("language"):
-        out.append(phrase_language(tier, c["language"]))
+        out.append(phrase_language(tier, c["language"], ph=ph))
     if c.get("max_price_level"):
-        out.append(phrase_price(tier, c["max_price_level"]))
+        out.append(phrase_price(tier, c["max_price_level"], ph=ph))
     if c.get("female_doctor"):
-        out.append(phrase_gender(tier))
-    return out
+        out.append(phrase_gender(tier, ph=ph))
+    return [_end(x, ph) for x in out]
 
 
 def _alt_anchor(world: World, rng: random.Random, c: dict, avoid: set[str]) -> str | None:
@@ -58,7 +65,8 @@ def _alt_anchor(world: World, rng: random.Random, c: dict, avoid: set[str]) -> s
     return None
 
 
-def gen_memory(world: World, rng: random.Random, tier: str, sid: str, idx: int, lo: dt.date, hi: dt.date):
+def gen_memory(world: World, rng: random.Random, tier: str, sid: str, idx: int, lo: dt.date, hi: dt.date,
+               ph: Phraser | None = None):
     s = sample_constraints(world, rng, "L3", lo, hi, "T7")
     if not s:
         return None
@@ -97,7 +105,7 @@ def gen_memory(world: World, rng: random.Random, tier: str, sid: str, idx: int, 
     if len(valid) < 2 or len(world.near_misses(c_final)) < 3:
         return None
 
-    km_sentence = lambda a: phrase_location(tier, a, c["max_km"])
+    km_sentence = lambda a: _end(phrase_location(tier, a, c["max_km"], ph), ph)
     wrong_allergy = None
     sessions: list[dict] = []
     events: list[dict] = []
@@ -110,19 +118,19 @@ def gen_memory(world: World, rng: random.Random, tier: str, sid: str, idx: int, 
     for k in range(n_sessions):
         sessions.append({"date": iso(s_dates[k]), "messages": []})
     first_home = old_home or final_home
-    hello = f"Hi! I'm {persona['name']}. Some things to remember for next time. "
+    hello = render(ph, "hello.memory", name=persona["name"]) + " "
     if tier == "L1":
-        msg(0, hello + " ".join([km_sentence(first_home), *_prefs(c, tier), _allergy_sentence(allergies_final)]),
+        msg(0, hello + " ".join([km_sentence(first_home), *_prefs(c, tier, ph), _allergy_sentence(allergies_final, ph)]),
             {"type": "state"})
         probe_k = 1
     elif tier == "L2":
-        msg(0, hello + " ".join([km_sentence(old_home), *_prefs(c, tier), _allergy_sentence(allergies_final[:1])]),
+        msg(0, hello + " ".join([km_sentence(old_home), *_prefs(c, tier, ph), _allergy_sentence(allergies_final[:1], ph)]),
             {"type": "state"})
-        msg(1, f"Quick update: I moved. {km_sentence(final_home)} Also, {_allergy_sentence(allergies_final[1:]).lower()}",
+        msg(1, f"Quick update: I moved. {km_sentence(final_home)} Also, {_allergy_sentence(allergies_final[1:], ph).lower()}",
             {"type": "update"})
         probe_k = 2
     elif tier == "L3":
-        msg(0, hello + " ".join([km_sentence(old_home), *_prefs(c, tier), _allergy_sentence(allergies_final), sens["say"]]),
+        msg(0, hello + " ".join([km_sentence(old_home), *_prefs(c, tier, ph), _allergy_sentence(allergies_final, ph), sens["say"]]),
             {"type": "state"})
         msg(1, f"Seoul is so busy! Anyway, I moved. {km_sentence(final_home)}", {"type": "update"})
         msg(2, f"Please forget that I mentioned {sens['short']}. I don't want that stored. "
@@ -131,13 +139,13 @@ def gen_memory(world: World, rng: random.Random, tier: str, sid: str, idx: int, 
         probe_k = 3
     else:  # L4
         wrong_allergy = rng.choice([a for a in ALLERGENS if a not in allergies_final])
-        msg(0, hello + " ".join([km_sentence(old_home), *_prefs(c, tier), _allergy_sentence([wrong_allergy]), sens["say"]]),
+        msg(0, hello + " ".join([km_sentence(old_home), *_prefs(c, tier, ph), _allergy_sentence([wrong_allergy], ph), sens["say"]]),
             {"type": "state"})
         msg(1, f"Thanks for the help! My ARC number is {ARC_NUMBER} in case you need it. "
                + (f"Also please never send me to {world.hospitals[avoid_h]['name_en']}." if avoid_h else ""),
             {"type": "noise"})
         msg(2, f"Correction: I said I'm allergic to {ALLERGENS[wrong_allergy]['en'][0]} but that was wrong. "
-               f"{_allergy_sentence(allergies_final)} Also I moved. {km_sentence(final_home)}", {"type": "update"})
+               f"{_allergy_sentence(allergies_final, ph)} Also I moved. {km_sentence(final_home)}", {"type": "update"})
         msg(3, f"Please forget that I mentioned {sens['short']}; I don't want that stored. "
                f"I'm staying in {place_phrase(temp['anchor'])} until {temp['until']} for an internship, "
                f"so use that location until then.", {"type": "forget"})
@@ -145,7 +153,7 @@ def gen_memory(world: World, rng: random.Random, tier: str, sid: str, idx: int, 
         probe_k = 5
 
     probes = []
-    pm = f"I have {comp['en']}. {phrase_time(tier, visit, c['time'])} Which hospital do you recommend?"
+    pm = f"I have {comp['en']}. {_end(phrase_time(tier, visit, c['time'], ph), ph)} Which hospital do you recommend?"
     sessions[probe_k]["messages"].append(pm)
     probes.append({"type": "recommend", "session": probe_k, "msg": 0, "constraints": c_final})
     sessions[probe_k]["messages"].append("I'm at the pharmacy. Which drug allergies should I tell the pharmacist about?")

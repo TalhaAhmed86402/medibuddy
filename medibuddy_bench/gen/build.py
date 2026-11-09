@@ -5,7 +5,12 @@
 
 Same seed + same code => byte-identical files (checked by tests/test_benchmark.py::Determinism).
 The hidden test split is produced by the benchmark maintainers with a secret seed, so the public
-repo contains the generator but not the test data."""
+repo contains the generator but not the test data.
+
+Wording.  Patient messages are paraphrased from the pools in gen/phrasing.py (switch off with --no-phrasing to get the v1.0
+wording).  Paraphrasing never changes a gold answer.  For the hidden split the maintainers can add private held-out wording:
+
+    python -m medibuddy_bench.gen.build --split test --seed <SECRET> --phrases private/heldout_phrases.json --out private/test"""
 from __future__ import annotations
 
 import argparse
@@ -22,6 +27,7 @@ from medibuddy_bench.gen.encounters import gen_encounter
 from medibuddy_bench.gen.hospitals import gen_background_notices, gen_hospitals
 from medibuddy_bench.gen.journey import gen_journey
 from medibuddy_bench.gen.memory import gen_memory
+from medibuddy_bench.gen.phrasing import POOLS, Phraser, load_extra
 from medibuddy_bench.gen.triage import CASES, gen_triage
 from medibuddy_bench.world import World
 
@@ -38,9 +44,19 @@ def _tier(i: int) -> str:
     return TIERS[i % 4]
 
 
-def build(split: str, seed: int, sizes: dict | None = None) -> dict:
+def build(split: str, seed: int, sizes: dict | None = None, phrasing: bool = True,
+          extra_phrases: dict | None = None) -> dict:
+    """Build one split.  `phrasing=False` reproduces the v1.0 wording; `extra_phrases` (private held-out paraphrases)
+    is allowed for the "test" split only, so private wording can never leak into the public data."""
+    if extra_phrases and split != "test":
+        raise ValueError("held-out phrases may only be used for the 'test' split")
     sizes = sizes or SIZES[split]
     rng = random.Random(seed)
+
+    def ph(sid: str) -> Phraser | None:
+        """Wording chooser for one scenario id (its own random stream, so no gold answer can change)."""
+        return Phraser(sid, extra_phrases) if phrasing else None
+
     hospitals = gen_hospitals(random.Random(rng.random()), 1200)
     notices = gen_background_notices(random.Random(rng.random()), hospitals, WORLD_START, WORLD_END)
     world = World({"meta": {"as_of": "2026-10-29", "split": split, "seed_hash": stable_hash(seed),
@@ -64,11 +80,11 @@ def build(split: str, seed: int, sizes: dict | None = None) -> dict:
         return out
 
     r = random.Random(rng.random())
-    scen["T1"] = run("T1", sizes["T1"], lambda sid, i, t: gen_choice(world, r, "T1", t, sid, i, lo, hi))
-    scen["T2"] = run("T2", sizes["T2"], lambda sid, i, t: gen_choice(world, r, "T2", t, sid, i, lo, hi))
-    scen["T3"] = run("T3", sizes["T3"], lambda sid, i, t: gen_choice(world, r, "T3", t, sid, i, lo, hi))
-    scen["T7"] = run("T7", sizes["T7"], lambda sid, i, t: gen_memory(world, r, t, sid, i, lo, hi))
-    scen["T8"] = run("T8", sizes["T8"], lambda sid, i, t: gen_journey(world, r, t, sid, i, lo, hi))
+    scen["T1"] = run("T1", sizes["T1"], lambda sid, i, t: gen_choice(world, r, "T1", t, sid, i, lo, hi, ph=ph(sid)))
+    scen["T2"] = run("T2", sizes["T2"], lambda sid, i, t: gen_choice(world, r, "T2", t, sid, i, lo, hi, ph=ph(sid)))
+    scen["T3"] = run("T3", sizes["T3"], lambda sid, i, t: gen_choice(world, r, "T3", t, sid, i, lo, hi, ph=ph(sid)))
+    scen["T7"] = run("T7", sizes["T7"], lambda sid, i, t: gen_memory(world, r, t, sid, i, lo, hi, ph=ph(sid)))
+    scen["T8"] = run("T8", sizes["T8"], lambda sid, i, t: gen_journey(world, r, t, sid, i, lo, hi, ph=ph(sid)))
     # T8 contains a choice scenario too; finalise those along with T1-T3
     # world is final now: recompute gold from the final world and drop anything that no longer qualifies
     for task in ("T1", "T2", "T3", "T8"):
@@ -85,9 +101,9 @@ def build(split: str, seed: int, sizes: dict | None = None) -> dict:
                 sid = f"{task}-{split}-{len(keep):04d}"
                 t = _tier(len(keep))
                 if task == "T8":
-                    s = gen_journey(world, r, t, sid, len(keep), lo, hi)
+                    s = gen_journey(world, r, t, sid, len(keep), lo, hi, ph=ph(sid))
                 else:
-                    s = gen_choice(world, r, task, t, sid, len(keep), lo, hi)
+                    s = gen_choice(world, r, task, t, sid, len(keep), lo, hi, ph=ph(sid))
                 if s and finalize_choice(world, s):
                     keep.append(s)
                     need -= 1
@@ -131,7 +147,8 @@ def build(split: str, seed: int, sizes: dict | None = None) -> dict:
                             "gold": {"summary": enc["gold_summary"], "spec": enc["spec"],
                                      "turns": enc["turns"]}})
         scen[task] = out
-    return {"world": world.data, "scenarios": scen}
+    return {"world": world.data, "scenarios": scen,
+            "phrasing": {"enabled": phrasing, "held_out": bool(extra_phrases), "pools_hash": stable_hash(POOLS)}}
 
 
 def write(ds: dict, out: str) -> dict:
@@ -139,6 +156,8 @@ def write(ds: dict, out: str) -> dict:
     with open(os.path.join(out, "world.json"), "w", encoding="utf-8") as f:
         json.dump(ds["world"], f, ensure_ascii=False, sort_keys=True, indent=1)
     manifest = {"version": VERSION, "world_hash": stable_hash(ds["world"]), "counts": {}, "hashes": {}}
+    if "phrasing" in ds:
+        manifest["phrasing"] = dict(ds["phrasing"])
     for task, items in ds["scenarios"].items():
         with open(os.path.join(out, f"{task}.jsonl"), "w", encoding="utf-8") as f:
             for it in items:
@@ -180,8 +199,12 @@ def main():
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--out", default=None)
     ap.add_argument("--review", default=None, help="directory for the human-review CSVs")
+    ap.add_argument("--no-phrasing", action="store_true", help="use the single v1.0 wording per style (no paraphrases)")
+    ap.add_argument("--phrases", default=os.environ.get("MEDIBUDDY_PHRASES"), metavar="JSON",
+                    help="private held-out paraphrases (test split only; default: $MEDIBUDDY_PHRASES)")
     a = ap.parse_args()
-    ds = build(a.split, a.seed)
+    extra = load_extra(a.phrases) if a.phrases else None
+    ds = build(a.split, a.seed, phrasing=not a.no_phrasing, extra_phrases=extra)
     out = a.out or os.path.join("data", a.split)
     m = write(ds, out)
     print(json.dumps(m["counts"]), "world", m["world_hash"])

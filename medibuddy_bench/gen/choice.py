@@ -13,6 +13,7 @@ import re
 import random
 
 from medibuddy_bench.common import CANARY, WEEKDAYS, iso
+from medibuddy_bench.gen.phrasing import Phraser, render, style_of
 from medibuddy_bench.knowledge import (COMPLAINTS, DISTRICTS, FIRST_NAMES, LANGUAGE_NAMES, NATIONALITY_WEIGHTED,
                                        VISAS)
 from medibuddy_bench.world import World, district_km
@@ -45,100 +46,80 @@ def gen_persona(rng: random.Random, idx: int) -> dict:
 
 
 # ------------------------------------------------------------------ slot text
-def phrase_time(tier: str, d: dt.date, hhmm: str) -> str:
+# Each phrase_* function returns what the patient says for one slot.  `ph` is a Phraser (varied wording drawn from
+# gen/phrasing.py); with ph=None the original single wording per style is used, which reproduces the v1.0 data exactly.
+def phrase_time(tier: str, d: dt.date, hhmm: str, ph: Phraser | None = None) -> str:
     """L1/L2 ISO date; L3 month name; L4 relative ("this coming Tuesday", needs today's date)."""
-    wd = WEEKDAYS[d.weekday()]
-    if tier in ("L1", "L2"):
-        return f"I'd like to go on {wd} {d.isoformat()} around {fmt_time(hhmm)}."
-    if tier == "L3":
-        return f"I'd like to go on {wd}, {d.strftime('%B')} {d.day}, around {fmt_time(hhmm)}."
-    return f"this coming {wd} around {fmt_time(hhmm)}."
+    return render(ph, f"time.{style_of(tier)}", wd=WEEKDAYS[d.weekday()], iso=d.isoformat(), month=d.strftime("%B"),
+                  day=d.day, t=fmt_time(hhmm))
 
 
-def phrase_location(tier: str, anchor: str, km: int) -> str:
-    pp = place_phrase(anchor)
-    if tier in ("L1", "L2"):
-        return f"I live in {pp} and I don't want to travel more than {km} km."
-    if tier == "L3":
-        return f"I'm based near {pp}, and anything farther than {km} kilometres is too far for me."
-    return f"staying around {pp}. {km}km max"
+def phrase_location(tier: str, anchor: str, km: int, ph: Phraser | None = None) -> str:
+    return render(ph, f"location.{style_of(tier)}", pp=place_phrase(anchor), km=km)
 
 
 SOFT_MARK = re.compile(r"if possible|preferabl|ideally|not a must|would be nice|prefer", re.I)
 
 
-def phrase_language(tier: str, lang: str, soft: bool = False) -> str:
-    n = LANGUAGE_NAMES[lang]
-    if soft:   # flexible preference: the patient can manage without it
-        if tier in ("L1", "L2"):
-            return f"Ideally I'd like staff who speak {n}, but it's not a must."
-        if tier == "L3":
-            return f"I'd prefer someone who can speak {n}, although I can manage without if needed."
-        return f"someone who can speak {n} if possible, not a must"
-    if tier in ("L1", "L2"):
-        return f"I need staff who speak {n} (or a hospital with an interpreter)."
-    if tier == "L3":
-        return f"My Korean is non-existent; I can only communicate in {n}, though an interpreter is fine too."
-    return f"korean isn't an option for me - {n} only (interpreter ok)"
+def phrase_language(tier: str, lang: str, soft: bool = False, ph: Phraser | None = None) -> str:
+    """`soft` = a flexible preference (the patient can manage without it) instead of a hard need."""
+    key = f"language.{'soft.' if soft else ''}{style_of(tier)}"
+    return render(ph, key, lang=LANGUAGE_NAMES[lang])
 
 
-def phrase_price(tier: str, level: int, soft: bool = False) -> str:
-    if soft:
-        if tier in ("L1", "L2"):
-            return f"Ideally keep the cost at price level {level} or lower, but a bit more is acceptable."
-        if tier == "L3":
-            return f"I'd prefer to stay at level {level} or below on the 1-3 price scale, if possible."
-        return f"budget: level {level}/3 if possible"
-    if tier in ("L1", "L2"):
-        return f"Please keep the cost at price level {level} or lower (1 = cheapest, 3 = most expensive)."
-    if tier == "L3":
-        return f"Nothing pricey: level {level} or below on the 1-3 price scale (1 is cheapest)."
-    return f"budget: max level {level}/3"
+def phrase_price(tier: str, level: int, soft: bool = False, ph: Phraser | None = None) -> str:
+    return render(ph, f"price.{'soft.' if soft else ''}{style_of(tier)}", level=level)
 
 
-def phrase_gender(tier: str, soft: bool = False) -> str:
-    if soft:
-        return {"L1": "A female doctor would be preferable, but it's not a must.",
-                "L2": "A female doctor would be preferable, but it's not a must.",
-                "L3": "I'd prefer a woman doctor if possible.",
-                "L4": "woman doc if possible"}[tier]
-    return {"L1": "I need a female doctor.", "L2": "I need a female doctor.",
-            "L3": "It has to be a woman doctor.", "L4": "woman doctor pls"}[tier]
+def phrase_gender(tier: str, soft: bool = False, ph: Phraser | None = None) -> str:
+    return render(ph, f"gender.{'soft.' if soft else ''}{style_of(tier)}")
 
 
-def slot_sentences(c: dict, tier: str) -> dict[str, str]:
+def slot_sentences(c: dict, tier: str, ph: Phraser | None = None) -> dict[str, str]:
     """What the patient says for each slot (used in the opening and as answers in T3)."""
-    out = {"location": phrase_location(tier, c["anchor"], c["max_km"]),
-           "time": phrase_time(tier, dt.date.fromisoformat(c["date"]), c["time"])}
+    out = {"location": phrase_location(tier, c["anchor"], c["max_km"], ph),
+           "time": phrase_time(tier, dt.date.fromisoformat(c["date"]), c["time"], ph)}
     if c.get("language"):
-        out["language"] = phrase_language(tier, c["language"], "language" in World.soft_slots(c))
+        out["language"] = phrase_language(tier, c["language"], "language" in World.soft_slots(c), ph)
     if c.get("max_price_level"):
-        out["price"] = phrase_price(tier, c["max_price_level"], "price" in World.soft_slots(c))
+        out["price"] = phrase_price(tier, c["max_price_level"], "price" in World.soft_slots(c), ph)
     if c.get("female_doctor"):
-        out["gender"] = phrase_gender(tier, "gender" in World.soft_slots(c))
+        out["gender"] = phrase_gender(tier, "gender" in World.soft_slots(c), ph)
     return out
 
 
 def compose_opening(persona: dict, complaint: dict, days: int, c: dict, disclosed: list[str], tier: str,
-                    slot_text: dict, avoid_name: str | None, rng: random.Random) -> str:
+                    slot_text: dict, avoid_name: str | None, rng: random.Random, ph: Phraser | None = None) -> str:
+    """The patient's first message.  `rng` is the generator's main stream and is consumed exactly as in v1.0 whether or
+    not `ph` is given (so the scenarios themselves never change); `ph` only varies the wording."""
     comp = complaint["en"]
+    dur = f"{days} day{'s' if days != 1 else ''}"
+    order = [s for s in SLOTS if s in disclosed and s in slot_text]
+    if ph is not None and ph.chance(.5):
+        ph.rng.shuffle(order)                       # the patient mentions the details in a different order
     if tier == "L4":
-        bits = [f"hi, {persona['name']} here ({persona['nationality']}). need a doctor, {complaint['simple']} "
-                f"for {days} days"]
-        bits += [slot_text[s].lower() for s in SLOTS if s in disclosed and s in slot_text]
+        lead = render(ph, "lead.terse", name=persona["name"], nat=persona["nationality"], simple=complaint["simple"],
+                      days=days, dur=dur)
+        bits = [lead] + [slot_text[s].lower() for s in order]
     else:
         greet = rng.choice([f"Hi, I'm {persona['name']}.", f"Hello! My name is {persona['name']}.",
                             f"Hi there, this is {persona['name']}."])
         intro = rng.choice([f"I'm from {persona['nationality']} and new to Korea.",
                             f"I moved here from {persona['nationality']} recently.", ""])
-        bits = [f"{greet} {intro}".strip(),
-                f"I've had {comp} for {days} day{'s' if days != 1 else ''} and I'd like to see a doctor."]
-        bits += [slot_text[s] for s in SLOTS if s in disclosed and s in slot_text]
+        if ph is not None:
+            greet = render(ph, "greeting", name=persona["name"])
+            intro = render(ph, "intro", nat=persona["nationality"])
+            complaint_sentence = render(ph, "complaint", comp=comp, dur=dur)
+        else:
+            complaint_sentence = f"I've had {comp} for {dur} and I'd like to see a doctor."
+        bits = [f"{greet} {intro}".strip(), complaint_sentence] + [slot_text[s] for s in order]
+    if ph is not None and tier == "L4":             # terse is messy, but keep the sentences apart
+        bits = [b if b.endswith((".", "?", "!")) else b + "." for b in bits]
     if c.get("has_referral"):
-        bits.append("My clinic gave me a referral letter for a larger hospital.")
+        bits.append(render(ph, "referral"))
     if avoid_name:
-        bits.append(f"Please don't send me to {avoid_name}; I had a bad experience there.")
-    bits.append("Can you recommend a place?" if tier != "L4" else "can u find me somewhere?")
+        bits.append(render(ph, "avoid", name=avoid_name))
+    bits.append(render(ph, "closing.terse" if tier == "L4" else "closing.plain"))
     return " ".join(bits)
 
 
@@ -231,8 +212,8 @@ def _inject(world: World, rng: random.Random, c: dict, site: str):
 
 
 def gen_choice(world: World, rng: random.Random, task: str, tier: str, sid: str, idx: int,
-               lo: dt.date, hi: dt.date, inject: bool = False):
-    """Returns scenario dict or None (caller retries)."""
+               lo: dt.date, hi: dt.date, inject: bool = False, ph: Phraser | None = None):
+    """Returns scenario dict or None (caller retries).  `ph` varies the wording only; see gen/phrasing.py."""
     s = sample_constraints(world, rng, tier, lo, hi, task)
     if not s:
         return None
@@ -300,7 +281,7 @@ def gen_choice(world: World, rng: random.Random, task: str, tier: str, sid: str,
         if not any(world.soft_misses(hid, c) for hid in live_valid):
             return None
 
-    slot_text = slot_sentences(c, tier)
+    slot_text = slot_sentences(c, tier, ph)
     present = [sl for sl in SLOTS if sl in slot_text]
     hidden: list[str] = []
     if task == "T3":
@@ -317,7 +298,7 @@ def gen_choice(world: World, rng: random.Random, task: str, tier: str, sid: str,
         if injection is None:
             return None
 
-    opening = compose_opening(persona, comp, days, c, disclosed, tier, slot_text, avoid_name, rng)
+    opening = compose_opening(persona, comp, days, c, disclosed, tier, slot_text, avoid_name, rng, ph)
     scen = {
         "id": sid, "task": task, "tier": tier,
         "public": {"opening": opening, "today": iso(d - dt.timedelta(days=rng.randint(1, 6 if tier == "L4" else 10)))},

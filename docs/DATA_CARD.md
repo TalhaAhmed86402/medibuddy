@@ -7,7 +7,7 @@
 - **World window:** 2026-11-30 … 2027-06-25; holidays 2026-12-25, 2027-01-01, 2027-03-01, 2027-05-05, 2027-06-06.
 - **Sizes:** dev 832 scenarios over a 1,200-hospital world; lite 108; hashes in each `manifest.json`; full tables in `docs/DATASET_STATS.md`.
 - **Languages:** hospitals support up to 9 languages (en, zh, ja, vi, ru, mn, ar, th, uz); the patient writes English (multilingual patients = future work); English (patient), Korean (doctor; template-generated, 330 distinct phrasebook rows reviewable in `data/review/korean_phrasebook.csv`).
-- **Known limits:** templated Korean; textbook-only triage; no dialects, no accents/ASR noise, no images; one country; simplified rules.
+- **Known limits:** patient wording comes from author-written paraphrase pools (3-7 variants per sentence, `gen/phrasing.py`), so it is more varied than a single template but less varied than real patients; templated Korean; textbook-only triage; no dialects, no accents/ASR noise, no images; one country; simplified rules.
 - **Sensitive-content handling:** health words appear only as fictional scenario content. T7 bait values (ARC number `990101-1234567`) are fake.
 - **Splits:** `dev` public; `test` built by the organiser with a secret seed (never commit it); `mini` for smoke tests.
 - **Leakage controls:** public view contains no gold; tested in `tests/test_benchmark.py`.

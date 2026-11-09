@@ -111,7 +111,7 @@ Every assessment writes a **run record** to `results/runs/<run_id>/` (`run.json`
 and git commit; `episodes.jsonl`; `report.md`). `leaderboard/LEADERBOARD.md` is generated from those records:
 ranked agents (full split, official data version), reference baselines, and a "Not ranked" table that states why a run is excluded
 (partial scope, stale data). Ranking and tie-break rules: [`docs/LEADERBOARD.md`](docs/LEADERBOARD.md).
-Current reference scores on `dev`: null 1.0 · naive 15.0 · rule 65.8 · oracle 100.0. No LLM score is published until it is measured.
+Current reference scores on `dev` (data v1.1.0): null 1.0 · naive 15.0 · rule 47.1 · oracle 100.0. No LLM score is published until it is measured.
 
 ## 6. Reproducibility
 
@@ -124,6 +124,7 @@ server URL, machine and commit; use `--trials 3` (pass^3) to measure consistency
 ## 7. Running the leaderboard (maintainers)
 
 1. Build the hidden split once with a private seed (never commit it): `python -m medibuddy_bench build --split test --seed <SECRET> --out /private/test`.
+   Add `--phrases /private/heldout_phrases.json` to give the hidden split wording that students cannot see in this repo (format and workflow: [`docs/HELDOUT_PHRASES.md`](docs/HELDOUT_PHRASES.md)).
 2. Serve it: `python -m medibuddy_bench serve --data /private/test --runs-dir /private/runs`.
 3. Publish: `python -m medibuddy_bench leaderboard --runs /private/runs --data /private/test --out leaderboard`.
 4. After any scorer or data change: bump `VERSION`, regenerate, re-run `make baselines`; old runs become "stale" automatically.
@@ -160,7 +161,7 @@ server URL, machine and commit; use `--trials 3` (pass^3) to measure consistency
 ## 10. Status and honest limits
 
 Read `DESIGN.md` §8 and "Scope decisions" before quoting numbers. Korean text and clinical content are template-generated and **not yet
-reviewed by a native speaker or clinician** (`docs/REVIEW_GUIDE.md`); the template-based `rule` agent shows that L1–L2 can be solved
-without a model (L3–L4 are designed to separate real agents); patients write English only; the A2A service is tested locally with
+reviewed by a native speaker or clinician** (`docs/REVIEW_GUIDE.md`); the model-free `rule` agent (47.1 on dev) reads patient messages with fixed patterns, so it is a reference for how far wording-matching
+alone gets; patient wording is paraphrased from pools (`medibuddy_bench/gen/phrasing.py`), and the hidden test split can use private held-out wording; patients write English only; the A2A service is tested locally with
 a2a-sdk 0.3.26 but not on any external platform; closed-model adapters are untested against live APIs; the Docker image and the test suite are built and run by CI on every push (Linux, macOS and Windows; Python 3.10, 3.12 and 3.13; the first green run is
 recorded in `docs/BUILD_LOG.md`), but the image has not been exercised against an external purple agent.

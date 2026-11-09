@@ -1,0 +1,14 @@
+{
+  "location.plain": [
+    "My address is in {pp}; the hospital must be within {km} km of it.",
+    "I'd like a clinic in or near {pp}, no further than {km} km from where I live."
+  ],
+  "time.plain": [
+    "I can attend on {wd} {iso}, and around {t} suits me.",
+    "Is there anything open on {wd} {iso} near {t}?"
+  ],
+  "closing.plain": [
+    "What would you suggest?",
+    "Where do you think I should go?"
+  ]
+}

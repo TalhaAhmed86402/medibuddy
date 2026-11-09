@@ -31,6 +31,8 @@ from a2a.server.tasks import InMemoryTaskStore
 from a2a.types import AgentCapabilities, AgentCard, AgentSkill
 from a2a.utils import new_agent_text_message
 
+from medibuddy_bench import VERSION
+
 
 class ToolDemoBackend:
     """Calls one tool, then gives a fixed reply.  Exercises the full wire protocol without a model."""
@@ -88,7 +90,7 @@ class PurpleExecutor(AgentExecutor):
 
 def build_app(host: str, port: int, backend: str, public_url: str | None = None):
     card = AgentCard(
-        name=f"MediBuddy purple ({backend})", version="1.0.0", description="Reference agent for MediBuddy-Bench.",
+        name=f"MediBuddy purple ({backend})", version=VERSION, description="Reference agent for MediBuddy-Bench.",
         url=public_url or f"http://{'localhost' if host in ('0.0.0.0', '::', '') else host}:{port}/", default_input_modes=["text"], default_output_modes=["text"],
         capabilities=AgentCapabilities(streaming=False),
         skills=[AgentSkill(id="help", name="Hospital help", tags=["healthcare"], description="Answers MediBuddy tasks.")])

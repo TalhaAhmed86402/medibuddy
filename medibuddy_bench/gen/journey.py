@@ -11,6 +11,7 @@ import random
 from medibuddy_bench.common import iso
 from medibuddy_bench.gen.choice import gen_choice
 from medibuddy_bench.gen.encounters import gen_encounter
+from medibuddy_bench.gen.phrasing import Phraser
 from medibuddy_bench.world import World
 
 _CHOICE = {"L1": ("T1", "L1"), "L2": ("T1", "L2"), "L3": ("T2", "L2"), "L4": ("T2", "L3")}
@@ -21,9 +22,10 @@ def closed_fraction(world: World, hospital_ids, date: dt.date) -> float:
     return sum(1 for h in ids if not world.live_status(h, date)["hours"]) / max(1, len(ids))
 
 
-def gen_journey(world: World, rng: random.Random, tier: str, sid: str, idx: int, lo: dt.date, hi: dt.date):
+def gen_journey(world: World, rng: random.Random, tier: str, sid: str, idx: int, lo: dt.date, hi: dt.date,
+                ph: Phraser | None = None):
     task, ctier = _CHOICE[tier]
-    ch = gen_choice(world, rng, task, ctier, sid, idx, lo, hi)
+    ch = gen_choice(world, rng, task, ctier, sid, idx, lo, hi, ph=ph)
     if not ch:
         return None
     c = ch["gold"]["constraints"]

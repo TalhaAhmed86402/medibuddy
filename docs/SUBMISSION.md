@@ -8,15 +8,16 @@ Entry point: `python -m medibuddy_bench <command>` (wraps `scripts/*`). A2A: `py
 ```bash
 python3 -m pytest -q tests                                   # 46 tests + docstring examples (+2 A2A end-to-end tests in a venv with requirements-a2a.txt)
 python3 scripts/run_benchmark.py --agent oracle --data data/dev --no-transcripts   # 100.0
-python3 scripts/run_benchmark.py --agent rule   --data data/dev --no-transcripts   # ~65.8
+python3 scripts/run_benchmark.py --agent rule   --data data/dev --no-transcripts   # ~47.1
 python3 scripts/fairness_twins.py --agent rule --data data/dev --limit 60          # gap 0.0000
 ```
 
 ## Hidden test split (organiser only)
 ```bash
-python3 -m medibuddy_bench.gen.build --split test --seed <PRIVATE_SEED> --out /private/test
+python3 -m medibuddy_bench.gen.build --split test --seed <PRIVATE_SEED> --phrases /private/heldout_phrases.json --out /private/test
 ```
-Never commit the seed or the output. Same seed + same code = identical files.
+Never commit the seed, the output or the held-out phrase file. Same seed + same code + same phrase file = identical files.
+The phrase file is optional (see docs/HELDOUT_PHRASES.md); without it the test split uses the public paraphrase pools.
 
 ## Running the workflow
 See README.md (install, test an agent, sweep, leaderboard), docs/INTEGRATION.md, docs/SETUP_GPU_MACHINE.md, docs/REPRODUCIBILITY.md.
