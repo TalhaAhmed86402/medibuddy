@@ -25,6 +25,14 @@ class H(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    def do_GET(self):                                   # GET /v1/models, like Ollama / vLLM / llama.cpp
+        data = json.dumps({"object": "list", "data": [{"id": "mock"}, {"id": "mock:7b"}]}).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
     def log_message(self, *a):
         pass
 

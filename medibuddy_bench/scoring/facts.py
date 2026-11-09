@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from medibuddy_bench.knowledge import ALLERGENS, BODY, DIAGNOSES, DRUGS, TESTS, TOPICS
 

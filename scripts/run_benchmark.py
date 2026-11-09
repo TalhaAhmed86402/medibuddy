@@ -3,21 +3,16 @@
 
   python scripts/run_benchmark.py --agent rule --data data/dev --tasks T1,T4 --limit 10
   python scripts/run_benchmark.py --agent mypkg.myagent:MyAgent --data data/dev --trials 3
+  python scripts/run_benchmark.py --agent openai:qwen2.5:7b ...     # any OpenAI-compatible server
+  python scripts/run_benchmark.py --agent http://localhost:8000/chat ...   # or cmd:"python my_agent.py", guarded:<spec>
+Accepted --agent forms are listed in medibuddy_bench/agents/registry.py.
 """
-import argparse, importlib, json, os, sys
+import argparse, json, os, sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from medibuddy_bench.agents.baselines import make
+from medibuddy_bench.agents.registry import resolve as factory
 from medibuddy_bench.runner import Runner
 from medibuddy_bench.scoring.aggregate import aggregate, to_markdown
-
-
-def factory(spec: str):
-    if ":" in spec and not spec.startswith("saboteur:"):
-        mod, cls = spec.split(":")
-        C = getattr(importlib.import_module(mod), cls)
-        return lambda scen: C()
-    return make(spec)
 
 
 def main():
@@ -30,6 +25,9 @@ def main():
     ap.add_argument("--trials", type=int, default=1)
     ap.add_argument("--out", default=None, help="write episodes as JSONL")
     ap.add_argument("--no-transcripts", action="store_true")
+    ap.add_argument("--checkpoint", default=None, metavar="FILE",
+                    help="append every scored episode to FILE and, if FILE exists for the same data, resume from it "
+                         "(an interrupted run continues instead of restarting)")
     ap.add_argument("--save-run", default=None, metavar="RUNS_DIR",
                     help="store a run record (e.g. results/runs) that scripts/leaderboard.py can rank")
     ap.add_argument("--name", default=None, help="agent name shown on the leaderboard (default: --agent)")
@@ -37,8 +35,9 @@ def main():
     ap.add_argument("--baseline", action="store_true", help="mark the run as a reference baseline (not ranked)")
     a = ap.parse_args()
     r = Runner(a.data, factory(a.agent), agent_name=a.agent, keep_transcripts=not a.no_transcripts)
-    eps = r.run(tasks=a.tasks.split(",") if a.tasks else None, tiers=a.tiers.split(",") if a.tiers else None,
-                limit=a.limit, trials=a.trials)
+    from medibuddy_bench.execute import run_with_checkpoint
+    eps = run_with_checkpoint(r, a.data, a.name or a.agent, a.tasks.split(",") if a.tasks else None,
+                              a.tiers.split(",") if a.tiers else None, a.limit, a.trials, a.checkpoint)
     rep = aggregate(eps)
     print(to_markdown(rep, a.agent))
     if a.save_run:
@@ -49,6 +48,8 @@ def main():
                      model=a.model or os.environ.get("MEDIBUDDY_MODEL"), kind="baseline" if a.baseline else "agent",
                      keep_transcripts=not a.no_transcripts)
         print(f"\nrun record: {p}")
+        if a.checkpoint and os.path.exists(a.checkpoint):
+            os.remove(a.checkpoint)
     if a.out:
         os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True)
         with open(a.out, "w", encoding="utf-8") as f:

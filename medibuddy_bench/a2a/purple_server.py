@@ -16,17 +16,15 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import json
-import re
+import os
 
 try:
     import uvicorn
-    from a2a.server.apps import A2AStarletteApplication  # noqa: F401  (a2a-sdk 0.3.x only)
+    from a2a.server.apps import A2AStarletteApplication     # removed in a2a-sdk 1.x
 except ImportError as _e:  # pragma: no cover
     raise SystemExit(f"{_e}\nThe A2A servers need a2a-sdk 0.3.x (1.x changed the server API). Use a clean venv:\n"
                      "  python -m venv .venv && . .venv/bin/activate && pip install -r requirements-a2a.txt")
 from a2a.server.agent_execution import AgentExecutor, RequestContext
-from a2a.server.apps import A2AStarletteApplication
 from a2a.server.events import EventQueue
 from a2a.server.request_handlers import DefaultRequestHandler
 from a2a.server.tasks import InMemoryTaskStore
@@ -88,10 +86,10 @@ class PurpleExecutor(AgentExecutor):
         raise NotImplementedError
 
 
-def build_app(host: str, port: int, backend: str):
+def build_app(host: str, port: int, backend: str, public_url: str | None = None):
     card = AgentCard(
         name=f"MediBuddy purple ({backend})", version="1.0.0", description="Reference agent for MediBuddy-Bench.",
-        url=f"http://{host}:{port}/", default_input_modes=["text"], default_output_modes=["text"],
+        url=public_url or f"http://{'localhost' if host in ('0.0.0.0', '::', '') else host}:{port}/", default_input_modes=["text"], default_output_modes=["text"],
         capabilities=AgentCapabilities(streaming=False),
         skills=[AgentSkill(id="help", name="Hospital help", tags=["healthcare"], description="Answers MediBuddy tasks.")])
     handler = DefaultRequestHandler(agent_executor=PurpleExecutor(make_backend(backend)), task_store=InMemoryTaskStore())
@@ -103,8 +101,10 @@ def main():
     ap.add_argument("--host", default="127.0.0.1")
     ap.add_argument("--port", type=int, default=9019)
     ap.add_argument("--backend", default="openai", choices=["openai", "anthropic", "tooldemo"])
+    ap.add_argument("--card-url", default=os.environ.get("MEDIBUDDY_PUBLIC_URL"),
+                    help="URL other containers/hosts use to reach this agent (default http://<host>:<port>/)")
     a = ap.parse_args()
-    uvicorn.run(build_app(a.host, a.port, a.backend), host=a.host, port=a.port, log_level="warning")
+    uvicorn.run(build_app(a.host, a.port, a.backend, a.card_url), host=a.host, port=a.port, log_level="warning")
 
 
 if __name__ == "__main__":

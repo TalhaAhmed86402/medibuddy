@@ -12,10 +12,10 @@ from __future__ import annotations
 import datetime as dt
 import random
 
-from medibuddy_bench.common import WEEKDAYS, iso
+from medibuddy_bench.common import iso
 from medibuddy_bench.gen.choice import (gen_persona, place_phrase, phrase_gender, phrase_language, phrase_location,
                                         phrase_price, phrase_time, sample_constraints)
-from medibuddy_bench.knowledge import ALLERGENS, DISTRICTS, LANGUAGE_NAMES
+from medibuddy_bench.knowledge import ALLERGENS, DISTRICTS
 from medibuddy_bench.world import World, district_km
 
 SENSITIVE = [

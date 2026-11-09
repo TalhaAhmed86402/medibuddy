@@ -2,7 +2,7 @@
 
 ## What this repository contains
 A runnable benchmark (generator, 8 tasks, deterministic scorers, tools, simulators, baselines, tests) plus a public dev split.
-Entry points: `scripts/run_benchmark.py` (local), `python -m medibuddy_bench.a2a.green_server` (A2A green-agent service, tested end to end against the reference purple agent with a2a-sdk 0.3.26; **not yet tried on the live AgentBeats platform, and incompatible with a2a-sdk 1.x**), `python -m medibuddy_bench.a2a.purple_server` (reference student agent for open and closed models).
+Entry point: `python -m medibuddy_bench <command>` (wraps `scripts/*`). A2A: `python -m medibuddy_bench.a2a.green_server` (A2A green-agent service, tested end to end against the reference purple agent with a2a-sdk 0.3.26; **not yet tried on the live AgentBeats platform, and incompatible with a2a-sdk 1.x**), `python -m medibuddy_bench.a2a.purple_server` (reference student agent for open and closed models).
 
 ## Verify before submitting
 ```bash
@@ -19,7 +19,7 @@ python3 -m medibuddy_bench.gen.build --split test --seed <PRIVATE_SEED> --out /p
 Never commit the seed or the output. Same seed + same code = identical files.
 
 ## Running the workflow
-See docs/QUICKSTART.md (Ollama model in one command; A2A service for students; leaderboard rules in docs/LEADERBOARD.md).
+See README.md (install, test an agent, sweep, leaderboard), docs/INTEGRATION.md, docs/SETUP_GPU_MACHINE.md, docs/REPRODUCIBILITY.md.
 
 ## Reporting an agent
 1. Run dev with `--trials 3` (pass^k) and without `--no-transcripts` for error analysis.

@@ -57,8 +57,12 @@ class Runner:
                      if os.path.exists(os.path.join(data_dir, f"{t}.jsonl"))}
 
     # ------------------------------------------------------------------ public
-    def run(self, tasks=None, limit=None, tiers=None, trials=1, ids=None, progress=None) -> list[dict]:
+    def run(self, tasks=None, limit=None, tiers=None, trials=1, ids=None, progress=None, done=None) -> list[dict]:
+        """`done` = set of (scenario id, trial) already scored (resume); those are skipped.
+        `progress(ep, index, total)` is called after every episode."""
         out = []
+        done = done or set()
+        plan = []
         for t in (tasks or list(self.scen)):
             items = self.scen[t]
             if tiers:
@@ -67,13 +71,16 @@ class Runner:
                 items = [s for s in items if s["id"] in ids]
             if limit:
                 items = items[:limit]
-            for s in items:
-                for trial in range(trials):
-                    ep = self.run_one(s)
-                    ep["trial"] = trial
-                    out.append(ep)
-                    if progress:
-                        progress(ep)
+            plan += [(s, trial) for s in items for trial in range(trials)]
+        total = len(plan)
+        for i, (s, trial) in enumerate(plan, 1):
+            if (s["id"], trial) in done:
+                continue
+            ep = self.run_one(s)
+            ep["trial"] = trial
+            out.append(ep)
+            if progress:
+                progress(ep, i, total)
         return out
 
     def run_one(self, scen: dict) -> dict:

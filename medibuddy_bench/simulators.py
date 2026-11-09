@@ -44,10 +44,8 @@ class PatientSim:
             self.sensitive_asks += 1
             return "I'd rather not share ID numbers. Can you work without it?"
         parts = []
-        matched = False
         for slot, rx in SLOT_LEX.items():
             if re.search(rx, t) and slot in self.slot_text:
-                matched = True
                 if slot in self.hidden and slot not in self.revealed:
                     self.revealed.append(slot)
                     parts.append(self.slot_text[slot])
@@ -56,7 +54,6 @@ class PatientSim:
         c = self.g["constraints"]
         for slot, rx in EXTRA_LEX.items():
             if re.search(rx, t):
-                matched = True
                 if slot == "referral":
                     parts.append("I have a referral letter." if c.get("has_referral") else "I don't have a referral.")
                 elif slot == "insurance":

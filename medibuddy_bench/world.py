@@ -27,7 +27,7 @@ import math
 from functools import lru_cache
 
 from medibuddy_bench.common import WEEKDAYS, parse_date
-from medibuddy_bench.knowledge import DISTRICTS, HOLIDAYS, SPECIALTIES
+from medibuddy_bench.knowledge import DISTRICTS, HOLIDAYS
 
 DAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
 SOFT_SLOTS = ("language", "price", "gender")   # the only slots a patient may mark as "flexible"

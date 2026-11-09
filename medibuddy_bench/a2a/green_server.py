@@ -21,12 +21,11 @@ import os
 
 try:
     import uvicorn
-    from a2a.server.apps import A2AStarletteApplication  # noqa: F401  (a2a-sdk 0.3.x only)
+    from a2a.server.apps import A2AStarletteApplication     # removed in a2a-sdk 1.x
 except ImportError as _e:  # pragma: no cover
     raise SystemExit(f"{_e}\nThe A2A servers need a2a-sdk 0.3.x (1.x changed the server API). Use a clean venv:\n"
                      "  python -m venv .venv && . .venv/bin/activate && pip install -r requirements-a2a.txt")
 from a2a.server.agent_execution import AgentExecutor, RequestContext
-from a2a.server.apps import A2AStarletteApplication
 from a2a.server.events import EventQueue
 from a2a.server.request_handlers import DefaultRequestHandler
 from a2a.server.tasks import InMemoryTaskStore, TaskUpdater
@@ -82,17 +81,15 @@ class GreenExecutor(AgentExecutor):
             return
         talker = TextTalker()
         loop = asyncio.get_running_loop()
-        done = {"n": 0}
 
         def send(msg: str, new: bool) -> str:
             return asyncio.run_coroutine_threadsafe(talker.send(url, msg, new), loop).result()
 
-        def progress(ep):
-            done["n"] += 1
-            if done["n"] % 10 == 0:
+        def progress(ep, i, total):
+            if i % 10 == 0 or i == total:
                 asyncio.run_coroutine_threadsafe(
                     updater.update_status(TaskState.working, new_agent_text_message(
-                        f"{done['n']} episodes scored", context.context_id, context.task_id)), loop)
+                        f"{i}/{total} episodes scored", context.context_id, context.task_id)), loop)
 
         try:
             out = await asyncio.to_thread(
@@ -123,12 +120,17 @@ class GreenExecutor(AgentExecutor):
         raise NotImplementedError("cancel is not supported; stop the evaluation by closing the purple agent")
 
 
+def advertised_url(host: str, port: int) -> str:
+    """URL put in the agent card.  Clients talk to the card's URL, so a wildcard bind address must not leak into it."""
+    return f"http://{'localhost' if host in ('0.0.0.0', '::', '') else host}:{port}/"
+
+
 def build_app(host: str, port: int, data_dir: str, public_url: str | None = None, runs_dir: str | None = None):
     card = AgentCard(
         name="MediBuddy-Bench", version=VERSION,
         description="Benchmark for agents that help international residents of Korea choose a hospital, "
                     "interpret a visit, summarise it and remember preferences. Send a JSON assessment request.",
-        url=public_url or f"http://{host}:{port}/", default_input_modes=["text"], default_output_modes=["text"],
+        url=public_url or advertised_url(host, port), default_input_modes=["text"], default_output_modes=["text"],
         capabilities=AgentCapabilities(streaming=False),
         skills=[AgentSkill(id="assess", name="Assess a MediBuddy agent", tags=["benchmark", "healthcare"],
                            description="Runs tasks T1-T8 against the purple agent and returns a gated score report.")])
@@ -143,7 +145,8 @@ def main():
     ap.add_argument("--data", default=os.path.join(HERE, "data", "dev"))
     ap.add_argument("--runs-dir", default=os.path.join(HERE, "results", "runs"),
                     help="where run records are stored for the leaderboard ('' to disable)")
-    ap.add_argument("--card-url", default=None, help="public URL advertised in the agent card")
+    ap.add_argument("--card-url", default=os.environ.get("MEDIBUDDY_PUBLIC_URL"),
+                    help="public URL advertised in the agent card (default http://<host>:<port>/; also $MEDIBUDDY_PUBLIC_URL)")
     a = ap.parse_args()
     uvicorn.run(build_app(a.host, a.port, a.data, a.card_url, a.runs_dir or None), host=a.host, port=a.port, log_level="warning")
 

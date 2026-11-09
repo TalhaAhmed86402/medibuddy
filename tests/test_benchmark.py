@@ -1,5 +1,5 @@
 """Regression tests: determinism, leakage, solvability, scorer sanity, saboteur gates, protocol round trip."""
-import json, os, subprocess, sys, tempfile, unittest
+import json, os, sys, unittest
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 from medibuddy_bench.agents import baselines

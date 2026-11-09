@@ -1,4 +1,5 @@
-# One-command workflow.  `make help` lists targets.  Python >= 3.10; A2A targets need `pip install -r requirements-a2a.txt`.
+# Convenience wrapper (Linux/macOS).  Everything is also available as `python -m medibuddy_bench <command>` on any OS (see README).
+# `make help` lists targets.  Python >= 3.10; A2A targets need `pip install -r requirements-a2a.txt`.
 PY ?= python3
 SPLIT ?= lite
 DATA ?= data/$(SPLIT)
@@ -6,8 +7,11 @@ DATA ?= data/$(SPLIT)
 help:
 	@echo "make test                run unit tests + docstring examples"
 	@echo "make baselines           score null/naive/rule/oracle on DATA (default data/lite) and record them"
-	@echo "make ollama MODEL=llama3.2:3b   score a local Ollama model (SPLIT=lite|dev) and record it"
+	@echo "make ollama MODEL=llama3.2:3b   score a local Ollama model (SPLIT=lite|dev) and record it; re-run the same command to resume after an interruption"
 	@echo "make leaderboard         rebuild leaderboard/LEADERBOARD.md from results/runs"
+	@echo "make sweep               score every configured model the server has (MAXVRAM=8 SPLIT=lite|dev)"
+	@echo "make verify              check data integrity and that it rebuilds identically"
+	@echo "make docker              build the Docker image and run the oracle inside it"
 	@echo "make serve-green         start the benchmark service (A2A) on :9009"
 	@echo "make serve-purple        start the reference student agent (A2A) on :9019 (needs OPENAI_BASE_URL etc.)"
 	@echo "make data SPLIT=dev      regenerate a split from its seed"
@@ -23,8 +27,19 @@ ollama:
 	@test -n "$(MODEL)" || (echo "usage: make ollama MODEL=llama3.2:3b" && exit 1)
 	OPENAI_BASE_URL=http://localhost:11434/v1 OPENAI_API_KEY=none MEDIBUDDY_MODEL=$(MODEL) \
 	  $(PY) scripts/run_benchmark.py --agent medibuddy_bench.agents.llm_openai_compat:OpenAICompatAgent \
-	  --name "ollama-$(MODEL)" --model $(MODEL) --data $(DATA) --no-transcripts --save-run results/runs
+	  --name "ollama-$(MODEL)" --model $(MODEL) --data $(DATA) --no-transcripts --save-run results/runs \
+	  --checkpoint results/.checkpoints/ollama-$(MODEL)-$(SPLIT).jsonl
 	$(PY) scripts/leaderboard.py --runs results/runs --data $(DATA) --out leaderboard
+
+sweep:
+	$(PY) scripts/sweep.py --data $(DATA) $(if $(MAXVRAM),--max-vram $(MAXVRAM),)
+
+verify:
+	$(PY) scripts/verify_data.py --data $(DATA) --rebuild
+
+docker:
+	docker build -t medibuddy-bench .
+	docker run --rm medibuddy-bench run --agent oracle --data data/lite --no-transcripts
 
 leaderboard:
 	$(PY) scripts/leaderboard.py --runs results/runs --data $(DATA) --out leaderboard
@@ -38,4 +53,4 @@ serve-purple:
 data:
 	$(PY) -m medibuddy_bench.gen.build --split $(SPLIT) --seed 1 --out data/$(SPLIT) $(if $(filter dev,$(SPLIT)),--review data/review,)
 
-.PHONY: help test baselines ollama leaderboard serve-green serve-purple data
+.PHONY: help test baselines ollama sweep verify docker leaderboard serve-green serve-purple data

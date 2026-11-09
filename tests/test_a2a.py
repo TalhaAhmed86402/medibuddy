@@ -11,7 +11,7 @@ import unittest
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 try:
-    import a2a.server.apps  # noqa: F401   (removed in a2a-sdk 1.x; this code targets 0.3.x)
+    import a2a.server.apps  # noqa: F401  (removed in a2a-sdk 1.x; this code targets 0.3.x)
     import httpx
     import uvicorn  # noqa: F401
     HAVE = True

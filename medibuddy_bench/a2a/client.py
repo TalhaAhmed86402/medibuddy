@@ -8,7 +8,7 @@ import uuid
 
 import httpx
 from a2a.client import ClientConfig, ClientFactory, create_text_message_object
-from a2a.types import Message, Part, Role, Task, TextPart
+from a2a.types import Message, Task
 
 
 def _text_of_parts(parts) -> str:

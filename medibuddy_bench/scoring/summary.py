@@ -11,7 +11,7 @@ import json
 import re
 
 from medibuddy_bench.common import C2
-from medibuddy_bench.knowledge import DIAGNOSES, DO_ITEMS, DRUGS, TESTS, WARNINGS
+from medibuddy_bench.knowledge import DO_ITEMS, DRUGS, WARNINGS
 from medibuddy_bench.scoring.common import allergen_keys, clamp
 from medibuddy_bench.scoring.facts import (Quantity, _alias_re, evaluate_facts, find_additions, norm_en, quantities)
 

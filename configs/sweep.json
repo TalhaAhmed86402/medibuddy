@@ -1,0 +1,23 @@
+{
+  "_comment": "Models to score, one after another. Works with ANY OpenAI-compatible server (Ollama, vLLM, llama.cpp server, LM Studio, SGLang, hosted APIs). 'model' must be the id the server lists at GET <base_url>/models. 'min_vram_gb' is a rough size at 4-bit quantisation plus a 16k context; use --max-vram to filter. Tags marked unverified may have a different name on your server; the sweep skips models the server does not have.",
+  "defaults": {
+    "base_url": "http://localhost:11434/v1",
+    "api_key": "none",
+    "ollama_ctx": 16384
+  },
+  "models": [
+    {"name": "llama3.2-3b",       "model": "llama3.2:3b",     "min_vram_gb": 4},
+    {"name": "qwen2.5-3b",        "model": "qwen2.5:3b",      "min_vram_gb": 4},
+    {"name": "qwen2.5-7b",        "model": "qwen2.5:7b",      "min_vram_gb": 7},
+    {"name": "qwen3-4b",          "model": "qwen3:4b",        "min_vram_gb": 5},
+    {"name": "qwen3-8b",          "model": "qwen3:8b",        "min_vram_gb": 7},
+    {"name": "llama3.1-8b",       "model": "llama3.1:8b",     "min_vram_gb": 7},
+    {"name": "gemma3-4b",         "model": "gemma3:4b",       "min_vram_gb": 5},
+    {"name": "gemma3-12b",        "model": "gemma3:12b",      "min_vram_gb": 11},
+    {"name": "mistral-7b",        "model": "mistral:7b",      "min_vram_gb": 7},
+    {"name": "phi4-mini",         "model": "phi4-mini",       "min_vram_gb": 4},
+    {"name": "deepseek-r1-7b",    "model": "deepseek-r1:7b",  "min_vram_gb": 7, "notes": "reasoning model; <think> blocks are stripped"},
+    {"name": "exaone3.5-7.8b",    "model": "exaone3.5:7.8b",  "min_vram_gb": 8, "notes": "Korean-specialised (LG); tag unverified"},
+    {"name": "gpt-oss-20b",       "model": "gpt-oss:20b",     "min_vram_gb": 14, "notes": "needs a larger GPU"}
+  ]
+}

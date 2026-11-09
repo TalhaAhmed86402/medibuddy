@@ -131,7 +131,7 @@ class _Builder:
 
     # ---- doctor side
     def d_prescribe(self, dr):
-        s, coll = self.s, self.coll
+        coll = self.coll
         d = DRUGS[dr["drug"]]
         n = dr["times_per_day"]
         ko = (f"{josa(d['ko'], '을/를')} 처방해 드릴게요. 하루 {KO_FREQ[n]}, {ko_timing(dr['timing'], dr['minutes'], coll)} "

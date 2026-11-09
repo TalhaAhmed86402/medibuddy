@@ -49,3 +49,11 @@ pass^1 .61; 46 pytest checks pass. Saboteurs not rerun after this change. Not ye
 - Checked: unique ids, no gold in public view, determinism. Saboteur gates covered by the test suite (mini split).
 - A2A: `medibuddy_bench/a2a/` (client, green server, reference purple server), `requirements-a2a.txt`, `Dockerfile`, `scenario.toml` commands; tested with `tests/test_a2a.py` (a2a-sdk 0.3.26, clean venv). a2a-sdk 1.x is not supported (server API removed).
 - Workflow: run records (`medibuddy_bench/results.py`), `scripts/leaderboard.py` (ranks full-split runs only; partial/stale listed with reasons), `scripts/assess.py`, `Makefile`, `docs/QUICKSTART.md`, fake Ollama server `tests/mock_openai.py` for a GPU-free pipeline test.
+- Live progress line per episode and `--checkpoint` resume in `scripts/run_benchmark.py` (also used by `make ollama`); `Runner.run(done=..., progress(ep, i, total))`; `tests/test_resume.py`.
+
+## v1.0.x platform-agnostic and reproducible tooling (2026-11-09)
+- Adapters: `http:`, `cmd:`, `guarded:`, `openai:`, `anthropic:`, `package:Class` resolved by `agents/registry.py`; examples in `examples/`.
+- `sweep` (any OpenAI-compatible server, resumable, `configs/sweep.json`), `execute.py` (checkpointed runs), `leaderboard.py`, `results.py` (environment metadata), `verify.py`.
+- CLI `python -m medibuddy_bench <command>` and `pyproject.toml`; lock file `requirements-a2a.lock`; `Dockerfile`, `docker-compose.yml`, CI matrix (Linux/macOS/Windows x Python 3.10/3.12/3.13 + Docker).
+- Verified here: tests on Python 3.11/3.12/3.13, dev rebuild identical after a lint cleanup, image contents simulated from the lock file in a clean venv. NOT verified here: the Docker build itself (Docker Hub unreachable), Python 3.10 execution (syntax-checked only), macOS/Windows.
+- Lint cleanup: unused imports and dead locals removed (no data change: dev rebuilt, hashes equal).

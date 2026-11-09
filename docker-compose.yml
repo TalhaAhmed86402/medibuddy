@@ -1,0 +1,32 @@
+# Whole workflow on one machine, no Python setup:
+#   cp .env.example .env            # point it at your model server
+#   docker compose up --build -d    # benchmark service on :9009, reference agent on :9019
+#   docker compose run --rm assess  # runs one assessment (lite split) and prints the report
+#   docker compose down
+# Results land in ./results/runs and ./leaderboard on the host (mounted volumes).
+services:
+  green:
+    build: .
+    image: medibuddy-bench
+    command: ["serve", "--host", "0.0.0.0", "--port", "9009", "--data", "data/lite"]
+    ports: ["9009:9009"]
+    volumes: ["./results:/app/results", "./leaderboard:/app/leaderboard"]
+
+  purple:
+    image: medibuddy-bench
+    command: ["agent", "--backend", "openai", "--host", "0.0.0.0", "--port", "9019"]
+    environment:
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-http://host.docker.internal:11434/v1}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-none}
+      MEDIBUDDY_MODEL: ${MEDIBUDDY_MODEL:-llama3.2:3b}
+      MEDIBUDDY_PUBLIC_URL: http://purple:9019/
+    extra_hosts: ["host.docker.internal:host-gateway"]    # reach a model server running on the host (Linux too)
+    ports: ["9019:9019"]
+    depends_on: [green]
+
+  assess:
+    image: medibuddy-bench
+    profiles: ["tools"]
+    entrypoint: ["python", "-m", "medibuddy_bench", "assess"]
+    command: ["--green", "http://green:9009", "--purple", "http://purple:9019", "--name", "compose-agent", "--model", "${MEDIBUDDY_MODEL:-llama3.2:3b}"]
+    depends_on: [green, purple]

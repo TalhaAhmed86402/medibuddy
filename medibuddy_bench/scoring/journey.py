@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import datetime as dt
 
-from medibuddy_bench.common import SUCCESS_SCORE
 from medibuddy_bench.gen.journey import follow_up_gold
 
 

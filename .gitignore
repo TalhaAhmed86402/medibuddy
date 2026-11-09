@@ -15,3 +15,4 @@ results/*.jsonl
 # hidden-split material must never be committed
 results/runs-test/
 private/
+results/.checkpoints/

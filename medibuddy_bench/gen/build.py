@@ -16,7 +16,7 @@ import os
 import random
 
 from medibuddy_bench import VERSION
-from medibuddy_bench.common import WORLD_END, WORLD_START, iso, stable_hash
+from medibuddy_bench.common import WORLD_END, WORLD_START, stable_hash
 from medibuddy_bench.gen.choice import finalize_choice, gen_choice
 from medibuddy_bench.gen.encounters import gen_encounter
 from medibuddy_bench.gen.hospitals import gen_background_notices, gen_hospitals
@@ -52,7 +52,7 @@ def build(split: str, seed: int, sizes: dict | None = None) -> dict:
     def run(task, n, fn, over=1.0):
         """Generate n scenarios, round-robin over tiers; retry until each succeeds."""
         out = []
-        i = attempts = 0
+        attempts = 0
         while len(out) < n and attempts < n * 400:
             attempts += 1
             sid = f"{task}-{split}-{len(out):04d}"

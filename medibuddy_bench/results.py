@@ -12,7 +12,9 @@ from __future__ import annotations
 import datetime as dt
 import json
 import os
+import platform
 import re
+import subprocess
 
 from medibuddy_bench import VERSION
 from medibuddy_bench.common import TASKS
@@ -26,6 +28,17 @@ def slug(s: str) -> str:
 def read_manifest(data_dir: str) -> dict:
     with open(os.path.join(data_dir, "manifest.json"), encoding="utf-8") as f:
         return json.load(f)
+
+
+def environment() -> dict:
+    """Where a run was produced (for reproducibility reports); contains no secrets."""
+    try:
+        commit = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True,
+                                cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))), timeout=5).stdout.strip()
+    except (OSError, subprocess.SubprocessError):
+        commit = ""
+    return {"python": platform.python_version(), "platform": platform.platform(), "machine": platform.machine(),
+            "git_commit": commit or None, "docker": os.path.exists("/.dockerenv")}
 
 
 def coverage(report: dict, manifest: dict, scope: dict) -> dict:
@@ -46,7 +59,7 @@ def coverage(report: dict, manifest: dict, scope: dict) -> dict:
 
 def save_run(runs_dir: str, agent: str, episodes: list[dict], report: dict, data_dir: str, scope: dict,
              source: str = "local", model: str | None = None, kind: str = "agent", notes: str = "",
-             keep_transcripts: bool = False) -> str:
+             keep_transcripts: bool = False, extra: dict | None = None) -> str:
     man = read_manifest(data_dir)
     now = dt.datetime.now(dt.timezone.utc)
     run_id = f"{now:%Y%m%d-%H%M%S}-{slug(agent)}"
@@ -59,7 +72,7 @@ def save_run(runs_dir: str, agent: str, episodes: list[dict], report: dict, data
                      "world_hash": man.get("world_hash"), "hashes": man.get("hashes")},
             "scope": {"tasks": scope.get("tasks"), "tiers": scope.get("tiers"), "limit": scope.get("limit"),
                       "trials": scope.get("trials", 1)},
-            "coverage": cov, "report": report}
+            "coverage": cov, "environment": environment(), "extra": extra or {}, "report": report}
     with open(os.path.join(path, "run.json"), "w", encoding="utf-8") as f:
         json.dump(meta, f, indent=1, ensure_ascii=False)
     with open(os.path.join(path, "episodes.jsonl"), "w", encoding="utf-8") as f:

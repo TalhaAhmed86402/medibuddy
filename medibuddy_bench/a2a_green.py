@@ -51,7 +51,6 @@ class MediBuddyGreen:
     async def run_eval(self, req, updater) -> None:
         cfg = dict(getattr(req, "config", {}) or {})
         url = str(next(iter(req.participants.values())))
-        first = {"flag": True}
 
         def send(text: str, new: bool) -> str:
             # talk_to_agent is async; this runs in a worker thread, so hop back onto the loop.

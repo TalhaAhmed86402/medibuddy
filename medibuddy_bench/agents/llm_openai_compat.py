@@ -22,21 +22,28 @@ from medibuddy_bench.protocol import RemoteAgent
 
 
 class OpenAICompatAgent(RemoteAgent):
-    def __init__(self, model: str | None = None, max_tokens: int = 1500, temperature: float = 0.0):
+    def __init__(self, model: str | None = None, base_url: str | None = None, api_key: str | None = None,
+                 max_tokens: int = 1500, temperature: float = 0.0, seed: int | None = 0):
+        """`model`/`base_url`/`api_key` default to $MEDIBUDDY_MODEL / $OPENAI_BASE_URL / $OPENAI_API_KEY.
+        temperature 0 and a fixed `seed` make runs as repeatable as the server allows (not bit-exact on every server)."""
         self.model = model or os.environ.get("MEDIBUDDY_MODEL")
         if not self.model:
-            raise RuntimeError("set MEDIBUDDY_MODEL")
-        base = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
-        self.url, self.key = base + "/chat/completions", os.environ.get("OPENAI_API_KEY", "none")
-        self.max_tokens, self.temperature, self.history = max_tokens, temperature, []
+            raise RuntimeError("set MEDIBUDDY_MODEL (or pass the model name)")
+        base = (base_url or os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")).rstrip("/")
+        self.url = base + "/chat/completions"
+        self.key = api_key or os.environ.get("OPENAI_API_KEY", "none")
+        self.max_tokens, self.temperature, self.seed, self.history = max_tokens, temperature, seed, []
         super().__init__(self._send_api, name=self.model)
 
     def _send_api(self, text: str, new_conversation: bool) -> str:
         if new_conversation:
             self.history = []
         self.history.append({"role": "user", "content": text})
-        body = json.dumps({"model": self.model, "messages": self.history, "temperature": self.temperature,
-                           "max_tokens": self.max_tokens}).encode()
+        payload = {"model": self.model, "messages": self.history, "temperature": self.temperature,
+                   "max_tokens": self.max_tokens}
+        if self.seed is not None:
+            payload["seed"] = self.seed
+        body = json.dumps(payload).encode()
         req = urllib.request.Request(self.url, body, {"Authorization": f"Bearer {self.key}",
                                                       "Content-Type": "application/json"})
         for attempt in range(6):

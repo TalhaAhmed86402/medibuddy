@@ -1,108 +1,163 @@
-# MediBuddy-Bench v1.0.0
+# MediBuddy-Bench
 
-A benchmark for **MediBuddy**-style agents: an assistant that helps an international resident in Korea
-(1) pick a hospital using current information and personal preferences, (2) interpret a Korean ↔ English
+A benchmark for **MediBuddy-style agents**: assistants that help an international resident of Korea
+(1) choose a hospital using current information and personal preferences, (2) interpret a Korean ↔ English
 consultation turn by turn, (3) summarise the visit, and (4) remember preferences across visits.
 
-Course: ESW4028_41 (Agentic AI, SKKU) – Phase 2 (benchmark). Everything is **synthetic** (fictional
-hospitals, fictional patients); no real medical advice is produced or evaluated for real use.
+Course project: ESW4028_41 (Agentic AI, SKKU), Phase 2. All data is **synthetic** (fictional hospitals and patients);
+the benchmark never produces or evaluates real medical advice. Scoring is deterministic and offline (no LLM judge).
 
-## Quick start (Python ≥ 3.10, standard library only)
+**Pick your path:** [I want to test my agent](#2-test-your-agent) · [I want to compare many models](#4-compare-many-models) ·
+[I run the leaderboard](#7-running-the-leaderboard-maintainers) · [Something broke](#9-troubleshooting)
 
+---
+
+## 1. Install (two ways, same result)
+
+Works on Linux, macOS and Windows. The benchmark core needs only **Python ≥ 3.10 and the standard library**.
+
+**A. From a clone (recommended for development)**
 ```bash
-python3 -m pytest -q tests                                # 46 tests + docstring examples (~1 min)
-python3 scripts/run_benchmark.py --agent rule   --data data/lite --no-transcripts   # 108 scenarios, fast
-python3 scripts/run_benchmark.py --agent rule   --data data/dev --no-transcripts    # 832 scenarios
-python3 scripts/run_benchmark.py --agent oracle --data data/dev --no-transcripts   # must print 100.0
-python3 -m medibuddy_bench.gen.build --split dev --seed 1 --out data/dev --review data/review   # regenerate
+git clone https://github.com/TalhaAhmed86402/medibuddy.git medibuddy-bench && cd medibuddy-bench
+python -m medibuddy_bench doctor        # checks Python, data integrity, model server; "FAIL" lines must be fixed
+python -m pytest -q tests               # optional: pip install pytest first (~1 min)
 ```
-
-Plug in your own agent (in-process):
-
-```python
-# mypkg/myagent.py
-from medibuddy_bench.agents.base import Agent, Reply
-class MyAgent(Agent):
-    def start_session(self, card, tools): self.card, self.tools = card, tools   # tools.call("search_hospitals", {...})
-    def respond(self, message): return Reply(text="...", data={"recommendations": ["H0042"]})
-```
+Optional, only for the A2A service (students' agents over A2A): use a clean virtual environment, because a2a-sdk 1.x is not supported.
 ```bash
-python3 scripts/run_benchmark.py --agent mypkg.myagent:MyAgent --data data/dev --trials 3
+python -m venv .venv && . .venv/bin/activate        # Windows: .venv\Scripts\activate
+pip install -r requirements-a2a.lock                 # exact tested versions (requirements-a2a.txt = loose pins)
 ```
 
-Any text-only A2A agent can be evaluated through the text protocol. The benchmark runs as an A2A service
-(`python -m medibuddy_bench.a2a.green_server`, needs `requirements-a2a.txt`); a reference student agent for open and closed
-models is `medibuddy_bench.a2a.purple_server`. Details: `docs/AGENT_INTERFACE.md`.
-
-## Workflow in one page
-
-See `docs/QUICKSTART.md`: `make test`, `make baselines`, `make ollama MODEL=llama3.2:3b`, `make serve-green`, `make leaderboard`.
-
-## Running a real model (closed or open source)
-
-Models are driven through the text protocol (`<tool_call>` / `<answer>`), so no native tool-calling support is needed.
-Always smoke-test first (`--tasks T1 --limit 3`); a full dev run is hundreds to thousands of API calls (T5 dominates).
-Add `--trials 3` for pass^k, drop `--no-transcripts` to keep conversations for error analysis.
-
-**Claude (Anthropic API)**
+**B. Docker (identical environment everywhere)**
 ```bash
-export ANTHROPIC_API_KEY=sk-ant-...  MEDIBUDDY_MODEL=claude-sonnet-5-5
-python3 scripts/run_benchmark.py --agent medibuddy_bench.agents.llm_anthropic:ClaudeAgent --data data/dev --no-transcripts --out results/claude.jsonl
+docker build -t medibuddy-bench .
+docker run --rm medibuddy-bench doctor
+docker run --rm medibuddy-bench run --agent oracle --data data/lite     # must print Overall (gated): 100.0
 ```
+All commands below work as `python -m medibuddy_bench <command>` or `docker run --rm medibuddy-bench <command>`.
+(`pip install -e .` also gives a `medibuddy` command.) On Windows use these commands instead of `make`.
 
-**OpenAI and anything OpenAI-compatible (hosted closed models, hosted/local open models)**
+Sanity check of the whole install, ~1 minute:
 ```bash
-export OPENAI_API_KEY=sk-...  MEDIBUDDY_MODEL=gpt-4o          # OPENAI_BASE_URL defaults to api.openai.com/v1
-python3 scripts/run_benchmark.py --agent medibuddy_bench.agents.llm_openai_compat:OpenAICompatAgent --data data/dev --no-transcripts --out results/gpt.jsonl
+python -m medibuddy_bench run --agent oracle --data data/lite --no-transcripts   # 100.0
+python -m medibuddy_bench run --agent rule   --data data/lite --no-transcripts   # ~66, a template agent with no LLM
 ```
-Open-source models: serve them first, then point `OPENAI_BASE_URL` at the server.
-```bash
-# vLLM (GPU box, e.g. the DASH Lab servers)
-vllm serve Qwen/Qwen2.5-72B-Instruct --port 8000
-export OPENAI_BASE_URL=http://localhost:8000/v1  OPENAI_API_KEY=none  MEDIBUDDY_MODEL=Qwen/Qwen2.5-72B-Instruct
-# Ollama (laptop): ollama pull llama3.1:8b   then   OPENAI_BASE_URL=http://localhost:11434/v1  MEDIBUDDY_MODEL=llama3.1:8b
-```
-Hosted open-model providers (Together, Fireworks, OpenRouter, ...) work the same way with their base URL and key.
-Gemini via its OpenAI-compatible endpoint also works. Reasoning models' `<think>...</think>` blocks are stripped.
-Any other agent: subclass `Agent` (see above) or expose it over the text protocol (`docs/AGENT_INTERFACE.md`).
-Both adapters were tested only against a mocked HTTP layer, not live services.
 
-## What is in the box
+## 2. Test your agent
 
-| Path | What |
+An agent receives a task card plus patient/doctor messages as text, may call tools, and replies with text and an optional
+`<answer>{json}</answer>`. **Any agent that can answer text with text can be evaluated.** Choose the way that fits yours
+(details and wire formats: [`docs/INTEGRATION.md`](docs/INTEGRATION.md)):
+
+| Your agent is… | Command (`--agent …`) |
 |---|---|
-| `medibuddy_bench/gen/` | seeded generators for the world and all 8 tasks |
-| `medibuddy_bench/scoring/` | deterministic, offline scorers (no LLM judge) + aggregation |
-| `medibuddy_bench/agents/` | baselines: null, naive, rule, oracle, saboteurs (safety-gate tests) |
-| `medibuddy_bench/runner.py`, `tools.py`, `simulators.py`, `protocol.py` | episode loop, tool API, patient simulator, text wire protocol |
-| `data/dev/` | public development split (seed 1, 832 scenarios, 1,200-hospital world). `data/lite/` – 108-scenario subset for quick runs. `data/review/` – CSVs for human review |
-| `results/` | pilot results of the baselines |
-| `scripts/` | `run_benchmark.py`, `dataset_stats.py`, `fairness_twins.py`, `import_real_data.py` |
-| `Makefile`, `leaderboard/` | one-command workflow; generated leaderboard (`LEADERBOARD.md`, `leaderboard.json`) from `results/runs/` |
-| `docs/` | QUICKSTART, TASKS, AGENT_INTERFACE, DATA_CARD, DATASET_STATS, REVIEW_GUIDE, LEADERBOARD, BUILD_LOG, SUBMISSION |
-| `DESIGN.md`, `DECISIONS.md` | the what / why / how, and the choices made on open questions |
+| a model on any **OpenAI-compatible server** (Ollama, vLLM, llama.cpp, LM Studio, SGLang, hosted APIs) | `openai:<model>` with `OPENAI_BASE_URL`, `OPENAI_API_KEY` set |
+| a **Python class** (`Agent` subclass) | `mypkg.myagent:MyAgent` |
+| a **web service** (any language) | `http://host:port/chat` |
+| a **program** (any language, no server) | `cmd:python my_agent.py` (JSON lines on stdin/stdout) |
+| an **A2A agent** | start the service, then `assess` (section 3) |
+| a built-in reference | `null`, `naive`, `rule`, `oracle`; wrap any agent with `guarded:<spec>` |
 
-## Headline numbers (dev split, 832 scenarios, 1 trial)
+Example, scoring a local model on the small split and recording it for the leaderboard:
+```bash
+export OPENAI_BASE_URL=http://localhost:11434/v1 OPENAI_API_KEY=none        # Windows PowerShell: $env:OPENAI_BASE_URL="..."
+python -m medibuddy_bench run --agent openai:qwen2.5:7b --name my-qwen --model qwen2.5:7b \
+    --data data/lite --no-transcripts --save-run results/runs --checkpoint results/.checkpoints/my-qwen.jsonl
+```
+While it runs you see one line per scenario with an ETA. If it is interrupted, run the **same command again**: it resumes.
+Smoke test first with `--tasks T1 --limit 3`. Closed models (`anthropic:<model>`, hosted OpenAI-compatible APIs) use the same flow;
+those adapters are tested only against mocked HTTP, not live services.
 
-| Agent | Overall (gated, 0-100) | Un-gated |
-|---|---|---|
-| null (says nothing) | 1.0 | 2.0 |
-| naive (generic text) | 15.0 | 20.5 |
-| rule (templates + tools, no LLM) | 65.8 | 70.8 |
-| oracle (reads gold) | 100.0 | 100.0 |
+**Splits.** `data/lite` (116 scenarios, minutes) for development; `data/dev` (832 scenarios) is the official public split that the
+leaderboard ranks; the graded `test` split is hidden. Only a run over the **whole** split is ranked.
 
-No LLM agent has been run yet (no API key in the build environment). See `results/pilot.md`.
+**Tasks and weights** (full detail: [`docs/TASKS.md`](docs/TASKS.md)): T1 hospital search 15 · T2 fresh vs stale information 10 ·
+T3 clarifying questions 10 · T4 triage 10 · T5 turn-by-turn interpretation 20 · T6 visit summary 10 · T7 memory across visits 15 ·
+T8 full journey 10. Each scenario has four difficulty tiers (L1 explicit … L4 colloquial, distracted, pressured).
+**Critical failures** (C1 missed red flag, C2 wrong medical fact, C3 privacy breach, C4 obeyed an injected instruction) zero the
+episode, so the headline *Overall (gated)* score cannot hide a dangerous answer. The un-gated score is reported next to it.
 
-## Status and honest limits
+## 3. The A2A workflow (what students use)
 
-Read `DESIGN.md` §8 (threats to validity) before quoting any number. In short: Korean text and
-clinical content are template-generated and **not yet reviewed by a native speaker / clinician**
-(`docs/REVIEW_GUIDE.md`); the rule baseline shows that L1–L2 can be solved by templates; the A2A
-service is tested end to end locally (a2a-sdk 0.3.26) but **not yet on the live AgentBeats platform**, and it does not work with a2a-sdk 1.x.
+```bash
+# terminal 1: the benchmark service
+python -m medibuddy_bench serve --port 9009 --data data/lite
+# terminal 2: your agent (here the reference agent wrapping a model server; replace with your own A2A agent)
+OPENAI_BASE_URL=http://localhost:11434/v1 MEDIBUDDY_MODEL=qwen2.5:7b python -m medibuddy_bench agent --backend openai --port 9019
+# terminal 3: start an assessment
+python -m medibuddy_bench assess --purple http://localhost:9019 --name my-agent --model qwen2.5:7b
+python -m medibuddy_bench leaderboard --data data/lite
+```
+Or with Docker Compose (copy `.env.example` to `.env` and point it at your model server): `docker compose up --build -d`, then
+`docker compose run --rm assess`. The A2A message format is defined by this project, not by a course template: one JSON
+text message in, a report out ([`docs/AGENT_INTERFACE.md`](docs/AGENT_INTERFACE.md)).
 
+## 4. Compare many models
 
-## Hidden test split
+`sweep` scores a list of models one after another on one server, resumes after interruptions, skips models the server does not
+have, and rebuilds the leaderboard. It needs only an OpenAI-compatible endpoint, so it is not tied to Ollama, an OS or a GPU.
+```bash
+python -m medibuddy_bench sweep --list                          # which configured models does the server have?
+python -m medibuddy_bench sweep --data data/lite --max-vram 8   # run everything that fits an 8 GB GPU
+```
+Model list and sizes: `configs/sweep.json`. Setting up a fresh GPU machine from zero: [`docs/SETUP_GPU_MACHINE.md`](docs/SETUP_GPU_MACHINE.md).
 
-The public repo holds only the generator. The organisers build the test split with a private seed:
-`python -m medibuddy_bench.gen.build --split test --seed <SECRET> --out /private/test` and never commit it.
-See `docs/SUBMISSION.md`.
+## 5. Read the results
+
+Every assessment writes a **run record** to `results/runs/<run_id>/` (`run.json` with the full report, scope, data hash, machine
+and git commit; `episodes.jsonl`; `report.md`). `leaderboard/LEADERBOARD.md` is generated from those records:
+ranked agents (full split, official data version), reference baselines, and a "Not ranked" table that states why a run is excluded
+(partial scope, stale data). Ranking and tie-break rules: [`docs/LEADERBOARD.md`](docs/LEADERBOARD.md).
+Current reference scores on `dev`: null 1.0 · naive 15.0 · rule 65.8 · oracle 100.0. No LLM score is published until it is measured.
+
+## 6. Reproducibility
+
+Data is generated from a seed and is **byte-identical on every machine** (checked on Linux, Python 3.11/3.12/3.13; CI repeats it on
+macOS and Windows): `python -m medibuddy_bench verify --data data/dev --rebuild`. Scoring has no randomness. Dependencies of the
+service are pinned (`requirements-a2a.lock`), and the Docker image fails to build if its data differs from its manifest.
+Model outputs are not bit-exact across hardware even at temperature 0 with a fixed seed, so each run record stores the model,
+server URL, machine and commit; use `--trials 3` (pass^3) to measure consistency. Details: [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md).
+
+## 7. Running the leaderboard (maintainers)
+
+1. Build the hidden split once with a private seed (never commit it): `python -m medibuddy_bench build --split test --seed <SECRET> --out /private/test`.
+2. Serve it: `python -m medibuddy_bench serve --data /private/test --runs-dir /private/runs`.
+3. Publish: `python -m medibuddy_bench leaderboard --runs /private/runs --data /private/test --out leaderboard`.
+4. After any scorer or data change: bump `VERSION`, regenerate, re-run `make baselines`; old runs become "stale" automatically.
+
+## 8. Repository map
+
+| Path | Purpose |
+|---|---|
+| `medibuddy_bench/gen/` | seeded generators: the world (1,200 hospitals, 47 districts) and all 8 tasks |
+| `medibuddy_bench/scoring/` | deterministic scorers and aggregation (gating, pass^k, tiers) |
+| `medibuddy_bench/agents/` | reference agents, model adapters (`llm_*`), plug-in adapters (`adapters.py`), `registry.py` (the `--agent` forms) |
+| `medibuddy_bench/a2a/` | A2A benchmark service (green), reference agent (purple), client |
+| `medibuddy_bench/{runner,execute,results,leaderboard,sweep,verify,cli}.py` | episode loop, checkpointed runs, run records, leaderboard, model sweep, data checks, CLI |
+| `scripts/` | thin command-line wrappers (`run_benchmark`, `sweep`, `leaderboard`, `assess`, `verify_data`, `dataset_stats`, `fairness_twins`, `import_real_data`) |
+| `data/lite`, `data/dev` | public splits; `data/review/` has the CSVs for native-speaker and clinician review |
+| `examples/` | minimal `http` and `cmd` agents to copy |
+| `configs/sweep.json` | models for the sweep |
+| `docs/` | TASKS, INTEGRATION, AGENT_INTERFACE, SETUP_GPU_MACHINE, REPRODUCIBILITY, LEADERBOARD, DATA_CARD, DATASET_STATS, REVIEW_GUIDE, SUBMISSION, BUILD_LOG |
+| `DESIGN.md`, `DECISIONS.md` | what / why / how, and the choices made on open questions |
+| `Dockerfile`, `docker-compose.yml`, `.github/workflows/ci.yml` | reproducible image, one-machine stack, cross-OS CI |
+
+## 9. Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| `doctor` says data FAIL | the checkout is damaged or edited; `git checkout data/` or `verify --data data/dev --rebuild` |
+| A2A commands: `No module named a2a.server.apps` | a2a-sdk 1.x is installed; use a clean venv with `requirements-a2a.lock` |
+| Ollama run scores oddly low | Ollama's default context is 4096 tokens; use `ollama_ctx` in `configs/sweep.json` (the sweep handles it) or a Modelfile with `PARAMETER num_ctx 16384` |
+| Ollama: `address already in use` | the Ollama app/service is already running; just use it (it restarts itself if killed) |
+| Model ignores `<tool_call>` / `<answer>` | expected for small models; it costs points by design. Read a transcript (omit `--no-transcripts`) |
+| Docker cannot reach the model server on the host | use `host.docker.internal` (the compose file maps it on Linux too) |
+| Windows: `make` not found | use the `python -m medibuddy_bench …` commands; `make` is only a convenience |
+
+## 10. Status and honest limits
+
+Read `DESIGN.md` §8 and "Scope decisions" before quoting numbers. Korean text and clinical content are template-generated and **not yet
+reviewed by a native speaker or clinician** (`docs/REVIEW_GUIDE.md`); the template-based `rule` agent shows that L1–L2 can be solved
+without a model (L3–L4 are designed to separate real agents); patients write English only; the A2A service is tested locally with
+a2a-sdk 0.3.26 but not on any external platform; closed-model adapters are untested against live APIs; the Docker image has not yet been built by
+the authors (the build was impossible in their environment); the CI workflow builds and tests it on every push.
