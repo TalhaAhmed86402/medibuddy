@@ -1,0 +1,4 @@
+# Only needed for the A2A servers (medibuddy_bench/a2a/). The benchmark core is standard-library only.
+a2a-sdk[http-server]==0.3.26
+uvicorn>=0.30
+httpx>=0.27

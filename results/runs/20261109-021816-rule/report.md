@@ -1,4 +1,4 @@
-### rule
+### rule (20261109-021816-rule)
 
 **Overall (gated): 65.8**  |  un-gated: 70.8  |  tasks covered: 100% of weight
 

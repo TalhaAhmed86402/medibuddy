@@ -11,3 +11,7 @@ data/real/*.zip
 results/*.jsonl
 .env
 *.key
+
+# hidden-split material must never be committed
+results/runs-test/
+private/

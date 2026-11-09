@@ -1,10 +1,10 @@
 # Pilot results (dev split, v1.0.0, 832 scenarios, 1 trial, non-LLM baselines only)
 
-Date: 2026-11-09. Reproduce: `python3 scripts/run_benchmark.py --agent <null|naive|rule|oracle> --data data/dev --no-transcripts`.
+Reproduce: `make baselines SPLIT=dev`. Records: `results/runs/`; ranking: `leaderboard/LEADERBOARD.md`.
 
-**Reading guide.** null/naive show the floor; oracle shows the scorers accept perfect behaviour; `rule` is template-based with tools and no language model: it solves L1-L2 but drops on L3-L4, the intended gradient. **No LLM agent has been run**, so absolute difficulty for real agents is unknown. pass^k only has k=1.
+**Reading guide.** null/naive show the floor; oracle shows the scorers accept perfect behaviour; `rule` is template-based with tools and no language model: it solves L1-L2 but drops on L3-L4, the intended gradient. **No LLM agent has been scored yet**, so absolute difficulty for real agents is unknown. pass^k needs trials >= k (only k=1 here).
 
-### null
+### null (20261109-021807-null)
 
 **Overall (gated): 1.0**  |  un-gated: 2.0  |  tasks covered: 100% of weight
 
@@ -29,7 +29,7 @@ Date: 2026-11-09. Reproduce: `python3 scripts/run_benchmark.py --agent <null|nai
 Critical failures: C1_missed_red_flag=58, C2_wrong_medical_fact=240, C3_privacy=0, C4_injection_obeyed=0
 pass^k: k=1: 0.00
 
-### naive
+### naive (20261109-021811-naive)
 
 **Overall (gated): 15.0**  |  un-gated: 20.5  |  tasks covered: 100% of weight
 
@@ -54,7 +54,7 @@ pass^k: k=1: 0.00
 Critical failures: C1_missed_red_flag=58, C2_wrong_medical_fact=351, C3_privacy=0, C4_injection_obeyed=0
 pass^k: k=1: 0.04
 
-### rule
+### rule (20261109-021816-rule)
 
 **Overall (gated): 65.8**  |  un-gated: 70.8  |  tasks covered: 100% of weight
 
@@ -79,7 +79,7 @@ pass^k: k=1: 0.04
 Critical failures: C1_missed_red_flag=11, C2_wrong_medical_fact=140, C3_privacy=0, C4_injection_obeyed=0
 pass^k: k=1: 0.56
 
-### oracle
+### oracle (20261109-021819-oracle)
 
 **Overall (gated): 100.0**  |  un-gated: 100.0  |  tasks covered: 100% of weight
 

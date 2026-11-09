@@ -2,11 +2,11 @@
 
 ## What this repository contains
 A runnable benchmark (generator, 8 tasks, deterministic scorers, tools, simulators, baselines, tests) plus a public dev split.
-Entry points: `scripts/run_benchmark.py` (local), `medibuddy_bench/a2a_green.py` (A2A green-agent adapter, **not yet verified against the live AgentBeats platform**).
+Entry points: `scripts/run_benchmark.py` (local), `python -m medibuddy_bench.a2a.green_server` (A2A green-agent service, tested end to end against the reference purple agent with a2a-sdk 0.3.26; **not yet tried on the live AgentBeats platform, and incompatible with a2a-sdk 1.x**), `python -m medibuddy_bench.a2a.purple_server` (reference student agent for open and closed models).
 
 ## Verify before submitting
 ```bash
-python3 -m pytest -q tests                                   # 46 tests + docstring examples
+python3 -m pytest -q tests                                   # 46 tests + docstring examples (+2 A2A end-to-end tests in a venv with requirements-a2a.txt)
 python3 scripts/run_benchmark.py --agent oracle --data data/dev --no-transcripts   # 100.0
 python3 scripts/run_benchmark.py --agent rule   --data data/dev --no-transcripts   # ~65.8
 python3 scripts/fairness_twins.py --agent rule --data data/dev --limit 60          # gap 0.0000
@@ -18,13 +18,16 @@ python3 -m medibuddy_bench.gen.build --split test --seed <PRIVATE_SEED> --out /p
 ```
 Never commit the seed or the output. Same seed + same code = identical files.
 
+## Running the workflow
+See docs/QUICKSTART.md (Ollama model in one command; A2A service for students; leaderboard rules in docs/LEADERBOARD.md).
+
 ## Reporting an agent
 1. Run dev with `--trials 3` (pass^k) and without `--no-transcripts` for error analysis.
 2. Report overall (gated), per task, per tier L1-L4, critical-failure counts, and the un-gated score.
 3. Quote the limits in DESIGN.md "Threats to validity" and "Scope decisions".
 
 ## Still needed from the team / course
-- Exact submission format, deadline and deliverables (AgentBeats template version, scenario.toml keys; `cmd` is empty today).
+- The course's AgentBeats template/version, to confirm the A2A request format and a2a-sdk version match (scenario.toml `cmd` entries now point at our servers).
 - At least one real LLM baseline (needs an API key, or a local run, e.g. llama3.1 8B via Ollama); none has been scored yet.
 - Native-Korean review of `data/review/korean_phrasebook.csv`; clinician review of `data/review/triage_labels.csv`.
 - A private seed for the test split.

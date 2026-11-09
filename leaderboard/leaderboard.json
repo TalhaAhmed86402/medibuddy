@@ -1,0 +1,24 @@
+{
+ "data": "1.0.0",
+ "world_hash": "250037d54de12f55",
+ "ranked": [],
+ "baselines": [
+  {
+   "agent": "oracle",
+   "overall": 100.0
+  },
+  {
+   "agent": "rule",
+   "overall": 65.76024305555555
+  },
+  {
+   "agent": "naive",
+   "overall": 14.96467013888889
+  },
+  {
+   "agent": "null",
+   "overall": 0.9562499999999998
+  }
+ ],
+ "not_ranked": []
+}

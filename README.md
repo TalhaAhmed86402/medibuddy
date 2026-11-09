@@ -30,8 +30,13 @@ class MyAgent(Agent):
 python3 scripts/run_benchmark.py --agent mypkg.myagent:MyAgent --data data/dev --trials 3
 ```
 
-Any text-only A2A agent can be evaluated through the text protocol (`docs/AGENT_INTERFACE.md`,
-`medibuddy_bench/a2a_green.py`).
+Any text-only A2A agent can be evaluated through the text protocol. The benchmark runs as an A2A service
+(`python -m medibuddy_bench.a2a.green_server`, needs `requirements-a2a.txt`); a reference student agent for open and closed
+models is `medibuddy_bench.a2a.purple_server`. Details: `docs/AGENT_INTERFACE.md`.
+
+## Workflow in one page
+
+See `docs/QUICKSTART.md`: `make test`, `make baselines`, `make ollama MODEL=llama3.2:3b`, `make serve-green`, `make leaderboard`.
 
 ## Running a real model (closed or open source)
 
@@ -73,7 +78,8 @@ Both adapters were tested only against a mocked HTTP layer, not live services.
 | `data/dev/` | public development split (seed 1, 832 scenarios, 1,200-hospital world). `data/lite/` – 108-scenario subset for quick runs. `data/review/` – CSVs for human review |
 | `results/` | pilot results of the baselines |
 | `scripts/` | `run_benchmark.py`, `dataset_stats.py`, `fairness_twins.py`, `import_real_data.py` |
-| `docs/` | TASKS, AGENT_INTERFACE, DATA_CARD, DATASET_STATS, REVIEW_GUIDE, LEADERBOARD, BUILD_LOG, SUBMISSION |
+| `Makefile`, `leaderboard/` | one-command workflow; generated leaderboard (`LEADERBOARD.md`, `leaderboard.json`) from `results/runs/` |
+| `docs/` | QUICKSTART, TASKS, AGENT_INTERFACE, DATA_CARD, DATASET_STATS, REVIEW_GUIDE, LEADERBOARD, BUILD_LOG, SUBMISSION |
 | `DESIGN.md`, `DECISIONS.md` | the what / why / how, and the choices made on open questions |
 
 ## Headline numbers (dev split, 832 scenarios, 1 trial)
@@ -92,7 +98,7 @@ No LLM agent has been run yet (no API key in the build environment). See `result
 Read `DESIGN.md` §8 (threats to validity) before quoting any number. In short: Korean text and
 clinical content are template-generated and **not yet reviewed by a native speaker / clinician**
 (`docs/REVIEW_GUIDE.md`); the rule baseline shows that L1–L2 can be solved by templates; the A2A
-adapter is **unverified** against the live AgentBeats platform.
+service is tested end to end locally (a2a-sdk 0.3.26) but **not yet on the live AgentBeats platform**, and it does not work with a2a-sdk 1.x.
 
 
 ## Hidden test split

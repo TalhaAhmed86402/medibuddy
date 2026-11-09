@@ -21,8 +21,32 @@ benchmark -> agent : <tool_result name="get_live_status">{…}</tool_result>
 agent -> benchmark : free text, optionally ending with <answer>{json}</answer>
 ```
 `medibuddy_bench.protocol.RemoteAgent(send)` adapts `send(text, new_conversation) -> text` to the Agent interface.
-`medibuddy_bench/a2a_green.py` wraps this for the AgentBeats green-agent shape. **Unverified on the live platform**; the 1.x a2a-sdk no longer has
-`a2a.server.apps`, so adjust imports to the template version.
+`medibuddy_bench/a2a_green.py` holds the framework-independent evaluation loop (`evaluate_remote`).
+
+## Running the A2A service (green agent) and connecting an agent (purple agent)
+Needs a2a-sdk **0.3.x** (1.x changed the server API; the servers stop with a clear message). Use a clean environment:
+```bash
+python -m venv .venv && . .venv/bin/activate && pip install -r requirements-a2a.txt
+python -m medibuddy_bench.a2a.green_server --port 9009 --data data/dev     # the benchmark service
+```
+Reference student agent (replace the backend with your own agent; the contract is text in, text out):
+```bash
+# open-source model (vLLM / Ollama / LM Studio / llama.cpp server, OpenAI-compatible)
+export OPENAI_BASE_URL=http://localhost:11434/v1 OPENAI_API_KEY=none MEDIBUDDY_MODEL=llama3.1:8b
+python -m medibuddy_bench.a2a.purple_server --backend openai --port 9019
+# closed model
+export ANTHROPIC_API_KEY=...  MEDIBUDDY_MODEL=claude-sonnet-5-5
+python -m medibuddy_bench.a2a.purple_server --backend anthropic --port 9019
+```
+Start an assessment by sending the green agent ONE A2A text message containing JSON (all config keys optional):
+```json
+{"participants": {"purple": "http://localhost:9019"},
+ "config": {"tasks": ["T1", "T4"], "tiers": ["L1", "L2"], "limit": 10, "trials": 1, "max_tool_calls": 25}}
+```
+The task finishes with two artifacts: `report.md` (readable) and `report.json` (machine-readable). Malformed requests, unknown
+config keys and unreachable agents end the task as `failed` with an explanation. A complete example client is in
+`tests/test_a2a.py`. Docker: `docker build -t medibuddy-bench .` (see the Dockerfile for the hidden-split mount).
+A run takes many model calls (T5 dominates): smoke-test with `"limit": 3`, or serve `data/lite`.
 
 ## Answer formats
 Recommend: `<answer>{"recommendations":[{"hospital_id":"H0001","reason":"…"}]}</answer>` · Triage: `{"triage":"emergency|urgent|routine|self_care"}` ·

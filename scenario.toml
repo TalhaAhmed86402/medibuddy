@@ -2,13 +2,12 @@
 # adjust keys/ports to the version provided by the course).
 [green_agent]
 endpoint = "http://127.0.0.1:9009"
-# NOTE: no server entry point is implemented yet; wire MediBuddyGreen into the course template's green-agent server.
-cmd = ""
+cmd = "python -m medibuddy_bench.a2a.green_server --host 127.0.0.1 --port 9009"
 
 [[participants]]
 role = "purple"
 endpoint = "http://127.0.0.1:9019"
-cmd = "python path/to/your_agent.py --host 127.0.0.1 --port 9019"
+cmd = "python -m medibuddy_bench.a2a.purple_server --backend openai --host 127.0.0.1 --port 9019"
 
 [config]
 split = "dev"          # use "test" (hidden, secret seed) only on the organiser's machine

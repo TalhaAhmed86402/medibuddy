@@ -47,3 +47,5 @@ pass^1 .61; 46 pytest checks pass. Saboteurs not rerun after this change. Not ye
 - Docstring examples now run in `tests/test_doctests.py` against `data/dev`; hospital ids in them were re-pinned to the new world.
 - Baselines on dev: null 1.0, naive 15.0, rule 65.8, oracle 100.0; 46 tests + 25 doctest blocks pass; rebuild is byte-identical.
 - Checked: unique ids, no gold in public view, determinism. Saboteur gates covered by the test suite (mini split).
+- A2A: `medibuddy_bench/a2a/` (client, green server, reference purple server), `requirements-a2a.txt`, `Dockerfile`, `scenario.toml` commands; tested with `tests/test_a2a.py` (a2a-sdk 0.3.26, clean venv). a2a-sdk 1.x is not supported (server API removed).
+- Workflow: run records (`medibuddy_bench/results.py`), `scripts/leaderboard.py` (ranks full-split runs only; partial/stale listed with reasons), `scripts/assess.py`, `Makefile`, `docs/QUICKSTART.md`, fake Ollama server `tests/mock_openai.py` for a GPU-free pipeline test.
