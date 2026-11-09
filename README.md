@@ -104,6 +104,9 @@ Model list and sizes: `configs/sweep.json`. Setting up a fresh GPU machine from 
 
 ## 5. Read the results
 
+> **Rules in one line:** hospital facts come only from the benchmark tools (no web lookups in place of them), any model or reasoning aid is fine,
+> and `dev` results are self-reported while official results come from the hidden `test` split. Full text: [`docs/INTEGRATION.md`](docs/INTEGRATION.md#rules-every-agent-is-held-to).
+
 Every assessment writes a **run record** to `results/runs/<run_id>/` (`run.json` with the full report, scope, data hash, machine
 and git commit; `episodes.jsonl`; `report.md`). `leaderboard/LEADERBOARD.md` is generated from those records:
 ranked agents (full split, official data version), reference baselines, and a "Not ranked" table that states why a run is excluded

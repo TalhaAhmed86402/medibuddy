@@ -21,6 +21,9 @@ Never commit the seed or the output. Same seed + same code = identical files.
 ## Running the workflow
 See README.md (install, test an agent, sweep, leaderboard), docs/INTEGRATION.md, docs/SETUP_GPU_MACHINE.md, docs/REPRODUCIBILITY.md.
 
+## Rules for agents
+See `docs/INTEGRATION.md` ("Rules every agent is held to"): benchmark tools are the only source of hospital facts; reasoning aids are allowed; `dev` is self-reported, official scores come from the hidden `test` split run by the maintainers.
+
 ## Reporting an agent
 1. Run dev with `--trials 3` (pass^k) and without `--no-transcripts` for error analysis.
 2. Report overall (gated), per task, per tier L1-L4, critical-failure counts, and the un-gated score.
