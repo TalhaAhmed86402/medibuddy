@@ -41,7 +41,7 @@
 
   metadata: {
     agentbeats_ids: {
-      medibuddy_bench: "<the green agent's id from agentbeats.dev>",
+      medibuddy_bench: "01a1dc6f-ff30-79c0-8c5b-08b149ef1c3f",   // MediBuddy-Bench on agentbeats.dev
       participant: "",          // filled in by each submitter
     },
   },
