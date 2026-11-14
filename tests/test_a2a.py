@@ -1,6 +1,7 @@
 """End-to-end over real A2A: green server <-> purple server.  Skipped when a2a-sdk is not installed
 (pip install -r requirements-a2a.lock)."""
 import asyncio
+import base64
 import json
 import os
 import socket
@@ -17,6 +18,23 @@ try:
     HAVE = True
 except ImportError:
     HAVE = False
+
+
+def gateway_rows(artifacts):
+    """What RDI-Foundation/agentbeats-gateway v0.3 (src/assessment.py, parse_parts) keeps from the final artifacts: every
+    DataPart and every TextPart whose text parses as JSON, in order. Each item becomes one leaderboard row."""
+    rows = []
+    for a in artifacts or []:
+        for p in a.parts:
+            kind = getattr(p.root, "kind", "")
+            if kind == "data":
+                rows.append(p.root.data)
+            elif kind == "text":
+                try:
+                    rows.append(json.loads(p.root.text))
+                except Exception:
+                    pass
+    return rows
 
 
 def free_port():
@@ -80,7 +98,7 @@ class EndToEnd(unittest.TestCase):
         self.assertEqual(names, {"result", "report.md", "report.json", "run_id"})
         res = next(a for a in t.artifacts if a.name == "result")
         row = res.parts[0].root.data                       # DataPart: what the AgentBeats gateway keeps
-        self.assertEqual(json.loads(res.parts[1].root.text), row)
+        self.assertEqual(gateway_rows(t.artifacts), [row])  # exactly one leaderboard row per assessment
         self.assertEqual(row["benchmark"], "medibuddy-bench")
         self.assertEqual(set(row["tasks"]), {"T1", "T4"})
         self.assertEqual(row["id"], next(a for a in t.artifacts if a.name == "run_id").parts[0].root.text)
@@ -89,7 +107,9 @@ class EndToEnd(unittest.TestCase):
         self.assertEqual(len(runs), 1)
         self.assertEqual(runs[0]["source"], "a2a")
         self.assertFalse(runs[0]["coverage"]["full"])      # limit 3 and two tasks => partial, never ranked
-        rep = json.loads(next(a for a in t.artifacts if a.name == "report.json").parts[0].root.text)
+        f = next(a for a in t.artifacts if a.name == "report.json").parts[0].root.file
+        self.assertEqual(f.mime_type, "application/json")
+        rep = json.loads(base64.b64decode(f.bytes))
         self.assertEqual(rep["tasks"]["T1"]["n"], 3)
 
     def test_shards_split_the_assessment(self):
