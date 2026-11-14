@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import base64
 import json
 import os
 
@@ -31,7 +32,8 @@ from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.events import EventQueue
 from a2a.server.request_handlers import DefaultRequestHandler
 from a2a.server.tasks import InMemoryTaskStore, TaskUpdater
-from a2a.types import AgentCapabilities, AgentCard, AgentSkill, DataPart, Part, TaskState, TextPart
+from a2a.types import (AgentCapabilities, AgentCard, AgentSkill, DataPart, FilePart, FileWithBytes, Part, TaskState,
+                       TextPart)
 from a2a.utils import new_agent_text_message
 
 from medibuddy_bench import VERSION
@@ -163,14 +165,16 @@ class GreenExecutor(AgentExecutor):
                  "trials": int(cfg.get("trials", 1)), "shard": cfg.get("shard")}, "a2a", cfg.get("model"))
         run_id = os.path.basename(run_path) if run_path else None
         summary = result_summary(out["report"], cfg, cfg["data_dir"], run_id)
-        # "result": the machine-readable row (DataPart, plus the same JSON as text for text-only readers)
-        await updater.add_artifact([Part(root=DataPart(data=summary)),
-                                    Part(root=TextPart(text=json.dumps(summary, ensure_ascii=False)))], name="result")
+        # The AgentBeats gateway turns EVERY DataPart, and every TextPart that parses as JSON, of every artifact into a
+        # leaderboard row. So the row is the only JSON part sent; the full report travels as a file, which it ignores.
+        await updater.add_artifact([Part(root=DataPart(data=summary))], name="result")
         if run_id:
             await updater.add_artifact([Part(root=TextPart(text=run_id))], name="run_id")
         await updater.add_artifact([Part(root=TextPart(text=out["markdown"]))], name="report.md")
-        await updater.add_artifact([Part(root=TextPart(text=json.dumps(out["report"], ensure_ascii=False)))],
-                                   name="report.json")
+        raw = json.dumps(out["report"], ensure_ascii=False).encode("utf-8")
+        await updater.add_artifact([Part(root=FilePart(file=FileWithBytes(
+            bytes=base64.b64encode(raw).decode("ascii"), mime_type="application/json", name="report.json")))],
+            name="report.json")
         await updater.complete()
 
     async def cancel(self, context: RequestContext, event_queue: EventQueue) -> None:
