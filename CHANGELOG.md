@@ -74,8 +74,10 @@ Scores from 1.1.0 are not comparable with this version.
 
 **A2A service (AgentBeats compatibility)**
 - Accepts `shard_index`, `num_shards`, `num_instances` (set by the AgentBeats leaderboard runner) and scores only its shard.
-- Returns a machine-readable `result` artifact (a DataPart plus the same JSON as text), because the AgentBeats gateway keeps only
-  JSON parts; `report.md`, `report.json` and `run_id` are still sent.
+- Returns a machine-readable `result` artifact (one DataPart). The AgentBeats gateway (v0.3, `parse_parts`) turns every DataPart and
+  every JSON-parsable text part of every artifact into a leaderboard row, so this row is the only JSON part sent: `report.json` is
+  sent as a file part (`application/json`), `report.md` and `run_id` as plain text. (First tagged build sent the row twice and
+  the full report as a third row; fixed before any platform run, the `v1.2.0` tag was moved.)
 - Malformed requests end as `rejected` (was `failed`); a progress message at least every 30 s; the card advertises streaming.
 - The framework-independent loop moved to `medibuddy_bench/remote.py`; `a2a_green.py` is now only an optional template shim.
 - AgentBeats deployment files: `amber-manifest.json5` (green), `agentbeats/purple-agent.json5`, `agentbeats/Dockerfile.purple` and
