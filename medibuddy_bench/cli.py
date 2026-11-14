@@ -42,9 +42,9 @@ def doctor() -> int:
     try:
         v = md.version("a2a-sdk")
         print(f"  {'ok  ' if v.startswith('0.3') else 'WARN'}  a2a-sdk {v}" +
-              ("" if v.startswith("0.3") else "  (the A2A service needs 0.3.x; see requirements-a2a.txt)"))
+              ("" if v.startswith("0.3") else "  (the A2A service needs 0.3.x; see requirements-a2a.lock)"))
     except md.PackageNotFoundError:
-        print("  info  a2a-sdk not installed (only needed for the A2A service: pip install -r requirements-a2a.txt)")
+        print("  info  a2a-sdk not installed (only needed for the A2A service: pip install -r requirements-a2a.lock)")
     for split in ("lite", "dev"):
         d = os.path.join(ROOT, "data", split)
         if os.path.isdir(d):
@@ -62,6 +62,8 @@ def doctor() -> int:
         print(f"  ok    model server {base}: {len(names)} models ({', '.join(names[:6])}{'...' if len(names) > 6 else ''})")
     except OSError:
         print(f"  info  no model server at {base} (set OPENAI_BASE_URL; not needed for baselines)")
+    except ValueError:
+        print(f"  info  {base} answered, but not with an OpenAI-style model list (not needed for baselines)")
     return 0 if ok else 1
 
 

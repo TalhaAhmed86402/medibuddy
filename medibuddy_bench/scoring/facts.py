@@ -51,6 +51,7 @@ def norm_en(text: str) -> str:
     t = re.sub(r"\b(" + "|".join(_NUMWORDS) + r")\b", _w, t)
     t = re.sub(r"\b(\d+) (\d+)/(\d+)\b", lambda m: str(int(m.group(1)) + int(m.group(2)) / int(m.group(3))), t)
     t = re.sub(r"\s+", " ", t).strip()
+    t = re.sub(r"\b(no|avoid|stop|without|not|never) drinking\b(?! water)", r"\1 drinking alcohol", t)   # "no drinking"
     return t
 
 
@@ -161,11 +162,24 @@ def allowed_from_facts(facts: list[dict]) -> set[Quantity]:
     return allowed
 
 
+def _canon(q: Quantity) -> tuple[float, str]:
+    """Hours and minutes are compared in minutes ("half an hour" is the source's "30분")."""
+    return (q.value * 60, "minute") if q.unit == "hour" else (q.value, q.unit)
+
+
 def find_additions(text: str, lang: str, allowed: set[Quantity]) -> list[Quantity]:
-    """Quantities present in the agent output that the source never contained."""
+    """Quantities present in the agent output that the source never contained.
+
+    >>> find_additions("take it half an hour after meals", "en", {Quantity(30.0, "minute")})
+    []
+    >>> find_additions("take 2 tablets", "en", {Quantity(1.0, "pill")})
+    [Quantity(value=2.0, unit='pill')]
+    """
+    ok = [_canon(a) for a in allowed]
     extra = []
     for q in quantities(text, lang):
-        if q not in allowed and not any(abs(q.value - a.value) < 1e-6 and q.unit == a.unit for a in allowed):
+        v, u = _canon(q)
+        if not any(abs(v - av) < 1e-6 and u == au for av, au in ok):
             extra.append(q)
     return extra
 
@@ -289,6 +303,7 @@ def _en(fact: dict, t: str, claimed: dict) -> str:
         return _status_set(fact["rel"], _rel_mentions(t), set())
     if k == "minutes":
         nums = {float(m.group(1)) for m in re.finditer(r"(\d+)\s*minutes", t)}
+        nums |= {_fnum(m.group(1)) * 60 for m in re.finditer(r"(\d+/\d+|\d+(?:\.\d+)?)\s*(?:an |a )?hours?", t)}
         return _status_set(float(fact["m"]), nums, claimed.get("minute", set()))
     if k in ("duration", "followup", "warn_days"):
         b = _classify_day_clauses(t)
@@ -357,18 +372,19 @@ def _en(fact: dict, t: str, claimed: dict) -> str:
 # Korean-side checkers
 # ======================================================================================
 _ALLERGY_WORD = re.compile(r"알레르기|알러지|알레르기성")
-_NEG_ALLERGY = re.compile(r"(?:알레르기|알러지)[가는도은을를]?\s*(?:전혀\s*)?(?:없|않|아니)")
+_NEG_ALLERGY = re.compile(r"(?:알레르기|알러지)(?:\s*(?:반응|증상|체질))?[가는도은을를이]?\s*(?:전혀\s*)?(?:있지\s*)?(?:없|않|아니)")
 
 
 def _ko_alias_re(aliases: list[str]) -> re.Pattern:
-    return re.compile("|".join(re.escape(a) for a in aliases))
+    """Korean aliases, plus English names matched case-insensitively ("Loratadine" inside a Korean sentence)."""
+    return re.compile("|".join(re.escape(a) for a in aliases), re.I)
 
 
 def _ko(fact: dict, t: str, claimed: dict) -> str:
     k = fact["kind"]
     if k == "allergy_ko":
         a = ALLERGENS[fact["key"]]
-        rx = _ko_alias_re(a["ko_alias"])
+        rx = _ko_alias_re(a["ko_alias"] + a["en"])      # the English name left untranslated still names the allergen
         ok = False
         for s in sentences(t):
             if rx.search(s) and _ALLERGY_WORD.search(s):
@@ -388,10 +404,15 @@ def _ko(fact: dict, t: str, claimed: dict) -> str:
                 if _NEG_ALLERGY.search(s):
                     return "present"
                 return "wrong"
+        # "nope, none" -> "아니요, 없습니다": a plain no, as the answer to the doctor's allergy question
+        named = [x for d in ALLERGENS.values() for x in d["ko_alias"]]
+        if re.search(r"없|아니요|아니에요|않", t) and not _ko_alias_re(named).search(t):
+            return "present"
         return "missing"
     if k == "duration_ko":
-        nums = {float(m.group(1)) for m in re.finditer(r"(\d+(?:\.\d+)?)일", t)}
-        nums |= {float(m.group(1)) * 7 for m in re.finditer(r"(\d+(?:\.\d+)?)주", t)}
+        nums = {float(m.group(1)) for m in re.finditer(r"(\d+(?:\.\d+)?)\s*일", t)}
+        nums |= {float(m.group(1)) * 7 for m in re.finditer(r"(\d+(?:\.\d+)?)\s*주", t)}
+        nums |= {float(v) for w, v in _KO_DAY_WORDS.items() if w in t}
         return _status_set(float(fact["n"]), nums, claimed.get("day", set()))
     if k == "body_ko":
         al = BODY[fact["key"]][2]
@@ -404,7 +425,7 @@ def _ko(fact: dict, t: str, claimed: dict) -> str:
         nums = {x for x in nums if 34 <= x <= 43}
         return _status_set(float(fact["x"]), nums, set())
     if k == "drug_ko":
-        al = DRUGS[fact["key"]]["ko_alias"]
+        al = DRUGS[fact["key"]]["ko_alias"] + DRUGS[fact["key"]]["en"]
         if _ko_alias_re(al).search(t):
             return "present"
         others = [x for key, d in DRUGS.items() if key != fact["key"] for x in d["ko_alias"]]
@@ -414,7 +435,9 @@ def _ko(fact: dict, t: str, claimed: dict) -> str:
         counts = set()
         for c in re.split(r"[.!?;,\n]", t):
             if re.search(r"하루|매일|일\s*\d", c):
-                counts |= {float(m.group(1)) for m in re.finditer(r"(\d+)번", c)}
+                counts |= {float(m.group(1)) for m in re.finditer(r"(\d+)\s*(?:번|회)", c)}
+                counts |= {float(v) for m in re.finditer(r"(한|두|세|네|다섯)\s*(?:번|차례)", c)
+                           for v in [_KO_NATIVE[m.group(1)]]}
         if not counts:
             return "missing"
         return "present" if counts == {n} else "wrong"
@@ -426,6 +449,9 @@ def _ko(fact: dict, t: str, claimed: dict) -> str:
         return "present" if ok else "missing"
     raise ValueError(f"unknown Korean fact kind {k}")
 
+
+_KO_NATIVE = {"한": 1, "두": 2, "세": 3, "네": 4, "다섯": 5}
+_KO_DAY_WORDS = {"이틀": 2, "사흘": 3, "나흘": 4, "닷새": 5, "엿새": 6, "일주일": 7}   # native-Korean day counts
 
 KO_KINDS = {"allergy_ko", "allergy_none_ko", "duration_ko", "body_ko", "temp_ko", "drug_ko", "freq_ko",
             "keywords_ko"}

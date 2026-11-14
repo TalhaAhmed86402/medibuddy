@@ -1,0 +1,9 @@
+# Reference PURPLE agent image for AgentBeats tests: the benchmark image, started as the reference agent.
+#   docker build -t medibuddy-bench .                                   (the main image first)
+#   docker build -f agentbeats/Dockerfile.purple --build-arg BASE=medibuddy-bench -t medibuddy-bench-purple .
+# Default backend "tooldemo" needs no model (a plumbing check: it scores low on purpose). For a real model use
+#   --backend openai with OPENAI_BASE_URL, OPENAI_API_KEY and MEDIBUDDY_MODEL set (see purple-agent.json5).
+ARG BASE=medibuddy-bench
+FROM ${BASE}
+EXPOSE 9009
+CMD ["agent", "--backend", "tooldemo", "--host", "0.0.0.0", "--port", "9009"]

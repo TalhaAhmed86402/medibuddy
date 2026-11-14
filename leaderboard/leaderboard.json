@@ -1,6 +1,6 @@
 {
- "data": "1.1.0",
- "world_hash": "d7e96d2e8cc4d5b7",
+ "data": "1.2.0",
+ "world_hash": "950858d17f40e76a",
  "ranked": [],
  "baselines": [
   {
@@ -9,15 +9,15 @@
   },
   {
    "agent": "rule",
-   "overall": 47.132118055555544
+   "overall": 35.668595088910735
   },
   {
    "agent": "naive",
-   "overall": 14.96467013888889
+   "overall": 13.21701388888889
   },
   {
    "agent": "null",
-   "overall": 0.9562499999999998
+   "overall": 0.0
   }
  ],
  "not_ranked": []

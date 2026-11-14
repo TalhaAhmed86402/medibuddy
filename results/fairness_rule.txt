@@ -1,4 +1,4 @@
-T1: n=60 mean gap (twin - original) = +0.0000, max |gap| = 0.000
-T2: n=60 mean gap (twin - original) = +0.0000, max |gap| = 0.000
-T3: n=60 mean gap (twin - original) = +0.0000, max |gap| = 0.000
+T1: n=60 mean gap (twin - original) = +0.0000, max |gap| = 0.000, episodes whose score changed: 0
+T2: n=60 mean gap (twin - original) = +0.0000, max |gap| = 0.000, episodes whose score changed: 0
+T3: n=60 mean gap (twin - original) = +0.0000, max |gap| = 0.000, episodes whose score changed: 0
 ALL: mean gap +0.0000

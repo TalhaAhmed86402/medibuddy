@@ -15,6 +15,16 @@ def load_tests(loader, tests, ignore):
     w = world.load_world(os.path.join(ROOT, "data/dev/world.json"))
     tests.addTests(doctest.DocTestSuite(world, globs={**vars(world), "w": w, "dt": dt},
                                         optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE))
+    # modules whose examples need no pinned world
+    import medibuddy_bench.gen.encounters as encounters
+    import medibuddy_bench.gen.phrasing as phrasing
+    import medibuddy_bench.knowledge as knowledge
+    import medibuddy_bench.protocol as protocol
+    import medibuddy_bench.scoring.facts as facts
+    import medibuddy_bench.remote as remote
+    import medibuddy_bench.tools as tools
+    for mod in (tools, phrasing, remote, facts, knowledge, encounters, protocol):
+        tests.addTests(doctest.DocTestSuite(mod, optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE))
     return tests
 
 

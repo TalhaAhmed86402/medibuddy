@@ -2,13 +2,13 @@
 
 ## What this repository contains
 A runnable benchmark (generator, 8 tasks, deterministic scorers, tools, simulators, baselines, tests) plus a public dev split.
-Entry point: `python -m medibuddy_bench <command>` (wraps `scripts/*`). A2A: `python -m medibuddy_bench.a2a.green_server` (A2A green-agent service, tested end to end against the reference purple agent with a2a-sdk 0.3.26; **not yet tried on the live AgentBeats platform, and incompatible with a2a-sdk 1.x**), `python -m medibuddy_bench.a2a.purple_server` (reference student agent for open and closed models).
+Entry point: `python -m medibuddy_bench <command>` (wraps `scripts/*`). A2A: `python -m medibuddy_bench.a2a.green_server` (A2A green-agent service, tested end to end against the reference purple agent with a2a-sdk 0.3.26; **built to the public AgentBeats conventions (`docs/AGENTBEATS.md`) but not yet tried on the live platform; a2a-sdk 1.x is not supported**), `python -m medibuddy_bench.a2a.purple_server` (reference student agent for open and closed models).
 
 ## Verify before submitting
 ```bash
-python3 -m pytest -q tests                                   # 46 tests + docstring examples (+2 A2A end-to-end tests in a venv with requirements-a2a.txt)
+python3 -m pytest -q tests                                   # full suite incl. docstring examples (the 5 A2A tests skip without a2a-sdk; they run in a venv with requirements-a2a.lock)
 python3 scripts/run_benchmark.py --agent oracle --data data/dev --no-transcripts   # 100.0
-python3 scripts/run_benchmark.py --agent rule   --data data/dev --no-transcripts   # ~47.1
+python3 scripts/run_benchmark.py --agent rule   --data data/dev --no-transcripts   # 35.7
 python3 scripts/fairness_twins.py --agent rule --data data/dev --limit 60          # gap 0.0000
 ```
 
@@ -32,7 +32,7 @@ See `docs/INTEGRATION.md` ("Rules every agent is held to"): benchmark tools are 
 
 ## Still needed from the team / course
 - The course's AgentBeats template/version, to confirm the A2A request format and a2a-sdk version match (scenario.toml `cmd` entries now point at our servers).
-- At least one real LLM baseline (needs an API key, or a local run, e.g. llama3.1 8B via Ollama); none has been scored yet.
+- Larger or closed-model baselines (open 3-8B models are scored: `docs/BASELINES.md`).
 - Native-Korean review of `data/review/korean_phrasebook.csv`; clinician review of `data/review/triage_labels.csv`.
 - A private seed for the test split.
-- Decisions pending in DECISIONS.md (#14-#17).
+- Decisions pending in DECISIONS.md (#14-#17, and confirmation of #23-#26 made for v1.2.0).

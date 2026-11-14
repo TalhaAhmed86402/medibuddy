@@ -54,7 +54,7 @@ TOOL_SPECS = [
                     "Returns up to `limit` summaries sorted by rating (or distance).",
      "parameters": {"specialty": "one of " + ", ".join(SPECIALTIES), "district": "exact district name",
                     "from_district": "district to measure distance from", "within_km": "number",
-                    "language": "en|zh|ja|vi|ru|mn (hospital has staff or an interpreter)",
+                    "language": "en|zh|ja|vi|ru|mn|ar|th|uz (hospital has staff who speak it, or an interpreter service)",
                     "tier": "clinic|hospital|general_hospital|tertiary", "open_on": "YYYY-MM-DD (static hours)",
                     "open_at": "HH:MM (use with open_on)", "female_doctor": "true|false",
                     "max_price_level": "1|2|3", "limit": "int <= 25", "sort": "rating|distance"}},
@@ -121,13 +121,55 @@ class MemoryStore:
         return "\n".join(f"{k}: {v}" for k, v in self.items.items())
 
 
+def _result_ids(name: str, res: dict) -> list[str]:
+    """Hospital ids a world-tool result showed to the agent.
+
+    >>> _result_ids("search_hospitals", {"count": 2, "results": [{"id": "H0001"}, {"id": "H0007"}]})
+    ['H0001', 'H0007']
+    >>> _result_ids("get_live_status", {"hospital_id": "H0042", "status": "open"})
+    ['H0042']
+    >>> _result_ids("distance_km", {"km": 3.2})
+    []
+    """
+    if name == "search_hospitals":
+        return [r["id"] for r in res.get("results", []) if isinstance(r, dict) and "id" in r]
+    if name == "get_hospital" and "id" in res:
+        return [res["id"]]
+    if name == "get_live_status" and "hospital_id" in res:
+        return [res["hospital_id"]]
+    return []
+
+
+def _flag(v) -> bool | None:
+    """Tool arguments arrive as JSON values or as strings ("true", "false", "1", "no"); None means 'not given'.
+
+    >>> _flag("false"), _flag("True"), _flag(True), _flag(None), _flag("")
+    (False, True, True, None, None)
+    """
+    if v is None or v == "":
+        return None
+    if isinstance(v, bool):
+        return v
+    if isinstance(v, (int, float)):
+        return bool(v)
+    s = str(v).strip().lower()
+    if s in ("true", "1", "yes", "y"):
+        return True
+    if s in ("false", "0", "no", "n", "none", "null"):
+        return False
+    raise ValueError(f"expected true or false, got {v!r}")
+
+
 class ToolClient:
-    def __init__(self, world: World, memory: MemoryStore | None = None, max_calls: int = 25):
-        self.world, self.memory, self.max_calls = world, memory, max_calls
+    def __init__(self, world: World, memory: MemoryStore | None = None, max_calls: int = 25, enabled: bool = True):
+        """`enabled=False`: a task without tools (T4-T6); every call is logged and refused."""
+        self.world, self.memory, self.max_calls, self.enabled = world, memory, max_calls, enabled
         self.log: list[dict] = []
         self._seen: set = set()          # (tool, args) of successful world-tool calls, for the repeat guard
 
     def specs(self) -> list[dict]:
+        if not self.enabled:
+            return []
         return TOOL_SPECS + (MEMORY_TOOL_SPECS if self.memory is not None else [])
 
     # ---- dispatcher
@@ -135,6 +177,9 @@ class ToolClient:
         args = args or {}
         entry = {"name": name, "args": copy.deepcopy(args)}
         self.log.append(entry)
+        if not self.enabled:
+            entry["error"] = "no tools in this task"
+            return {"error": "no tools are available in this task; answer directly"}
         if len(self.log) > self.max_calls:
             entry["error"] = "budget"
             return {"error": f"tool budget of {self.max_calls} calls exhausted"}
@@ -152,6 +197,9 @@ class ToolClient:
             entry["error"] = res["error"]
         elif not name.startswith("memory_"):
             self._seen.add(key)
+            ids = _result_ids(name, res)
+            if ids:
+                entry["ids"] = ids          # hospitals the agent has really been shown (used by the grounding check)
         return res
 
     def _dispatch(self, name: str, a: dict) -> dict:
@@ -168,7 +216,7 @@ class ToolClient:
                            within_km=float(a["within_km"]) if a.get("within_km") is not None else None,
                            from_district=a.get("from_district"), language=a.get("language"), tier=a.get("tier"),
                            open_on=a.get("open_on"), open_at=a.get("open_at"),
-                           female_doctor=bool(a.get("female_doctor")) or None,
+                           female_doctor=_flag(a.get("female_doctor")) or None,
                            max_price_level=int(a["max_price_level"]) if a.get("max_price_level") else None,
                            limit=int(a.get("limit", 10)), sort=a.get("sort", "rating"))
             return {"count": len(res), "results": res}
@@ -186,7 +234,7 @@ class ToolClient:
                 return {"error": "unknown hospital_id"}
             return copy.deepcopy(w.live_status(a["hospital_id"], dt.date.fromisoformat(a["date"])))
         if name == "list_districts":
-            return _list_districts(a.get("region"), str(a.get("korean", "")).lower() in ("true", "1", "yes"))
+            return _list_districts(a.get("region"), bool(_flag(a.get("korean"))))
         if name == "distance_km":
             for k in ("from_district", "to_district"):
                 if a[k] not in DISTRICTS:

@@ -30,3 +30,5 @@ benchmark. Mitigations built in:
 ## Changing the benchmark
 Any change to generators, vocabularies or scorers must bump `VERSION` (`medibuddy_bench/__init__.py` and `pyproject.toml`),
 regenerate the splits, and re-run the baselines. Old run records then show as "stale" instead of being compared to new ones.
+The policy and the history are in `CHANGELOG.md`. To rebuild the data of an older version, check out that version's code
+(`git checkout <commit>` then `verify --data data/dev --rebuild`): the generator of one version reproduces only its own data.

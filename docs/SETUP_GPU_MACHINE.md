@@ -54,12 +54,18 @@ ollama ps                                  # in a second terminal: PROCESSOR sho
 Ollama's OpenAI endpoint uses a 4096-token context unless the model variant says otherwise. The sweep (next step) creates
 `<model>-ctx16k` variants automatically; for a single run do it yourself:
 `printf 'FROM qwen2.5:7b\nPARAMETER num_ctx 16384\n' > Modelfile && ollama create qwen2.5-7b-ctx16k -f Modelfile`, then use that name.
+Simpler on recent Ollama versions: start the server with `OLLAMA_CONTEXT_LENGTH=16384` (every model then gets 16k; `ollama ps`
+shows the CONTEXT column).
+
+**Faster runs.** Start the server with `OLLAMA_NUM_PARALLEL=4` and pass `--workers 4` to `run` or `sweep`: four episodes are
+scored at once and the scores are the same as a sequential run. On an 8 GB card keep `OLLAMA_NUM_PARALLEL=2` for 7-8B models (each
+slot needs its own 16k context). The reference baselines in `docs/BASELINES.md` were made this way on one 24 GB GPU.
 
 ## 6. Run the sweep
 ```bash
 python -m medibuddy_bench sweep --list                         # what the server has
-python -m medibuddy_bench sweep --data data/lite --max-vram 8  # every configured model that fits; resumable; rebuilds the leaderboard
-python -m medibuddy_bench sweep --data data/dev --trials 3     # the official split, once the lite pass looks right (long)
+python -m medibuddy_bench sweep --data data/lite --max-vram 8 --workers 2   # every configured model that fits; resumable; board in leaderboard-lite/
+python -m medibuddy_bench sweep --data data/dev --trials 3 --workers 2      # the official split, once the lite pass looks right (long)
 cat leaderboard/LEADERBOARD.md
 ```
 If it stops (sleep, crash, Ctrl-C) run the same command again: finished models are skipped, the current one resumes.

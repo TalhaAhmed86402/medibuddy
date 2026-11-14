@@ -23,7 +23,7 @@ try:
     from a2a.server.apps import A2AStarletteApplication     # removed in a2a-sdk 1.x
 except ImportError as _e:  # pragma: no cover
     raise SystemExit(f"{_e}\nThe A2A servers need a2a-sdk 0.3.x (1.x changed the server API). Use a clean venv:\n"
-                     "  python -m venv .venv && . .venv/bin/activate && pip install -r requirements-a2a.txt")
+                     "  python -m venv .venv && . .venv/bin/activate && pip install -r requirements-a2a.lock")
 from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.events import EventQueue
 from a2a.server.request_handlers import DefaultRequestHandler

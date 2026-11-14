@@ -18,6 +18,7 @@ jobs:
       - run: python -m pytest -q tests
       - run: python -m medibuddy_bench verify --data data/dev
       - run: python -m medibuddy_bench run --agent oracle --data data/lite --no-transcripts
+      - run: python scripts/baselines_report.py --check       # baseline tables match the run records
 
   a2a:                                   # the A2A service with its pinned dependencies
     runs-on: ubuntu-latest

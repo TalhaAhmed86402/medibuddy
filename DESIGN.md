@@ -65,30 +65,33 @@ temporary relocation that expires, deletion requests, ID-number bait, abstention
 are chosen so the naive date lands on a closed day.
 
 ## 7. Validation done
-- Oracle = 100 on every task; null ≈ 1; naive ≈ 15; rule ≈ 66; ordering null < naive < rule < oracle (tested).
+- Oracle = 100 on every task; null 0; naive ≈ 13; rule ≈ 36 (47 at v1.1.0 and 66 at v1.0.0, before the wording was paraphrased); ordering null < naive < rule < oracle (tested).
+- Open-model baselines (untuned 3-8B models, lite split): 21.5 to 50.1, around the rule agent's 33.7 on lite; `docs/BASELINES.md`.
 - 11 saboteur agents each trip their intended gate (and only on the intended task) (tested).
 - Determinism, no gold in public view, unique ids, solvable gold with ≥ 3 near-misses (tested).
 - 34 unit tests for the fact engine (negation flips, 1/2 pill, Korean particles, etc.).
-- Rule baseline on the 832-scenario dev split (data v1.1.0, paraphrased wording): 0.72 / 0.68 on L1 / L2 and 0.36 / 0.34 on L3 / L4 → the tiers still separate agents. (Before paraphrasing, v1.0.0: 0.98 / 0.95 / 0.39 / 0.38, and overall 65.8 versus 47.1 now.)
-- Fairness twins (name and nationality swapped, gold unchanged): score gap 0.0000 for scripted agents; the script is the check to run on LLM agents.
+- Rule baseline on the 832-scenario dev split (data v1.2.0): 0.54 / 0.48 on L1 / L2 and 0.36 / 0.36 on L3 / L4 (v1.1.0: 0.72 / 0.68 / 0.36 / 0.34; v1.0.0: 0.98 / 0.95 / 0.39 / 0.38).
+- Fairness twins (name and nationality swapped to another coherent pair of the same sex, gold unchanged): score gap 0.0000 for scripted agents; for the open models see `docs/BASELINES.md`.
 - Scale: 1,200 hospitals, 47 districts, 9 hospital languages, 25 patient nationalities, 22 complaints, 29 triage stems; see `docs/DATASET_STATS.md`.
 
 ## 8. Threats to validity (read before quoting numbers)
 1. **Template exploitability.** A pattern-matching agent can read templated wording. Mitigations in place: every patient sentence is
    drawn from a pool of 3-7 paraphrases per style (`gen/phrasing.py`; v1.1.0 cut the model-free rule agent from 65.8 to 47.1 on dev),
    word order varies, and the hidden test split can use private held-out paraphrases (`docs/HELDOUT_PHRASES.md`). Still open:
-   the pools are written by us, so they share our style; real patients write more variably; T4 triage texts and the T5/T6 doctor
-   and patient turns are still single-wording templates (changing them needs clinician and native-speaker review).
+   the pools are written by us, so they share our style; real patients write more variably; T4 triage texts and the Korean doctor
+   turns of T5/T6 are still single-wording templates (changing them needs clinician and native-speaker review). The English patient
+   turns of T5/T6/T8 are paraphrased since v1.2.0.
 2. **Synthetic language.** Korean utterances are templated and **unreviewed by a native speaker**; real
-   clinicians speak more variably. `data/review/korean_phrasebook.csv` (213 rows) is for that review.
+   clinicians speak more variably. `data/review/korean_phrasebook.csv` (487 rows) is for that review.
 3. **Clinical content.** Triage labels (`data/review/triage_labels.csv`) are textbook cases but **not
    clinician-reviewed**.
-4. **No LLM baseline yet.** Difficulty is calibrated only on non-LLM baselines.
+4. **Few LLM baselines.** Difficulty is calibrated on the scripted ladder and on small open models (3-8B, `docs/BASELINES.md`);
+   larger and closed models, and model runs on the dev split, have not been made.
 5. **Regex-based text scorers** (triage, memory abstention, allergy extraction) can mis-score unusual phrasing;
    structured `<answer>` JSON is preferred and scored first.
 6. **Simulated patient** is a keyword lexicon; it cannot be "fooled" like a human, nor behave like one.
 7. **World simulation ≠ real Korea.** Rules are simplified.
-8. **A2A adapter unverified** on the platform.
+8. **A2A service not yet run on the live platform.** It follows the public AgentBeats templates (`docs/AGENTBEATS.md`) and is tested locally.
 
 
 ## Hard vs soft preferences (v0.2)

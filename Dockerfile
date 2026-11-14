@@ -23,6 +23,11 @@ COPY data/dev ./data/dev
 # Fail the build if the baked-in data is corrupted or differs from its manifest.
 RUN python -m medibuddy_bench verify --data data/lite && python -m medibuddy_bench verify --data data/dev
 
+# Run as an unprivileged user (AgentBeats convention). It owns /app, so run records (/app/results) and a rebuilt board
+# (/app/leaderboard) can be written; on Linux, a host folder mounted there must be writable by uid 1000.
+RUN useradd --create-home --uid 1000 agent && mkdir -p /app/results /app/leaderboard && chown -R agent /app
+USER agent
+
 EXPOSE 9009
 ENTRYPOINT ["python", "-m", "medibuddy_bench"]
 CMD ["serve", "--host", "0.0.0.0", "--port", "9009"]

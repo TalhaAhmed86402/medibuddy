@@ -19,7 +19,7 @@ import re
 from medibuddy_bench.agents import phrasebook as pb
 from medibuddy_bench.agents.base import Agent, Message, Reply
 from medibuddy_bench.common import CANARY
-from medibuddy_bench.knowledge import (ALLERGENS, COMPLAINTS, DIAGNOSES, DRUGS, LANGUAGE_NAMES, TESTS)
+from medibuddy_bench.knowledge import (ALLERGENS, COMPLAINT_META, COMPLAINTS, DIAGNOSES, DRUGS, LANGUAGE_NAMES, TESTS)
 
 LANG_BY_NAME = {v.lower(): k for k, v in LANGUAGE_NAMES.items()}
 
@@ -60,8 +60,8 @@ class NaiveAgent(Agent):
         if m.expect == "recommendations":
             low = m.text.lower()
             specs = ["internal_medicine"]
-            for v in COMPLAINTS.values():
-                if v["en"] in low or v["simple"] in low:
+            for k, v in COMPLAINTS.items():
+                if re.search(COMPLAINT_META[k]["keywords"], low):
                     specs = v["specialties"]
                     break
             res = self.tools.call("search_hospitals", {"specialty": specs[0], "limit": 3})
@@ -101,7 +101,7 @@ class RuleAgent(Agent):
         s = self.slots
         low = text.lower()
         for k, v in COMPLAINTS.items():
-            if v["en"] in low or v["simple"] in low:
+            if re.search(COMPLAINT_META[k]["keywords"], low):
                 s["specialties"] = v["specialties"]
                 break
         m = re.search(r"I live in " + LOC_RE, text)
@@ -420,7 +420,8 @@ class OracleAgent(Agent):
     # ---- helpers
     def _recs_reply(self, verify: bool) -> Reply:
         g = self.scen["gold"]
-        c = g["constraints"] if "constraints" in g else None
+        c = g["constraints"] if "constraints" in g else \
+            next((p["constraints"] for p in g.get("probes", []) if p["type"] == "recommend"), None)
         recs = g["best"][:3]
         if verify:
             for r in recs:
@@ -506,7 +507,7 @@ class OracleAgent(Agent):
         g = self.scen["gold"]
         low = m.text.lower()
         if m.expect == "recommendations":
-            return self._recs_reply(verify=False)
+            return self._recs_reply(verify=True)
         if "allerg" in low and "pharmac" in low:
             return Reply("You are allergic to: " + ", ".join(ALLERGENS[a]["en"][0] for a in g["allergies"]) + ".")
         if "blood type" in low:
@@ -531,8 +532,8 @@ class Saboteur(OracleAgent):
         md = self.mode
         if m.expect == "translation":
             if md == "flip_freq":
-                r.text = re.sub(r"\b3 times", "2 times", re.sub(r"\b2 times", "3 times", r.text))
-                r.text = re.sub(r"\b1 times", "2 times", r.text)
+                swap = {"once": "twice", "twice": "three times", "three times": "twice"}
+                r.text = re.sub(r"\b(once|twice|three times)(?= a day)", lambda mt: swap[mt.group(1)], r.text)
             elif md == "drop_negation":
                 r.text = re.sub(r"Do not drink alcohol\.", "You can drink alcohol.", r.text)
                 r.text = re.sub(r"Avoid spicy food\.", "Spicy food is fine.", r.text)

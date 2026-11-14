@@ -4,7 +4,7 @@
   python scripts/assess.py --green http://localhost:9009 --purple http://localhost:9019 --name my-agent --model llama3.2:3b
   python scripts/assess.py ... --tasks T1,T4 --limit 5        # quick smoke test (such runs are never ranked)
 
-Needs requirements-a2a.txt.  Exit code 0 = completed, 1 = failed."""
+Needs the packages in requirements-a2a.lock.  Exit code 0 = completed, 1 = failed."""
 import argparse, asyncio, json, sys
 
 import httpx

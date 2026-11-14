@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import json
 import os
-import sys
 import time
 import urllib.error
 import urllib.request
@@ -24,9 +23,11 @@ from medibuddy_bench.protocol import RemoteAgent
 
 class OpenAICompatAgent(RemoteAgent):
     def __init__(self, model: str | None = None, base_url: str | None = None, api_key: str | None = None,
-                 max_tokens: int = 1500, temperature: float = 0.0, seed: int | None = 0):
+                 max_tokens: int = 1500, temperature: float = 0.0, seed: int | None = 0, extra_body: dict | None = None):
         """`model`/`base_url`/`api_key` default to $MEDIBUDDY_MODEL / $OPENAI_BASE_URL / $OPENAI_API_KEY.
-        temperature 0 and a fixed `seed` make runs as repeatable as the server allows (not bit-exact on every server)."""
+        temperature 0 and a fixed `seed` make runs as repeatable as the server allows (not bit-exact on every server).
+        `extra_body` (default: JSON in $MEDIBUDDY_EXTRA_BODY) is merged into every request, e.g.
+        {"reasoning_effort": "none"} to switch off the thinking phase of reasoning models on servers that support it."""
         self.model = model or os.environ.get("MEDIBUDDY_MODEL")
         if not self.model:
             raise RuntimeError("set MEDIBUDDY_MODEL (or pass the model name)")
@@ -34,16 +35,14 @@ class OpenAICompatAgent(RemoteAgent):
         self.url = base + "/chat/completions"
         self.key = api_key or os.environ.get("OPENAI_API_KEY", "none")
         self.max_tokens, self.temperature, self.seed, self.history = max_tokens, temperature, seed, []
+        if extra_body is None and os.environ.get("MEDIBUDDY_EXTRA_BODY"):
+            extra_body = json.loads(os.environ["MEDIBUDDY_EXTRA_BODY"])
+        self.extra_body = dict(extra_body or {})
         super().__init__(self._send_api, name=self.model)
 
     def _send_api(self, text: str, new_conversation: bool) -> str:
-        trace = os.environ.get("MEDIBUDDY_TRACE")          # =1: print every exchange to stderr (debugging)
-        if new_conversation:
+        if new_conversation:                                 # (MEDIBUDDY_TRACE printing is done by RemoteAgent)
             self.history = []
-            if trace:
-                print("\n===== new conversation =====", file=sys.stderr)
-        if trace:
-            print(f"--> {text[-400:]!r}", file=sys.stderr)
         self.history.append({"role": "user", "content": text})
         payload = {"model": self.model, "messages": self.history, "temperature": self.temperature,
                    "max_tokens": self.max_tokens,
@@ -51,6 +50,7 @@ class OpenAICompatAgent(RemoteAgent):
                    "stop": ["</tool_call>", "<tool_result"]}
         if self.seed is not None:
             payload["seed"] = self.seed
+        payload.update(self.extra_body)
         body = json.dumps(payload).encode()
         req = urllib.request.Request(self.url, body, {"Authorization": f"Bearer {self.key}",
                                                       "Content-Type": "application/json"})
@@ -64,7 +64,7 @@ class OpenAICompatAgent(RemoteAgent):
                     time.sleep(2 ** attempt)
                     continue
                 raise RuntimeError(f"API error {e.code}: {e.read().decode()[:300]}")
-            except urllib.error.URLError:
+            except (urllib.error.URLError, TimeoutError, ConnectionError):   # unreachable, reset or a read timeout
                 if attempt < 5:
                     time.sleep(2 ** attempt)
                     continue
@@ -74,6 +74,4 @@ class OpenAICompatAgent(RemoteAgent):
         if "<tool_call" in reply and "</tool_call>" not in reply:
             reply += "</tool_call>"                      # the stop sequence consumed the closing tag
         self.history.append({"role": "assistant", "content": reply or "(empty)"})
-        if trace:
-            print(f"<-- {reply[:400]!r}", file=sys.stderr)
         return reply

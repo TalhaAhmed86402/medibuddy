@@ -51,6 +51,8 @@ def coverage(report: dict, manifest: dict, scope: dict) -> dict:
         why.append("tier filter " + ",".join(scope["tiers"]))
     if scope.get("limit"):
         why.append(f"limit {scope['limit']} per task")
+    if scope.get("shard") and int(scope["shard"][1]) > 1:
+        why.append(f"shard {int(scope['shard'][0]) + 1} of {int(scope['shard'][1])} (merge the shards to rank)")
     short = [t for t, r in report["tasks"].items() if r["n"] < manifest["counts"].get(t, 0)]
     if short and not scope.get("limit"):
         why.append("fewer scenarios than the split: " + ",".join(short))

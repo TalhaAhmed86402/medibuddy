@@ -22,6 +22,7 @@ def main():
     ap.add_argument("--tasks", default=None)
     ap.add_argument("--tiers", default=None)
     ap.add_argument("--limit", type=int, default=None)
+    ap.add_argument("--ids", default=None, help="comma-separated scenario ids, e.g. T6-dev-0042 (re-run one disputed episode)")
     ap.add_argument("--trials", type=int, default=1)
     ap.add_argument("--out", default=None, help="write episodes as JSONL")
     ap.add_argument("--no-transcripts", action="store_true")
@@ -33,11 +34,15 @@ def main():
     ap.add_argument("--name", default=None, help="agent name shown on the leaderboard (default: --agent)")
     ap.add_argument("--model", default=None, help="model name shown on the leaderboard (default: $MEDIBUDDY_MODEL)")
     ap.add_argument("--baseline", action="store_true", help="mark the run as a reference baseline (not ranked)")
+    ap.add_argument("--workers", type=int, default=1,
+                    help="episodes run at once (default 1). Use 2-8 with a server that batches requests (vLLM, Ollama with "
+                         "OLLAMA_NUM_PARALLEL, hosted APIs); scores do not depend on it")
     a = ap.parse_args()
     r = Runner(a.data, factory(a.agent), agent_name=a.agent, keep_transcripts=not a.no_transcripts)
     from medibuddy_bench.execute import run_with_checkpoint
     eps = run_with_checkpoint(r, a.data, a.name or a.agent, a.tasks.split(",") if a.tasks else None,
-                              a.tiers.split(",") if a.tiers else None, a.limit, a.trials, a.checkpoint)
+                              a.tiers.split(",") if a.tiers else None, a.limit, a.trials, a.checkpoint,
+                              workers=a.workers, ids=a.ids.split(",") if a.ids else None)
     rep = aggregate(eps)
     print(to_markdown(rep, a.agent))
     if a.save_run:

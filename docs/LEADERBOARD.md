@@ -17,12 +17,16 @@
 - **Ranked** only if the run covers the whole split (all 8 tasks, every scenario, no `tasks/tiers/limit` filter) on the same data
   version and world hash as the official split. Partial runs and runs on other data are listed under "Not ranked" with the reason.
 - Several runs of one agent: every run is kept; the board shows each. Use `trials: 3` for pass^3.
-- Baselines (null, naive, rule, oracle) are reference rows and never take a rank.
+- Baselines (null, naive, rule, oracle) and the maintainers' open-model runs (`docs/BASELINES.md`, recorded with `--baseline`)
+  are reference rows and never take a rank.
+- Sharded assessments (`num_shards` > 1) are partial per shard; rank an agent on one unsharded run, or merge the shards' episodes
+  into one run record before building the board.
 
 ## Integrity checks before posting
-Oracle = 100 and null about 1 on the official split; no tool-budget overruns; participants never receive `gold` (tested);
+Oracle = 100 and null 0 on the official split; no tool-budget overruns; participants never receive `gold` (tested);
 re-run `make baselines` after any change to the generator or scorers and bump `VERSION` (runs on older versions become "stale").
 
 ## Operating the service
-Issues from students go in `docs/ISSUES.md` with the version and hash of each fix. Any scorer or data change = new `VERSION`, then
-re-run all ranked agents (their old runs are marked stale automatically).
+Issues from students follow `docs/SUPPORT.md` (templates in `.github/ISSUE_TEMPLATE/`); answers that recur go into `docs/FAQ.md`.
+Any scorer or data change = new `VERSION` (policy in `CHANGELOG.md`), then re-run all ranked agents (their old runs are marked
+stale automatically).

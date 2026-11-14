@@ -191,17 +191,19 @@ POOLS: dict[str, list[str]] = {
         "I recently arrived in Korea from {nat}.", "I'm a newcomer from {nat}.",
         "I've just moved to Korea; I'm originally from {nat}.",
     ],
+    # the complaint sentence wraps one of the per-complaint "symptom.*" sentences below
     "complaint": [
-        "I've had {comp} for {dur} and I'd like to see a doctor.",
-        "For {dur} now I've had {comp}, so I'd like to see a doctor.",
-        "I've been dealing with {comp} for {dur}. I need to see a doctor.",
-        "I'm not feeling well: {comp} for {dur}. I'd like to be seen by a doctor.",
+        "{symptom} I'd like to see a doctor.",
+        "{symptom} I need to see a doctor.",
+        "{symptom} Could I get seen somewhere?",
+        "{symptom} I'd like to be seen by a doctor.",
+        "{symptom}",
     ],
     "lead.terse": [
-        "hi, {name} here ({nat}). need a doctor, {simple} for {days} days",
-        "hello, im {name} from {nat}. need a doctor - {simple} for {dur}",
-        "{name} ({nat}) here. {simple} for {dur}, need to see a doctor",
-        "hi {name} here, {nat}. need doc: {simple} {dur}",
+        "hi, {name} here ({nat}). need a doctor, {symptom}",
+        "hello, im {name} ({nat}). need a doctor - {symptom}",
+        "{name} ({nat}) here. {symptom}, need to see a doctor",
+        "hi {name} here, {nat}. need doc: {symptom}",
     ],
     "closing.plain": [
         "Can you recommend a place?", "Which hospital or clinic would you recommend?", "Where should I go?",
@@ -219,6 +221,163 @@ POOLS: dict[str, list[str]] = {
         "Not {name}, please. I had a bad experience there.",
         "I'd rather not go to {name}, because of a bad past experience.",
     ],
+    # ------------------------------------------------------------ what the patient comes for (one pool per complaint)
+    # 'symptom.<key>' is used at tiers L1-L3, 'symptom.<key>.terse' at L4.  Symptoms carry a duration {dur};
+    # services (a checkup, a blood-pressure check, a wart to look at) must not, so nobody 'has a checkup for 4 days'.
+    "symptom.cough_cold": [
+        "I've had a cough and a sore throat for {dur}.",
+        "My throat has been sore and I've been coughing for {dur}.",
+        "I've been coughing for {dur}, and my throat hurts when I swallow.",
+        "For {dur} I've had a sore throat and a cough that won't go away.",
+    ],
+    "symptom.cough_cold.terse": ['cough + sore throat, {dur}', 'coughing and throat hurts, {dur} now', '{dur} of coughing, throat sore'],
+    "symptom.skin_rash": [
+        "I've had an itchy rash on my arms for {dur}.",
+        "An itchy red rash came up on my arms {dur} ago and it hasn't gone away.",
+        'My arms have been itchy with a rash for {dur}.',
+    ],
+    "symptom.skin_rash.terse": ['itchy rash on arms, {dur}', 'rash on my arms, itchy, {dur} now'],
+    "symptom.ankle_sprain": [
+        "I twisted my ankle {dur} ago and it's still swollen.",
+        'My ankle has been swollen for {dur}, since I twisted it.',
+        "I've had a sore, swollen ankle for {dur} after twisting it.",
+    ],
+    "symptom.ankle_sprain.terse": ['twisted ankle {dur} ago, swollen', 'ankle swollen after a twist, {dur}'],
+    "symptom.toothache": [
+        "I've had a toothache for {dur}.",
+        'One of my teeth has been hurting for {dur}.',
+        "I've had a throbbing pain in a back tooth for {dur}.",
+    ],
+    "symptom.toothache.terse": ['toothache {dur}', 'tooth hurts, {dur} now'],
+    "symptom.stomach_pain": [
+        "I've had stomach pain and some nausea for {dur}.",
+        'My stomach has been hurting for {dur} and I feel a bit sick.',
+        "For {dur} I've had an upset stomach with some nausea.",
+    ],
+    "symptom.stomach_pain.terse": ['stomach pain + nausea {dur}', 'stomach hurts, bit nauseous, {dur}'],
+    "symptom.eye_irritation": [
+        'My eyes have been red and itchy for {dur}.',
+        "I've had red, itchy eyes for {dur}.",
+        'Both my eyes have been itchy and red for {dur}.',
+    ],
+    "symptom.eye_irritation.terse": ['red itchy eyes, {dur}', 'eyes red + itchy {dur}'],
+    "symptom.headache": [
+        "I've been getting headaches again and again for {dur}.",
+        "I keep getting headaches; it's been {dur} now.",
+        'My headaches keep coming back, and it has been going on for {dur}.',
+    ],
+    "symptom.headache.terse": ['headaches keep coming back, {dur}', 'headache on and off {dur}'],
+    "symptom.urinary": [
+        'It has burned when I urinate for {dur}.',
+        "I've had a burning feeling when I pee for {dur}.",
+        'For {dur} it has hurt to urinate.',
+    ],
+    "symptom.urinary.terse": ['burns when i pee, {dur}', 'pain peeing {dur}'],
+    "symptom.ear_pain": [
+        'My ear has been hurting for {dur}.',
+        "I've had ear pain for {dur}.",
+        "I've had an earache on one side for {dur}.",
+    ],
+    "symptom.ear_pain.terse": ['ear pain {dur}', 'earache, {dur} now'],
+    "symptom.back_pain": [
+        "I've had lower back pain for {dur}.",
+        'My lower back has been hurting for {dur}.',
+        'For {dur} my lower back has been sore, especially when I bend.',
+    ],
+    "symptom.back_pain.terse": ['lower back pain {dur}', 'back hurts, {dur}'],
+    "symptom.allergy_nose": [
+        "I've had a runny nose and lots of sneezing for {dur}.",
+        "My nose keeps running and I've been sneezing a lot for {dur}.",
+        "For {dur} I've been sneezing constantly, with a runny nose.",
+    ],
+    "symptom.allergy_nose.terse": ['runny nose, sneezing a lot, {dur}', 'sneezing + runny nose {dur}'],
+    "symptom.checkup": [
+        "I'd like to get a general health checkup.",
+        "I want a routine health checkup; nothing is wrong, I just haven't had one in a while.",
+        "I'm looking for a general checkup.",
+    ],
+    "symptom.checkup.terse": ['want a general checkup', 'health check, nothing wrong'],
+    "symptom.acne": [
+        "I've had a bad acne breakout on my face for {dur}.",
+        "My face broke out in painful pimples {dur} ago and it's getting worse.",
+    ],
+    "symptom.acne.terse": ['bad acne breakout on face, {dur}', 'pimples all over my face, {dur}'],
+    "symptom.diarrhea": [
+        "I've had diarrhea for {dur}.",
+        "I've had loose stools for {dur}.",
+        "I've had diarrhea for {dur} and I feel a bit weak.",
+    ],
+    "symptom.diarrhea.terse": ['diarrhea {dur}', 'loose stool, {dur} now'],
+    "symptom.wrist_pain": [
+        'My wrist has been hurting for {dur}; I type all day at work.',
+        "I've had wrist pain for {dur}, probably from typing.",
+    ],
+    "symptom.wrist_pain.terse": ['wrist hurts from typing, {dur}', 'wrist pain {dur}, computer work'],
+    "symptom.child_fever": [
+        'My child has had a mild fever and a runny nose for {dur}.',
+        'My son has had a slight fever and a runny nose for {dur}.',
+        'My daughter has had a low fever and a runny nose for {dur}.',
+    ],
+    "symptom.child_fever.terse": ['my kid has a mild fever + runny nose, {dur}', 'child with mild fever, runny nose, {dur}'],
+    "symptom.insomnia": [
+        "I've had trouble sleeping and have been feeling anxious for {dur}.",
+        "For {dur} I've barely slept and I feel anxious all the time.",
+    ],
+    "symptom.insomnia.terse": ['cant sleep, anxious, {dur}', 'no sleep + anxiety {dur}'],
+    "symptom.dizziness": [
+        "For {dur} I've felt dizzy whenever I stand up.",
+        'I get lightheaded when I stand up; it started {dur} ago.',
+        "I've been dizzy every time I stand up, for {dur} now.",
+    ],
+    "symptom.dizziness.terse": ['dizzy when i stand up, {dur}', 'lightheaded standing up, {dur}'],
+    "symptom.blurry_vision": [
+        "For {dur} the words get blurry when I'm reading.",
+        'My vision has been blurry when I read, for {dur} now.',
+    ],
+    "symptom.blurry_vision.terse": ['blurry vision reading, {dur}', 'words blurry when reading, {dur}'],
+    "symptom.period_pain": [
+        "I've had very painful period cramps for {dur}.",
+        'My period started {dur} ago and the cramps are much worse than usual.',
+        'My period pain has been really bad for {dur}.',
+    ],
+    "symptom.period_pain.terse": ['bad period cramps, {dur}', 'period pain v bad, {dur}'],
+    "symptom.skin_wart": [
+        "There's a small wart on my hand that I'd like looked at.",
+        "I have a small wart on my hand I'd like removed.",
+    ],
+    "symptom.skin_wart.terse": ['small wart on hand, want it checked', 'wart on my hand, want it off'],
+    "symptom.blood_pressure": [
+        "I'd like to have my blood pressure checked.",
+        'I need a blood pressure check.',
+        'I want to get my blood pressure measured; it was a bit high last time.',
+    ],
+    "symptom.blood_pressure.terse": ['need a blood pressure check', 'bp check pls'],
+    # ------------------------------------------------------------ consultation: the patient's English turns (T5, T6, T8)
+    # 'plain' at L1-L2, 'casual' at L3-L4.  Only the English wording varies; the facts and the Korean reference stay the same.
+    "enc.symptom.plain": ["My {body} has been hurting for {dur}.", "I've had pain in my {body} for {dur}.",
+                          "It's my {body}. It has hurt for {dur}.", "For {dur} now my {body} has been hurting."],
+    "enc.symptom.casual": ["my {body}'s been bothering me for about {dur}", "{body} hurts, like {dur} now",
+                           "been having {body} pain for {dur} or so", "{dur} now, my {body} hurts"],
+    "enc.nose.plain": ["I've had a runny nose and sneezing for {dur}.", "My nose has been running and I keep sneezing; it's been {dur}.",
+                       "For {dur} I've been sneezing a lot, with a runny nose."],
+    "enc.nose.casual": ["runny nose and sneezing, like {dur} now", "sneezing nonstop, nose running, {dur} or so",
+                        "nose running, sneezing, {dur}"],
+    "enc.fever.yes.plain": ["Yes, I had a fever of {temp} degrees.", "Yes, my temperature went up to {temp} degrees.",
+                            "Yes, it reached {temp} degrees."],
+    "enc.fever.yes.casual": ["yeah, fever, {temp} degrees at most", "yeah, it got up to {temp} degrees", "yes, highest was {temp} degrees"],
+    "enc.fever.no.plain": ["No, I don't have a fever.", "No, I haven't had a fever.", "No, my temperature has been normal."],
+    "enc.fever.no.casual": ["nope, no fever", "no fever, no", "nah, no fever"],
+    "enc.allergy.yes.plain": ["Yes, I'm allergic to {allergen}.", "Yes, I have an allergy to {allergen}.", "Yes, {allergen} gives me an allergic reaction."],
+    "enc.allergy.yes.casual": ["yes, {allergen} allergy", "yeah, allergic to {allergen}", "{allergen}, i'm allergic"],
+    "enc.allergy.no.plain": ["No, I don't have any allergies.", "No allergies that I know of.", "No, I'm not allergic to anything."],
+    "enc.allergy.no.casual": ["no allergies", "nope, none", "not that i know of"],
+    "enc.curmed.yes.plain": ["I take {drug} {freq}.", "Yes, I'm taking {drug} {freq}.", "I'm on {drug}, {freq}."],
+    "enc.curmed.yes.casual": ["i take {drug}, {freq}", "yeah, {drug} {freq}", "just {drug}, {freq}"],
+    "enc.curmed.no.plain": ["No, I'm not taking any medicine.", "No medication at the moment.", "No, I don't take anything regularly."],
+    "enc.curmed.no.casual": ["nothing right now", "no meds", "nope, nothing"],
+    "enc.q_meal": ["Can I take it before meals?", "Is it okay to take it before eating?", "Could I take it before I eat?"],
+    "enc.q_coffee": ["Can I drink coffee?", "Is coffee okay?", "Am I allowed to drink coffee?"],
+    "enc.thanks": ["Thank you, doctor.", "Thanks a lot, doctor.", "Thank you very much, doctor."],
     # ------------------------------------------------------------ T7 (memory) openers and the allergy statement
     "hello.memory": [
         "Hi! I'm {name}. Some things to remember for next time.",
@@ -243,8 +402,13 @@ REQUIRED: dict[str, tuple[str, ...]] = {
     "price": ("{level}",),
     "greeting": ("{name}",),
     "intro": (),                                      # "" (say nothing about origin) is a valid choice
-    "complaint": ("{comp}", "{dur}"),
-    "lead.terse": ("{name}", "{nat}", "{simple}"),
+    "complaint": ("{symptom}",),
+    "lead.terse": ("{name}", "{nat}", "{symptom}"),
+    "enc.symptom": ("{body}", "{dur}"),
+    "enc.nose": ("{dur}",),
+    "enc.fever.yes": ("{temp}",),
+    "enc.allergy.yes": ("{allergen}",),
+    "enc.curmed.yes": ("{drug}", "{freq}"),
     "closing": (),
     "referral": (),
     "avoid": ("{name}",),
@@ -253,7 +417,25 @@ REQUIRED: dict[str, tuple[str, ...]] = {
 }
 _SAMPLE = dict(pp="Mapo-gu", km=3, wd="Tuesday", iso="2027-02-02", month="February", day=2, t="3:30 pm", lang="Vietnamese",
                level=2, name="Hana", nat="Japan", simple="cough, sore throat", dur="2 days", days=2,
-               comp="a cough", names="penicillin")
+               comp="a cough", names="penicillin", symptom="I've had a cough for 2 days.", body="throat", temp=38.5,
+               allergen="penicillin", drug="acetaminophen", freq="twice a day")
+
+
+def _complaint_rules():
+    """symptom.<complaint> pools: symptoms and a child's illness must say how long ({dur}); services must not."""
+    from medibuddy_bench.knowledge import COMPLAINT_META
+    need, ban = {}, set()
+    for k, m in COMPLAINT_META.items():
+        for key in (f"symptom.{k}", f"symptom.{k}.terse"):
+            if m["kind"] == "service":
+                ban.add(key)
+            else:
+                need[key] = ("{dur}",)
+    return need, ban
+
+
+_SYMPTOM_NEED, _SYMPTOM_BAN = _complaint_rules()
+REQUIRED.update(_SYMPTOM_NEED)
 
 
 def _required_for(key: str) -> tuple[str, ...]:
@@ -282,6 +464,8 @@ def validate_pools(pools: dict[str, list[str]]) -> list[str]:
             for token in need:
                 if token not in t:
                     problems.append(f"{key}[{i}]: missing {token!r}")
+            if key in _SYMPTOM_BAN and "{dur}" in t:
+                problems.append(f"{key}[{i}]: a service has no duration; remove '{{dur}}'")
             try:
                 t.format(**_SAMPLE)
             except (KeyError, IndexError, ValueError) as e:

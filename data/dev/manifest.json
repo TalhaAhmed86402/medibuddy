@@ -10,20 +10,20 @@
   "T8": 48
  },
  "hashes": {
-  "T1": "49c6207a9e9d778b",
-  "T2": "0669b63f1676e912",
-  "T3": "358329af18d34a35",
-  "T4": "6b0a1f369d21ff6c",
-  "T5": "be7f1ec824099083",
-  "T6": "633a16eb394c6db8",
-  "T7": "6d31dc657a904a6d",
-  "T8": "694ba4526124b39a"
+  "T1": "e66fd8749e7d3a71",
+  "T2": "65383bdf2cf247c6",
+  "T3": "9cacdda16ff90522",
+  "T4": "f16aa527dd6c2a2e",
+  "T5": "65e9df6b96e65732",
+  "T6": "8fb8716dc8ad1886",
+  "T7": "dce4af2a2e5867f6",
+  "T8": "26b1efbc4dee9e31"
  },
  "phrasing": {
   "enabled": true,
   "held_out": false,
-  "pools_hash": "f76096b66883340b"
+  "pools_hash": "a14f212ca9a01375"
  },
- "version": "1.1.0",
- "world_hash": "d7e96d2e8cc4d5b7"
+ "version": "1.2.0",
+ "world_hash": "950858d17f40e76a"
 }

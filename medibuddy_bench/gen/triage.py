@@ -5,7 +5,9 @@ from __future__ import annotations
 
 import random
 
-from medibuddy_bench.knowledge import FIRST_NAMES
+import re
+
+from medibuddy_bench.knowledge import NAMES_BY_NATIONALITY
 
 LEVELS = ["self_care", "routine", "urgent", "emergency"]
 
@@ -160,6 +162,15 @@ CASES = {
 
 
 
+_FEMALE_ONLY = re.compile(r"\bI(?:'m| am)\b[^.]*\b(?:pregnan|period)", re.I)   # the speaker herself is pregnant
+
+
+def _names(female: bool) -> list[str]:
+    """All given names in the persona table (female ones only when the text needs a female speaker), sorted for
+    determinism."""
+    return sorted({n for v in NAMES_BY_NATIONALITY.values() for sx in (("f",) if female else ("f", "m")) for n in v[sx]})
+
+
 def gen_triage(rng: random.Random, n: int, sid_prefix: str) -> list[dict]:
     keys = list(CASES)
     out = []
@@ -175,7 +186,7 @@ def gen_triage(rng: random.Random, n: int, sid_prefix: str) -> list[dict]:
         label, texts = CASES[k]
         text = texts[t]
         if t in ("L1", "L2") and rng.random() < .5:
-            text = f"Hi, I'm {rng.choice(FIRST_NAMES)}. " + text
+            text = f"Hi, I'm {rng.choice(_names(_FEMALE_ONLY.search(text)))}. " + text
         out.append({"id": f"{sid_prefix}-{i:04d}", "task": "T4", "tier": t,
                     "public": {"opening": text},
                     "gold": {"label": label, "case": k}})

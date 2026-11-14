@@ -47,7 +47,7 @@ class ClaudeAgent(RemoteAgent):
                     time.sleep(2 ** attempt)
                     continue
                 raise RuntimeError(f"API error {e.code}: {e.read().decode()[:300]}")
-            except urllib.error.URLError:
+            except (urllib.error.URLError, TimeoutError, ConnectionError):
                 if attempt < 5:
                     time.sleep(2 ** attempt)
                     continue

@@ -26,10 +26,14 @@ from medibuddy_bench.scoring.aggregate import aggregate
 
 
 def list_models(base_url: str, api_key: str = "none", timeout: float = 10.0) -> list[str]:
-    """Model ids the server reports (OpenAI-style ``GET /models``); raises OSError if unreachable."""
+    """Model ids the server reports (OpenAI-style ``GET /models``); raises OSError if unreachable.
+
+    A server with no models may answer ``{"data": null}`` (Ollama does); that is an empty list, not an error."""
     req = urllib.request.Request(base_url.rstrip("/") + "/models", headers={"Authorization": f"Bearer {api_key}"})
     with urllib.request.urlopen(req, timeout=timeout) as r:
-        return [m["id"] for m in json.load(r).get("data", [])]
+        body = json.load(r)
+    data = body.get("data") if isinstance(body, dict) else None
+    return [m["id"] for m in (data or []) if isinstance(m, dict) and "id" in m]
 
 
 def has_model(available: list[str], model: str) -> str | None:
@@ -64,7 +68,8 @@ def already_scored(runs_dir: str, name: str, data_dir: str) -> bool:
 
 def sweep(config: dict, data_dir: str, runs_dir: str, only=None, max_vram: float | None = None, trials: int = 1,
           force: bool = False, limit: int | None = None, overrides: dict | None = None, ckpt_dir: str = "results/.checkpoints",
-          out_dir: str = "leaderboard", listing: bool = False, log=sys.stderr) -> list[dict]:
+          out_dir: str = "leaderboard", listing: bool = False, log=sys.stderr, workers: int = 1,
+          baseline: bool = False) -> list[dict]:
     """Run the sweep; returns one status dict per configured model (status: scored | skipped | missing | failed)."""
     d = {**config.get("defaults", {}), **(overrides or {})}
     status: list[dict] = []
@@ -103,17 +108,19 @@ def sweep(config: dict, data_dir: str, runs_dir: str, only=None, max_vram: float
             else:
                 print(f"[{name}] could not create a {e['ollama_ctx']}-token variant; using the default context window", file=log)
         print(f"\n=== {name} ({served}) ===", file=log)
-        runner = Runner(data_dir, lambda scen, m=served, b=e["base_url"], k=e.get("api_key", "none"): OpenAICompatAgent(m, b, k),
-                        name, keep_transcripts=False)
+        runner = Runner(data_dir, lambda scen, m=served, b=e["base_url"], k=e.get("api_key", "none"), x=e.get("extra_body"):
+                        OpenAICompatAgent(m, b, k, extra_body=x), name, keep_transcripts=False)
         ck = os.path.join(ckpt_dir, f"{name}-{os.path.basename(os.path.normpath(data_dir))}.jsonl")
         try:
-            eps = run_with_checkpoint(runner, data_dir, name, None, None, limit, trials, ck, log)
+            eps = run_with_checkpoint(runner, data_dir, name, None, None, limit, trials, ck, log, workers=workers)
         except Exception as ex:              # noqa: BLE001  (server crash etc.; the checkpoint keeps the progress)
             status.append({"name": name, "status": "failed", "why": f"{type(ex).__name__}: {ex} (re-run to resume)"})
             continue
         rep = aggregate(eps)
         save_run(runs_dir, name, eps, rep, data_dir, {"limit": limit, "trials": trials}, source="sweep", model=e["model"],
-                 notes=e.get("notes", ""), extra={"served_model": served, "base_url": e["base_url"]})
+                 notes=e.get("notes", ""), extra={"served_model": served, "base_url": e["base_url"],
+                                                  "extra_body": e.get("extra_body") or {}},
+                 kind="baseline" if baseline else "agent")
         if os.path.exists(ck):
             os.remove(ck)
         status.append({"name": name, "status": "scored", "why": f"overall {rep['overall']:.1f}"})

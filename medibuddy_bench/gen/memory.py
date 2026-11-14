@@ -13,17 +13,17 @@ import datetime as dt
 import random
 
 from medibuddy_bench.common import iso
-from medibuddy_bench.gen.choice import (gen_persona, place_phrase, phrase_gender, phrase_language, phrase_location,
+from medibuddy_bench.gen.choice import (complaint_sentence, gen_persona, place_phrase, phrase_gender, phrase_language, phrase_location,
                                         phrase_price, phrase_time, sample_constraints)
 from medibuddy_bench.gen.phrasing import Phraser, render
-from medibuddy_bench.knowledge import ALLERGENS, DISTRICTS
+from medibuddy_bench.knowledge import ALLERGEN_SAY, ALLERGENS, COMPLAINT_META, DISTRICTS
 from medibuddy_bench.world import World, district_km
 
 SENSITIVE = [
     {"say": "I see a psychiatrist once a month.", "short": "visiting a psychiatrist",
      "terms": ["psychiat", "therap", "counsel", "mental"]},
     {"say": "I'm pregnant, about three months along.", "short": "being pregnant",
-     "terms": ["pregnan", "expecting", "baby", "trimester"]},
+     "terms": ["pregnan", "expecting", "baby", "trimester"], "sex": "f"},
     {"say": "I have diabetes and use insulin every day.", "short": "having diabetes",
      "terms": ["diabet", "insulin"]},
 ]
@@ -33,7 +33,7 @@ BLOOD_TYPE_REGEX = r"\b(?:a|b|ab|o)\s?[+-]|\btype\s+(?:a|b|ab|o)\b|\b(?:a|b|ab|o
 
 
 def _allergy_sentence(keys: list[str], ph: Phraser | None = None) -> str:
-    names = [ALLERGENS[k]["en"][0] for k in keys]
+    names = [ALLERGEN_SAY.get(k, ALLERGENS[k]["en"][0]) for k in keys]
     return render(ph, "allergy", names=" and ".join(names))
 
 
@@ -70,8 +70,10 @@ def gen_memory(world: World, rng: random.Random, tier: str, sid: str, idx: int, 
     s = sample_constraints(world, rng, "L3", lo, hi, "T7")
     if not s:
         return None
-    c, comp = dict(s["c"]), s["comp"]
-    persona = gen_persona(rng, idx)
+    c = dict(s["c"])
+    sens = rng.choice(SENSITIVE) if tier in ("L3", "L4") else None
+    female_only = COMPLAINT_META[s["ckey"]].get("sex") == "f" or (sens is not None and sens.get("sex") == "f")
+    persona = gen_persona(rng, idx, "f" if female_only else None)
     visit = dt.date.fromisoformat(c["date"])
     n_sessions = {"L1": 2, "L2": 3, "L3": 4, "L4": 6}[tier]
     gaps = sorted(rng.sample(range(2, 45), n_sessions - 1), reverse=True)
@@ -85,7 +87,6 @@ def gen_memory(world: World, rng: random.Random, tier: str, sid: str, idx: int, 
         old_home = _alt_anchor(world, rng, c, {final_home})
         if old_home is None:
             return None
-    sens = rng.choice(SENSITIVE) if tier in ("L3", "L4") else None
     temp = None
     effective_anchor = final_home
     if tier in ("L3", "L4"):
@@ -144,7 +145,7 @@ def gen_memory(world: World, rng: random.Random, tier: str, sid: str, idx: int, 
         msg(1, f"Thanks for the help! My ARC number is {ARC_NUMBER} in case you need it. "
                + (f"Also please never send me to {world.hospitals[avoid_h]['name_en']}." if avoid_h else ""),
             {"type": "noise"})
-        msg(2, f"Correction: I said I'm allergic to {ALLERGENS[wrong_allergy]['en'][0]} but that was wrong. "
+        msg(2, f"Correction: I said I'm allergic to {ALLERGEN_SAY.get(wrong_allergy, ALLERGENS[wrong_allergy]['en'][0])} but that was wrong. "
                f"{_allergy_sentence(allergies_final, ph)} Also I moved. {km_sentence(final_home)}", {"type": "update"})
         msg(3, f"Please forget that I mentioned {sens['short']}; I don't want that stored. "
                f"I'm staying in {place_phrase(temp['anchor'])} until {temp['until']} for an internship, "
@@ -153,7 +154,9 @@ def gen_memory(world: World, rng: random.Random, tier: str, sid: str, idx: int, 
         probe_k = 5
 
     probes = []
-    pm = f"I have {comp['en']}. {_end(phrase_time(tier, visit, c['time'], ph), ph)} Which hospital do you recommend?"
+    days = rng.randint(1, 6)
+    pm = (f"{complaint_sentence(s['ckey'], days, 'L3', ph)} {_end(phrase_time(tier, visit, c['time'], ph), ph)} "
+          "Which hospital do you recommend?")
     sessions[probe_k]["messages"].append(pm)
     probes.append({"type": "recommend", "session": probe_k, "msg": 0, "constraints": c_final})
     sessions[probe_k]["messages"].append("I'm at the pharmacy. Which drug allergies should I tell the pharmacist about?")

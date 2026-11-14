@@ -118,7 +118,7 @@ COMPLAINTS = {
                 "specialties": ["internal_medicine", "family_medicine"], "mild": True},
     "acne": {"en": "bad acne on my face", "simple": "many pimples on face",
              "specialties": ["dermatology"], "mild": True},
-    "diarrhea": {"en": "diarrhea since two days", "simple": "loose stool, two days",
+    "diarrhea": {"en": "diarrhea", "simple": "loose stool",
                  "specialties": ["internal_medicine", "family_medicine"], "mild": True},
     "wrist_pain": {"en": "wrist pain from typing all day", "simple": "wrist hurt, use computer much",
                    "specialties": ["orthopedics", "family_medicine"], "mild": True},
@@ -137,6 +137,39 @@ COMPLAINTS = {
     "blood_pressure": {"en": "a blood pressure check", "simple": "check my blood pressure",
                        "specialties": ["internal_medicine", "family_medicine"], "mild": True},
 }
+
+
+# How a complaint is spoken about.  kind: "symptom" (has a duration), "service" (a check or test, no duration) or "child"
+# (a parent asking for a child; has a duration).  sex: "f" if only a female patient can have it.  keywords: a regular
+# expression the scripted reference agents (naive, rule) use to recognise the complaint in free text.
+COMPLAINT_META = {
+    "cough_cold": {"kind": "symptom", "keywords": r"cough|sore throat|throat"},
+    "skin_rash": {"kind": "symptom", "keywords": r"rash|itchy skin|itchy (?:spots|patches)"},
+    "ankle_sprain": {"kind": "symptom", "keywords": r"ankle"},
+    "toothache": {"kind": "symptom", "keywords": r"tooth|teeth|molar"},
+    "stomach_pain": {"kind": "symptom", "keywords": r"stomach|nause|tummy"},
+    "eye_irritation": {"kind": "symptom", "keywords": r"eyes? (?:are |is |look )?(?:red|itchy)|red,? itchy eyes|itchy eyes"},
+    "headache": {"kind": "symptom", "keywords": r"headache|migraine"},
+    "urinary": {"kind": "symptom", "keywords": r"urinat|\bpee\b|bladder"},
+    "ear_pain": {"kind": "symptom", "keywords": r"\bears?\b"},
+    "back_pain": {"kind": "symptom", "keywords": r"back pain|\bback\b"},
+    "allergy_nose": {"kind": "symptom", "keywords": r"runny nose|sneez"},
+    "checkup": {"kind": "service", "keywords": r"check-?up|health check"},
+    "acne": {"kind": "symptom", "keywords": r"acne|pimple|breakout"},
+    "diarrhea": {"kind": "symptom", "keywords": r"diarrh|loose stool"},
+    "wrist_pain": {"kind": "symptom", "keywords": r"wrist"},
+    "child_fever": {"kind": "child", "keywords": r"\b(?:child|son|daughter|kid|toddler)\b"},
+    "insomnia": {"kind": "symptom", "keywords": r"sleep|insomnia|anxious"},
+    "dizziness": {"kind": "symptom", "keywords": r"dizz|lightheaded|light-headed"},
+    "blurry_vision": {"kind": "symptom", "keywords": r"blurr|vision|reading"},
+    "period_pain": {"kind": "symptom", "sex": "f", "keywords": r"period|menstrua|cramps"},
+    "skin_wart": {"kind": "service", "keywords": r"wart|bump"},
+    "blood_pressure": {"kind": "service", "keywords": r"blood pressure"},
+}
+assert set(COMPLAINT_META) == set(COMPLAINTS)
+
+# How patients say an allergen in a sentence (the ALLERGENS aliases stay the matching vocabulary).
+ALLERGEN_SAY = {"peanut": "peanuts", "sulfa": "sulfa drugs"}
 
 # ---- Drugs and allergens (interpretation and summaries) -------------------------------
 DRUGS = {
@@ -158,9 +191,9 @@ ALLERGENS = {
                 "blocks_drugs": ["ibuprofen"]},
     "sulfa": {"ko": "설파제", "ko_alias": ["설파"], "en": ["sulfa", "sulpha", "sulfonamide"],
               "blocks_drugs": []},
-    "latex": {"ko": "라텍스", "ko_alias": ["라텍스"], "en": ["latex"], "blocks_drugs": []},
+    "latex": {"ko": "라텍스", "ko_alias": ["라텍스", "고무"], "en": ["latex"], "blocks_drugs": []},
     "peanut": {"ko": "땅콩", "ko_alias": ["땅콩"], "en": ["peanut"], "blocks_drugs": []},
-    "shellfish": {"ko": "갑각류", "ko_alias": ["갑각류", "새우"],
+    "shellfish": {"ko": "갑각류", "ko_alias": ["갑각류", "새우", "조개", "해산물"],
                   "en": ["shellfish", "shrimp", "crustacean"], "blocks_drugs": []},
 }
 
@@ -251,6 +284,47 @@ NATIONALITY_WEIGHTED = [
     ("Morocco", "ar", 1), ("Pakistan", "en", 1), ("Germany", "en", 1), ("France", "en", 1), ("Brazil", "en", 1),
     ("Nigeria", "en", 1), ("Mexico", "en", 1), ("Iran", "en", 1), ("Canada", "en", 1), ("Australia", "en", 1)]
 NATIONALITIES = [(n, l) for n, l, _ in NATIONALITY_WEIGHTED]
+
+# Given names that are common in each country, by sex ("f" / "m").  A persona's name is drawn from its own nationality and
+# sex, so "Ravi from China with painful periods" cannot happen.  The fairness-twin check swaps (name, nationality) pairs
+# from this table.  Names are plain ASCII so that simple string matching works for every agent.
+NAMES_BY_NATIONALITY = {
+    "China": {"f": ["Mei", "Xiaoling", "Jing", "Yan", "Hui", "Lan"], "m": ["Wei", "Jun", "Hao", "Lei", "Tao", "Qiang"]},
+    "Vietnam": {"f": ["Linh", "Thu", "Huong", "Mai", "Ngoc", "Trang"], "m": ["Minh", "Tuan", "Hung", "Duc", "Khanh", "Quang"]},
+    "USA": {"f": ["Emma", "Olivia", "Sarah", "Jessica", "Emily", "Ashley"], "m": ["Noah", "Michael", "James", "Ryan", "Daniel", "Tyler"]},
+    "Thailand": {"f": ["Malee", "Siriporn", "Ploy", "Kanya", "Pim", "Nok"], "m": ["Somchai", "Anan", "Niran", "Kittisak", "Tawan", "Chai"]},
+    "Uzbekistan": {"f": ["Dilnoza", "Gulnora", "Malika", "Nilufar", "Shahnoza", "Zarina"], "m": ["Aziz", "Bekzod", "Jasur", "Sardor", "Timur", "Rustam"]},
+    "Japan": {"f": ["Yuki", "Sakura", "Aiko", "Haruka", "Mio", "Naomi"], "m": ["Hiro", "Kenji", "Takumi", "Daiki", "Ren", "Sota"]},
+    "Russia": {"f": ["Olga", "Anya", "Elena", "Natalia", "Irina", "Svetlana"], "m": ["Ivan", "Dmitri", "Sergei", "Alexei", "Mikhail", "Pavel"]},
+    "Mongolia": {"f": ["Oyun", "Saraa", "Enkhjin", "Nomin", "Ariunaa", "Solongo"], "m": ["Bayar", "Batu", "Temuulen", "Ganbold", "Erdene", "Bilguun"]},
+    "Philippines": {"f": ["Maria", "Angelica", "Joy", "Kristine", "Grace", "Mae"], "m": ["Jose", "Mark", "Paolo", "Carlo", "Miguel", "Rafael"]},
+    "India": {"f": ["Priya", "Sunita", "Ananya", "Kavya", "Neha", "Pooja"], "m": ["Ravi", "Arjun", "Rahul", "Vikram", "Sanjay", "Amit"]},
+    "Nepal": {"f": ["Sita", "Gita", "Anjali", "Sabina", "Asmita", "Sarita"], "m": ["Bikash", "Suman", "Ramesh", "Prakash", "Sujan", "Dipak"]},
+    "Indonesia": {"f": ["Siti", "Dewi", "Putri", "Ayu", "Rina", "Wulan"], "m": ["Budi", "Agus", "Rizky", "Dimas", "Hendra", "Arif"]},
+    "Kazakhstan": {"f": ["Aigerim", "Dana", "Madina", "Saule", "Aruzhan", "Asel"], "m": ["Nursultan", "Yerlan", "Arman", "Daniyar", "Askar", "Marat"]},
+    "Egypt": {"f": ["Nour", "Yara", "Mariam", "Salma", "Heba", "Aya"], "m": ["Omar", "Ahmed", "Mostafa", "Karim", "Youssef", "Tarek"]},
+    "Saudi Arabia": {"f": ["Fatima", "Noura", "Reem", "Lama", "Hessa", "Sara"], "m": ["Abdullah", "Faisal", "Khaled", "Saud", "Turki", "Fahad"]},
+    "Morocco": {"f": ["Khadija", "Imane", "Houda", "Zineb", "Meryem", "Nadia"], "m": ["Hamza", "Mehdi", "Amine", "Rachid", "Yassine", "Adil"]},
+    "Pakistan": {"f": ["Ayesha", "Zainab", "Hina", "Sana", "Mahnoor", "Iqra"], "m": ["Ali", "Usman", "Bilal", "Tariq", "Imran", "Hassan"]},
+    "Germany": {"f": ["Anna", "Lena", "Ingrid", "Katrin", "Sophie", "Julia"], "m": ["Lukas", "Jonas", "Felix", "Tobias", "Stefan", "Markus"]},
+    "France": {"f": ["Camille", "Chloe", "Manon", "Elise", "Juliette", "Claire"], "m": ["Hugo", "Louis", "Julien", "Thomas", "Antoine", "Mathieu"]},
+    "Brazil": {"f": ["Ana", "Juliana", "Fernanda", "Beatriz", "Camila", "Larissa"], "m": ["Pedro", "Gabriel", "Rafael", "Thiago", "Bruno", "Lucas"]},
+    "Nigeria": {"f": ["Amara", "Chioma", "Ngozi", "Funmi", "Adaeze", "Bisi"], "m": ["Chidi", "Emeka", "Tunde", "Obinna", "Segun", "Ibrahim"]},
+    "Mexico": {"f": ["Sofia", "Valeria", "Guadalupe", "Ximena", "Daniela", "Marisol"], "m": ["Carlos", "Diego", "Luis", "Jorge", "Alejandro", "Javier"]},
+    "Iran": {"f": ["Leila", "Maryam", "Shirin", "Parisa", "Niloofar", "Mina"], "m": ["Amir", "Reza", "Mehran", "Hossein", "Arash", "Kaveh"]},
+    "Canada": {"f": ["Madison", "Hannah", "Megan", "Abigail", "Brooke", "Taylor"], "m": ["Liam", "Ethan", "Owen", "Nathan", "Connor", "Logan"]},
+    "Australia": {"f": ["Charlotte", "Mia", "Isla", "Ruby", "Zoe", "Matilda"], "m": ["Jack", "Oliver", "Lachlan", "Cooper", "Harry", "Mitchell"]},
+}
+assert set(NAMES_BY_NATIONALITY) == {n for n, _, _ in NATIONALITY_WEIGHTED}
+
+
+def country_phrase(nat: str) -> str:
+    """How a patient names their country in a sentence ("from the USA", "from the Philippines").
+
+    >>> country_phrase("USA"), country_phrase("Philippines"), country_phrase("Japan")
+    ('the USA', 'the Philippines', 'Japan')
+    """
+    return f"the {nat}" if nat in ("USA", "Philippines") else nat
 VISAS = ["D-2 (degree student)", "D-4 (language trainee)", "E-7 (professional worker)",
          "E-2 (foreign language instructor)", "F-6 (marriage migrant)", "D-10 (job seeker)",
          "F-2 (resident)", "C-3 (short-term visitor)"]

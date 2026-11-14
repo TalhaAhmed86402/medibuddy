@@ -1,5 +1,5 @@
 # Convenience wrapper (Linux/macOS).  Everything is also available as `python -m medibuddy_bench <command>` on any OS (see README).
-# `make help` lists targets.  Python >= 3.10; A2A targets need `pip install -r requirements-a2a.txt`.
+# `make help` lists targets.  Python >= 3.10; A2A targets need `pip install -r requirements-a2a.lock` in a clean venv.
 PY ?= python3
 SPLIT ?= lite
 DATA ?= data/$(SPLIT)
@@ -15,6 +15,8 @@ help:
 	@echo "make serve-green         start the benchmark service (A2A) on :9009"
 	@echo "make serve-purple        start the reference student agent (A2A) on :9019 (needs OPENAI_BASE_URL etc.)"
 	@echo "make data SPLIT=dev      regenerate a split from its seed"
+	@echo "make docs                regenerate the generated parts of the docs (dataset statistics, baseline tables)"
+	@echo "make release-check       everything to run before tagging a version (tests, rebuild, docs current)"
 
 test:
 	$(PY) -m pytest -q tests
@@ -53,4 +55,14 @@ serve-purple:
 data:
 	$(PY) -m medibuddy_bench.gen.build --split $(SPLIT) --seed 1 --out data/$(SPLIT) $(if $(filter dev,$(SPLIT)),--review data/review,)
 
-.PHONY: help test baselines ollama sweep verify docker leaderboard serve-green serve-purple data
+docs:
+	$(PY) scripts/dataset_stats.py --data data/dev --write
+	$(PY) scripts/baselines_report.py
+
+release-check:
+	$(PY) -m pytest -q tests
+	$(PY) -m medibuddy_bench verify --data data/dev --rebuild
+	$(PY) -m medibuddy_bench verify --data data/lite --rebuild
+	$(PY) scripts/baselines_report.py --check
+
+.PHONY: help test baselines ollama sweep verify docker leaderboard serve-green serve-purple data docs release-check

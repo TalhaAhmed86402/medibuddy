@@ -3,7 +3,8 @@
 score = weighted sum of checks (all deterministic, computed against the FINAL world state):
   top1_valid   the first recommendation satisfies every hard constraint (live truth)
   precision3   fraction of the (up to 3) recommendations that satisfy every hard constraint
-  grounded     every recommended id exists (no invented hospitals)
+  grounded     every recommended id exists AND was returned by a hospital tool in this episode (no invented or
+               outside hospitals)
   rules        no tertiary hospital for a mild case without referral (unless the answer warns about referral)
   -- only when the patient marked some preference as flexible (soft) --
   options      the answer offers at least 2 distinct valid options (the patient must be able to choose)
@@ -48,7 +49,8 @@ def score_choice(world, c: dict, texts: list[str], data: dict | None, tool_log: 
     else:
         checks["top1_valid"] = 1.0 if recs[0] in valid else 0.0
         checks["precision3"] = sum(1 for r in recs if r in valid) / len(recs)
-        checks["grounded"] = 1.0 if all(r in world.hospitals for r in recs) else 0.0
+        shown = {i for e in tool_log for i in e.get("ids", ())}
+        checks["grounded"] = 1.0 if all(r in world.hospitals and r in shown for r in recs) else 0.0
         bad_tier = [r for r in recs if r in world.hospitals and "tier" in world.violations(r, c)]
         warned = bool(re.search(r"referral", final_text.lower()))
         checks["rules"] = 1.0 - (0.0 if warned else len(bad_tier) / len(recs))

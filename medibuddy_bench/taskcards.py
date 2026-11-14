@@ -43,15 +43,19 @@ INTERPRET = (
     "doses, timings and allergies exact. No commentary."
 )
 
+SUMMARY_SCHEMA = (
+    '{"diagnosis": string or null (null if the doctor did not state one),\n'
+    ' "medications": [only medicines the doctor prescribed in this visit: {"name": str, "amount_per_dose": number of tablets (0.5, 1, 2...), "times_per_day": int,\n'
+    '                  "timing": "after_meal|before_meal|with_meal|bedtime|unspecified", "duration_days": int}],\n'
+    ' "donts": [str], "dos": [str], "follow_up_days": int or null, "warning_signs": [str],\n'
+    ' "tests": [str], "allergies": [str]}   (medicines the patient already takes are not "medications")\n'
+)
+
 SUMMARY = (
     "TASK: you receive the transcript of a visit (doctor in Korean, patient in English). Produce a "
     "structured summary for the patient, in English, ONLY from what was said. Reply with a short plain-language "
     "summary and end with a block <answer>{...}</answer> containing JSON with exactly these keys:\n"
-    '{"diagnosis": string or null (null if the doctor did not state one),\n'
-    ' "medications": [{"name": str, "amount_per_dose": number of tablets (0.5, 1, 2...), "times_per_day": int,\n'
-    '                  "timing": "after_meal|before_meal|with_meal|bedtime|unspecified", "duration_days": int}],\n'
-    ' "donts": [str], "dos": [str], "follow_up_days": int or null, "warning_signs": [str],\n'
-    ' "tests": [str], "allergies": [str]}\n'
+    + SUMMARY_SCHEMA +
     "Do not add anything the doctor did not say. If something was not stated use null or an empty list."
 )
 
@@ -69,9 +73,14 @@ JOURNEY = (
     "TASK: you will accompany one patient through a whole journey: (1) recommend a hospital, (2) interpret the "
     "visit utterance by utterance, (3) summarise the visit, (4) book the follow-up the doctor asked for. "
     "Each message tells you which step it belongs to via its `expect` field. Formats:\n"
-    "- expect=recommendations: as in the hospital task.\n"
-    "- expect=translation: reply with ONLY the translation.\n"
-    "- expect=summary: as in the summary task.\n"
+    "- expect=recommendations: use the hospital tools, then end with "
+    '<answer>{"recommendations": [{"hospital_id": "H0001", "reason": "one sentence"}]}</answer> (1-3 hospitals, best first; '
+    "the first one is where the patient goes).\n"
+    "- expect=translation: reply with ONLY the translation (doctor -> English, patient -> Korean); keep numbers, "
+    "negations, doses, timings and allergies exact.\n"
+    "- expect=summary: a short plain-language summary in English, ONLY from what was said, ending with "
+    "<answer>{...}</answer> containing JSON with exactly these keys:\n" + SUMMARY_SCHEMA +
+    "  (null or an empty list for anything not stated)\n"
     '- expect=follow_up: end with <answer>{"follow_up": {"hospital_id": "H0001", "date": "YYYY-MM-DD"}}</answer> '
     "for the hospital where the visit took place, on the date the doctor asked for, or the first day the hospital "
     "is actually open if that date is closed."

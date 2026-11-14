@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import re
 
+from medibuddy_bench.knowledge import COMPLAINT_META, country_phrase
+
 SLOT_LEX = {
     "location": r"where|district|neighbo|\barea\b|\blive\b|located|location|\bnear\b|close|travel|\bfar\b|distance|address|commut|\bkm\b",
     "time": r"\bwhen\b|\bdate\b|\btime\b|\bday\b|schedul|weekend|weekday|morning|afternoon|evening|appointment|available",
@@ -59,9 +61,13 @@ class PatientSim:
                 elif slot == "insurance":
                     parts.append("I have normal health insurance; I don't think that matters for this.")
                 elif slot == "duration":
-                    parts.append(f"About {self.g.get('days', 3)} days.")
+                    if COMPLAINT_META.get(self.g.get("complaint"), {}).get("kind") == "service":
+                        parts.append("Nothing has started suddenly; I'd just like it checked.")
+                    else:
+                        n = self.g.get("days", 3)
+                        parts.append(f"About {n} day{'s' if n != 1 else ''}.")
                 elif slot == "nationality":
-                    parts.append(f"I'm from {self.g['persona']['nationality']}.")
+                    parts.append(f"I'm from {country_phrase(self.g['persona']['nationality'])}.")
         if not parts:
             return ("I'm not sure what you mean. I just need a hospital that fits what I told you "
                     "- you can ask me about where, when, language, cost or doctor preference.")

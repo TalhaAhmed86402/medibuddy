@@ -15,7 +15,9 @@ same runner evaluates in-process and remote agents."""
 from __future__ import annotations
 
 import json
+import os
 import re
+import sys
 from typing import Callable
 
 from medibuddy_bench.agents.base import Agent, Message, Reply
@@ -40,9 +42,30 @@ def _as_call(obj) -> dict | None:
     return None
 
 
-def extract_tool_call(text: str) -> dict | None:
+def _bare_call(text: str, names) -> dict | None:
+    """`memory_put {"key": "a", "value": "b"}` at the start of a line, for a known tool name (no tags at all).
+
+    >>> _bare_call('memory_put {"key": "a", "value": "b"} then more text', {"memory_put"})
+    {'name': 'memory_put', 'args': {'key': 'a', 'value': 'b'}}
+    >>> _bare_call('I will call memory_put {"key": "a"} later', {"memory_put"}) is None
+    True
+    """
+    if not names:
+        return None
+    m = re.search(r"(?m)^\s*`?(" + "|".join(re.escape(n) for n in sorted(names)) + r")`?\s*(?:\(|:)?\s*(?=\{)", text)
+    if not m:
+        return None
+    try:
+        args = json.JSONDecoder().raw_decode(text[m.end():])[0]
+    except json.JSONDecodeError:
+        return None
+    return {"name": m.group(1), "args": args} if isinstance(args, dict) else None
+
+
+def extract_tool_call(text: str, names=None) -> dict | None:
     """First tool call in an agent reply.  Deliberately tolerant, because small models mangle the tags
-    (`<tool_call {...};</tool_call>`, missing close tag, trailing `;`, a ```json fence, a bare JSON object).
+    (`<tool_call {...};</tool_call>`, missing close tag, trailing `;`, a ```json fence, a bare JSON object, or, when the
+    known tool `names` are given, a bare `tool_name {...}` at the start of a line).
     Only the FIRST call is used; anything after it is ignored (the model must wait for the result)."""
     dec = json.JSONDecoder()
     for m in _CALL_TAG.finditer(text):
@@ -58,16 +81,18 @@ def extract_tool_call(text: str) -> dict | None:
     fenced = _FENCE.match(text) or (re.match(r"^\s*(\{.*\})\s*$", text, re.S))
     if fenced:                                     # reply is nothing but a call object
         try:
-            return _as_call(json.loads(fenced.group(1)))
+            call = _as_call(json.loads(fenced.group(1)))
         except json.JSONDecodeError:
-            return None
-    return None
+            call = None
+        if call:
+            return call
+    return _bare_call(text, names)
 
 
-def parse_agent_reply(text: str) -> tuple[str, dict | None, dict | None]:
-    """-> (clean_text, answer_json_or_None, tool_call_or_None)."""
+def parse_agent_reply(text: str, names=None) -> tuple[str, dict | None, dict | None]:
+    """-> (clean_text, answer_json_or_None, tool_call_or_None).  `names` = tool names available in this episode."""
     text = text or ""
-    call = extract_tool_call(text)
+    call = extract_tool_call(text, names)
     if call:
         return "", None, call
     data = None
@@ -86,13 +111,23 @@ def parse_agent_reply(text: str) -> tuple[str, dict | None, dict | None]:
 
 class RemoteAgent(Agent):
     def __init__(self, send: Callable[[str, bool], str], name: str = "remote", max_tool_rounds: int = 25):
-        self._send, self.name, self.max_rounds = send, name, max_tool_rounds
+        self._raw_send, self.name, self.max_rounds = send, name, max_tool_rounds
         self._card = ""
         self._tools = None
         self._first = True
 
     def start_session(self, card: str, tools) -> None:
         self._card, self._tools, self._first = card, tools, True
+
+    def _send(self, text: str, new: bool) -> str:
+        """Send through the transport; with MEDIBUDDY_TRACE=1 print every exchange to stderr (any text adapter)."""
+        trace = os.environ.get("MEDIBUDDY_TRACE")
+        if trace:
+            print(("\n===== new conversation =====\n" if new else "") + f"--> {text[-400:]!r}", file=sys.stderr, flush=True)
+        out = self._raw_send(text, new)
+        if trace:
+            print(f"<-- {(out or '')[:400]!r}", file=sys.stderr, flush=True)
+        return out
 
     def respond(self, message: Message) -> Reply:
         prefix = ""
@@ -107,12 +142,13 @@ class RemoteAgent(Agent):
                       "optionally ending with <answer>{json}</answer>.\n\n")
             new, self._first = True, False
         out = self._send(prefix + render_message(message), new)
+        names = {t["name"] for t in self._tools.specs()} if self._tools is not None else set()
         for _ in range(self.max_rounds + 1):
-            clean, data, call = parse_agent_reply(out)
+            clean, data, call = parse_agent_reply(out, names)
             if call is None:
                 return Reply(text=clean, data=data)
             res = self._tools.call(call["name"], call["args"])
             payload = json.dumps(res, ensure_ascii=False)
             out = self._send(f'<tool_result name="{call["name"]}">{payload}</tool_result>', False)
-        clean, data, _ = parse_agent_reply(out)
+        clean, data, _ = parse_agent_reply(out, names)
         return Reply(text=clean or "(tool budget exhausted)", data=data)

@@ -12,7 +12,8 @@ from __future__ import annotations
 import random
 
 from medibuddy_bench.gen.ko import KO_AMOUNT, KO_DAYS_COLLOQ, KO_FREQ, josa
-from medibuddy_bench.knowledge import (ALLERGENS, BODY, DIAGNOSES, DO_ITEMS, DRUGS, TESTS, TOPICS, WARNINGS)
+from medibuddy_bench.gen.phrasing import POOLS, Phraser, render
+from medibuddy_bench.knowledge import (ALLERGEN_SAY, ALLERGENS, BODY, DIAGNOSES, DO_ITEMS, DRUGS, TESTS, TOPICS, WARNINGS)
 
 CLINICAL = {
     "common_cold": {"body": "throat", "drugs": [("acetaminophen", 3, "after_meal", 30), ("ambroxol", 3, "after_meal", 30)],
@@ -39,16 +40,38 @@ CLINICAL = {
 
 _EN_FREQ = {1: "once", 2: "twice", 3: "three times", 4: "four times"}
 
+# T8: the consultation must fit the complaint the patient chose the hospital for.  Complaint key -> scripted visits.
+VISIT_FOR_COMPLAINT = {
+    "cough_cold": ["common_cold", "acute_tonsillitis"],
+    "stomach_pain": ["acute_gastritis", "pending_tests"],
+    "diarrhea": ["acute_gastritis", "pending_tests"],
+    "allergy_nose": ["allergic_rhinitis"],
+    "ankle_sprain": ["ankle_sprain"],
+    "headache": ["tension_headache"],
+}
+
+
+def en_freq(n: int) -> str:
+    """>>> en_freq(1), en_freq(3)
+    ('once a day', 'three times a day')
+    """
+    return f"{_EN_FREQ[n]} a day"
+
+
+def _days(n: int) -> str:
+    return f"{n} day{'s' if n != 1 else ''}"
+
 
 def _cap(s: str) -> str:
     return s[0].upper() + s[1:]
 
 
 # =============================================================================== spec
-def make_spec(rng: random.Random, tier: str, follow_up: int | None = None) -> dict:
-    key = rng.choice(list(CLINICAL))
+def make_spec(rng: random.Random, tier: str, follow_up: int | None = None, clinical: str | None = None,
+              onset: int | None = None) -> dict:
+    key = clinical or rng.choice(list(CLINICAL))
     cl = CLINICAL[key]
-    onset = rng.choice([2, 3, 4, 5, 7])
+    onset = onset or rng.choice([2, 3, 4, 5, 7])
     fever = rng.random() < .35
     temp = rng.choice([37.8, 38.0, 38.5, 39.0, 39.5]) if fever else None
     drugs = []
@@ -120,10 +143,16 @@ def _f(fid, kind, severity="normal", **kw):
 
 # =============================================================================== turns
 class _Builder:
-    def __init__(self, spec, tier, rng):
-        self.s, self.tier, self.rng = spec, tier, rng
+    def __init__(self, spec, tier, rng, ph: Phraser | None = None):
+        self.s, self.tier, self.rng, self.ph = spec, tier, rng, ph
         self.turns: list[dict] = []
         self.coll = tier in ("L3", "L4")
+        self.style = "casual" if self.coll else "plain"
+
+    def say(self, key: str, **fields) -> str:
+        """Patient wording from the pools in gen/phrasing.py (own random stream; the facts never change)."""
+        styled = f"{key}.{self.style}"
+        return render(self.ph, styled if styled in POOLS else key, **fields)
 
     def add(self, speaker, text, facts=None, reference="", phrase_key=""):
         self.turns.append({"speaker": speaker, "src_lang": "ko" if speaker == "doctor" else "en",
@@ -146,7 +175,7 @@ class _Builder:
                  _f(f"{k}.dur", "duration", "high", n=dr["duration_days"])]
         if dr["minutes"]:
             facts.append(_f(f"{k}.min", "minutes", "normal", m=dr["minutes"]))
-        ref = (f"I will prescribe {d['en'][0]}. Take {en_amount(dr['amount'])} {n} times a day, "
+        ref = (f"I will prescribe {d['en'][0]}. Take {en_amount(dr['amount'])} {en_freq(n)}, "
                f"{en_timing(dr['timing'], dr['minutes'])}, for {dr['duration_days']} days.")
         return ko, facts, ref
 
@@ -192,14 +221,12 @@ class _Builder:
         n = s["onset_days"]
         if s["body"]:
             en_body = BODY[s["body"]][0]
-            text = (f"My {en_body} has been hurting for {n} days." if not self.coll else
-                    f"my {en_body}'s been bothering me for about {n} days")
+            text = self.say("enc.symptom", body=en_body, dur=_days(n))
             ko_noun = BODY[s["body"]][1]
             ref = f"{n}일 전부터 {josa(ko_noun, '이/가')} 아파요."
             facts = [_f("p.body", "body_ko", "normal", key=s["body"]), _f("p.onset", "duration_ko", "high", n=n)]
         else:
-            text = f"I've had a runny nose and sneezing for {n} days." if not self.coll else \
-                f"runny nose and sneezing, like {n} days now"
+            text = self.say("enc.nose", dur=_days(n))
             ref = f"{n}일 전부터 콧물이 나고 재채기가 나와요."
             facts = [_f("p.nose", "keywords_ko", "normal", all=[["콧물", "코"], ["재채기"]]),
                      _f("p.onset", "duration_ko", "high", n=n)]
@@ -208,36 +235,35 @@ class _Builder:
     def p_fever(self):
         t = self.s["temp"]
         if t:
-            return (f"Yes, I had a fever of {t} degrees." if not self.coll else f"yeah, fever, {t} degrees at most"), \
+            return self.say("enc.fever.yes", temp=t), \
                 [_f("p.temp", "temp_ko", "high", x=t)], f"열이 {t}도까지 올랐어요."
-        return ("No, I don't have a fever." if not self.coll else "nope, no fever"), \
+        return self.say("enc.fever.no"), \
             [_f("p.nofever", "keywords_ko", "normal", all=[["열"], ["없", "안"]])], "열은 없어요."
 
     def p_allergy(self):
         a = self.s["allergy"]
         if a:
-            en = ALLERGENS[a]["en"][0]
-            text = (f"Yes, I'm allergic to {en}." if not self.coll else f"yes, {en} allergy")
+            en = ALLERGEN_SAY.get(a, ALLERGENS[a]["en"][0])
+            text = self.say("enc.allergy.yes", allergen=en)
             return text, [_f("p.allergy", "allergy_ko", "hazard", key=a)], \
                 f"저는 {ALLERGENS[a]['ko']} 알레르기가 있어요."
-        return ("No, I don't have any allergies." if not self.coll else "no allergies"), \
+        return self.say("enc.allergy.no"), \
             [_f("p.noallergy", "allergy_none_ko", "hazard")], "알레르기는 없어요."
 
     def p_curmed(self):
         c = self.s["current_med"]
         if c:
             d = DRUGS[c["drug"]]
-            text = (f"I take {d['en'][0]} {c['times_per_day']} times a day." if not self.coll else
-                    f"i take {d['en'][0]}, {c['times_per_day']}x a day")
+            text = self.say("enc.curmed.yes", drug=d["en"][0], freq=en_freq(c["times_per_day"]))
             return text, [_f("p.cur", "drug_ko", "high", key=c["drug"]),
                           _f("p.curfreq", "freq_ko", "high", n=c["times_per_day"])], \
                 f"{josa(d['ko'], '을/를')} 하루 {c['times_per_day']}번 먹고 있어요."
-        return ("No, I'm not taking any medicine." if not self.coll else "nothing right now"), \
+        return self.say("enc.curmed.no"), \
             [_f("p.nocur", "keywords_ko", "normal", all=[["약"], ["없", "안"]])], "먹고 있는 약은 없어요."
 
 
-def build_turns(spec: dict, tier: str, rng: random.Random) -> list[dict]:
-    b = _Builder(spec, tier, rng)
+def build_turns(spec: dict, tier: str, rng: random.Random, ph: Phraser | None = None) -> list[dict]:
+    b = _Builder(spec, tier, rng, ph)
     s = spec
     b.add("doctor", "안녕하세요. 어디가 불편하세요?", [], "Hello. What seems to be the problem?", "greet")
     t, f, r = b.p_symptom(); b.add("patient", t, f, r, "p_symptom")
@@ -269,7 +295,7 @@ def build_turns(spec: dict, tier: str, rng: random.Random) -> list[dict]:
         b.add("doctor", ko, facts, ref, "rx")
     # patient question about meals
     if s["before_meal_question"]:
-        b.add("patient", "Can I take it before meals?", [_f("pq.meal", "keywords_ko", "normal",
+        b.add("patient", b.say("enc.q_meal"), [_f("pq.meal", "keywords_ko", "normal",
                                                           all=[["식전", "식사 전", "밥 먹기 전", "공복"],
                                                                ["먹어도", "복용", "드셔도", "돼요", "되나요", "될까요", "괜찮"]])],
               "식전에 먹어도 돼요?", "p_q_meal")
@@ -282,7 +308,7 @@ def build_turns(spec: dict, tier: str, rng: random.Random) -> list[dict]:
     for tpc in s["dont"]:
         ko, facts, ref = b.d_dont(tpc); b.add("doctor", ko, facts, ref, "dont")
     if "coffee" in s["permits"]:
-        b.add("patient", "Can I drink coffee?", [_f("pq.coffee", "keywords_ko", "normal", all=[["커피"]])],
+        b.add("patient", b.say("enc.q_coffee"), [_f("pq.coffee", "keywords_ko", "normal", all=[["커피"]])],
               TOPICS["coffee"]["ko_question"], "p_q_coffee")
         b.add("doctor", TOPICS["coffee"]["ko_permit"][1 if b.coll else 0],
               [_f("permit.coffee", "permit", "high", topic="coffee")], "Coffee is fine.", "permit")
@@ -291,7 +317,7 @@ def build_turns(spec: dict, tier: str, rng: random.Random) -> list[dict]:
     for k in s["warn"]:
         ko, facts, ref = b.d_warn(k); b.add("doctor", ko, facts, ref, "warn")
     ko, facts, ref = b.d_follow(); b.add("doctor", ko, facts, ref, "follow")
-    b.add("patient", "Thank you, doctor.", [_f("thanks", "keywords_ko", "normal", all=[["감사", "고맙"]])],
+    b.add("patient", b.say("enc.thanks"), [_f("thanks", "keywords_ko", "normal", all=[["감사", "고맙"]])],
           "감사합니다, 선생님.", "thanks")
     turns = b.turns
     if tier == "L4":
@@ -351,9 +377,12 @@ def gold_summary(spec: dict) -> dict:
     }
 
 
-def gen_encounter(rng: random.Random, tier: str, follow_up: int | None = None) -> dict:
-    spec = make_spec(rng, tier, follow_up)
-    turns = build_turns(spec, tier, rng)
+def gen_encounter(rng: random.Random, tier: str, follow_up: int | None = None, ph: Phraser | None = None,
+                  clinical: str | None = None, onset: int | None = None) -> dict:
+    """One consultation.  `clinical` fixes the scripted visit (T8 picks one that fits the complaint) and `onset`
+    the days since the symptoms began (T8 keeps it consistent with the patient's first message)."""
+    spec = make_spec(rng, tier, follow_up, clinical, onset)
+    turns = build_turns(spec, tier, rng, ph)
     return {"spec": spec, "turns": turns, "gold_summary": gold_summary(spec)}
 
 

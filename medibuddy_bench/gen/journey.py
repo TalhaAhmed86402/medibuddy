@@ -10,7 +10,7 @@ import random
 
 from medibuddy_bench.common import iso
 from medibuddy_bench.gen.choice import gen_choice
-from medibuddy_bench.gen.encounters import gen_encounter
+from medibuddy_bench.gen.encounters import VISIT_FOR_COMPLAINT, gen_encounter
 from medibuddy_bench.gen.phrasing import Phraser
 from medibuddy_bench.world import World
 
@@ -25,7 +25,7 @@ def closed_fraction(world: World, hospital_ids, date: dt.date) -> float:
 def gen_journey(world: World, rng: random.Random, tier: str, sid: str, idx: int, lo: dt.date, hi: dt.date,
                 ph: Phraser | None = None):
     task, ctier = _CHOICE[tier]
-    ch = gen_choice(world, rng, task, ctier, sid, idx, lo, hi, ph=ph)
+    ch = gen_choice(world, rng, task, ctier, sid, idx, lo, hi, ph=ph, complaints=list(VISIT_FOR_COMPLAINT))
     if not ch:
         return None
     c = ch["gold"]["constraints"]
@@ -37,7 +37,10 @@ def gen_journey(world: World, rng: random.Random, tier: str, sid: str, idx: int,
         f = closed_fraction(world, valid, visit + dt.timedelta(days=n))
         if f > best_f:
             best_n, best_f = n, f
-    enc = gen_encounter(rng, tier, follow_up=best_n)
+    # the visit treats the complaint the patient came with, and the symptoms have lasted since the first message
+    clinical = rng.choice(VISIT_FOR_COMPLAINT[ch["gold"]["complaint"]])
+    onset = ch["gold"]["days"] + (visit - dt.date.fromisoformat(ch["public"]["today"])).days
+    enc = gen_encounter(rng, tier, follow_up=best_n, ph=ph, clinical=clinical, onset=onset)
     ch["id"], ch["task"], ch["tier"] = sid, "T8", tier
     ch["gold"]["choice_task"] = task
     ch["gold"]["encounter"] = {"spec": enc["spec"], "turns": enc["turns"], "gold_summary": enc["gold_summary"]}

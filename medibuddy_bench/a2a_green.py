@@ -1,8 +1,10 @@
-"""AgentBeats / A2A adapter ("green agent") for MediBuddy-Bench.   STATUS: NOT VERIFIED against the live platform.
+"""Optional shim for course repositories built on the LambdaLabsML/agentbeats-lambda template.
 
-Layers
-  1. `evaluate_remote(send, data_dir, ...)`   pure Python, tested (tests/test_benchmark.py::Protocol).
-     `send(text, new_conversation) -> text` is whatever carries a message to the purple agent.
+The supported A2A service is `medibuddy_bench.a2a.green_server` (tested end to end).  This module is only for a course
+that hands out that template and wants the benchmark inside the template's own GreenAgent class.
+STATUS: NOT VERIFIED against the template (no template was available).
+
+  1. `evaluate_remote` lives in `medibuddy_bench.remote` (framework independent, tested); it is re-exported here.
   2. `MediBuddyGreen`                          thin wrapper in the shape of the LambdaLabsML/agentbeats-lambda
      template (GreenAgent.run_eval(EvalRequest, updater) + ToolProvider.talk_to_agent).  The template's
      import paths are assumed (a2a-sdk 0.2/0.3 era; the 1.x SDK moved `a2a.server.apps`).  Adjust the
@@ -13,26 +15,8 @@ from __future__ import annotations
 
 import asyncio
 import json
-import os
-from typing import Callable
 
-from medibuddy_bench.protocol import RemoteAgent
-from medibuddy_bench.runner import Runner
-from medibuddy_bench.scoring.aggregate import aggregate, to_markdown
-
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-
-def evaluate_remote(send: Callable[[str, bool], str], data_dir: str | None = None, name: str = "purple",
-                    tasks=None, tiers=None, limit=None, trials: int = 1, max_tool_calls: int = 25,
-                    progress=None) -> dict:
-    """Blocking. Runs the benchmark against a text-only agent and returns {"report", "markdown", "episodes"}."""
-    data_dir = data_dir or os.path.join(HERE, "data", "dev")
-    runner = Runner(data_dir, lambda scen: RemoteAgent(send, name, max_tool_calls), name,
-                    max_tool_calls=max_tool_calls, keep_transcripts=False)
-    eps = runner.run(tasks=tasks, tiers=tiers, limit=limit, trials=trials, progress=progress)
-    rep = aggregate(eps)
-    return {"report": rep, "markdown": to_markdown(rep, name), "episodes": eps}
+from medibuddy_bench.remote import evaluate_remote  # noqa: F401  (re-exported for older imports)
 
 
 def _template_imports():  # isolated so a version mismatch fails with a clear message

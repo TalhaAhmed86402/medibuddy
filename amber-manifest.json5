@@ -1,0 +1,46 @@
+// AgentBeats Amber component manifest for the MediBuddy-Bench GREEN agent (the benchmark service).
+// Format: RDI-Foundation/green-agent-template amber-manifest.json5 (read 2026-11-14). Not yet run on the platform.
+// A leaderboard repository's scenario.json5 can point at this file by its raw GitHub URL (see agentbeats/scenario.json5).
+// The image is pushed by .github/workflows/publish.yml when a v* tag is pushed; GitHub lower-cases the owner name.
+{
+  manifest_version: "0.1.0",
+
+  // The benchmark needs no secrets: it talks only to the purple agent it is given.
+  config_schema: {
+    type: "object",
+    properties: {},
+    additionalProperties: false,
+  },
+
+  // The platform's A2A proxy. Participant URLs arrive inside the assessment request; Amber requires the slot to be
+  // referenced somewhere in the program, hence the unused environment variable.
+  slots: {
+    proxy: { kind: "a2a" },
+  },
+
+  program: {
+    image: "ghcr.io/talhaahmed86402/medibuddy-bench:1.2.0",
+    entrypoint: "python -m medibuddy_bench serve --host 0.0.0.0 --port 9009 --data data/dev",
+    env: {
+      AMBER_HINT_PROXY: "${slots.proxy}",
+    },
+    network: {
+      endpoints: [
+        { name: "a2a_endpoint", port: 9009 },
+      ],
+    },
+  },
+
+  provides: {
+    a2a: { kind: "a2a", endpoint: "a2a_endpoint" },
+  },
+
+  exports: { a2a: "a2a" },
+
+  // Default assessment request. Keys the service accepts: split (dev|lite), tasks, tiers, limit, trials, max_tool_calls,
+  // name, model; shard_index / num_shards / num_instances are added by the leaderboard runner.
+  metadata: {
+    assessment_config: { split: "dev", trials: 1 },
+    participant_roles: ["purple"],
+  },
+}

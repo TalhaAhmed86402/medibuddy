@@ -25,15 +25,15 @@ from medibuddy_bench.gen.phrasing import POOLS, Phraser, load_extra, render, val
 from medibuddy_bench.knowledge import LANGUAGE_NAMES
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-LEGACY_LITE_HASHES = {  # task hashes of the v1.0.0 'lite' split (seed 1); build(..., phrasing=False) must reproduce them
-    "T1": "e9d28878dbd5c1a3",
-    "T2": "00a9d163df7c5dbb",
-    "T3": "df1655f521e0401e",
-    "T4": "62266bac597adadb",
-    "T5": "2a8142197783e051",
-    "T6": "373f295558299712",
-    "T7": "c8d4546b7327c508",
-    "T8": "9247383891c76c2d",
+PHRASING_OFF_LITE_HASHES = {  # 'lite' split (seed 1) built with phrasing off, pinned at data v1.2.0 (regression guard)
+    "T1": "c5540bf2f1366598",
+    "T2": "4810b57984d2d0bf",
+    "T3": "c2bf56a5652a1cab",
+    "T4": "8f935a48d741e073",
+    "T5": "196113797dc0f16e",
+    "T6": "278826d7a4def319",
+    "T7": "9fd1c5ce49494d13",
+    "T8": "8c827e5d5076c102",
 }
 
 
@@ -70,11 +70,13 @@ class Pools(unittest.TestCase):
 
 
 class Legacy(unittest.TestCase):
-    def test_phrasing_off_reproduces_v1_0_data_exactly(self):
-        """The original wording is the first entry of every pool; switching paraphrasing off must give the v1.0.0 files."""
+    def test_phrasing_off_build_is_pinned(self):
+        """Phrasing off uses the first entry of every pool.  The hashes are pinned so that any change to the generator is
+        noticed.  (Data v1.2.0 changed scenario content, so this no longer equals the v1.0.0 files; use the v1.1.0
+        release of the code to rebuild older data.)"""
         ds = build("lite", 1, phrasing=False)
         got = {t: stable_hash(items) for t, items in ds["scenarios"].items()}
-        self.assertEqual(got, LEGACY_LITE_HASHES)
+        self.assertEqual(got, PHRASING_OFF_LITE_HASHES)
 
 
 class Invariants(unittest.TestCase):
@@ -87,14 +89,21 @@ class Invariants(unittest.TestCase):
 
     @staticmethod
     def _non_text(s, task):
+        """The scenario with every patient-worded string removed (what is left must not depend on wording)."""
         s = copy.deepcopy(s)
-        s["gold"].pop("slot_text", None)
-        p = s["public"]
+        g, p = s["gold"], s["public"]
+        g.pop("slot_text", None)
         if task in ("T1", "T2", "T3", "T8"):
             p.pop("opening", None)
         if task == "T7":
             for ss in p["sessions"]:
                 ss["messages"] = len(ss["messages"])
+        turn_lists = {"T5": [p.get("turns", []), g.get("turns", [])], "T6": [p.get("transcript", []), g.get("turns", [])],
+                      "T8": [g.get("encounter", {}).get("turns", [])]}.get(task, [])
+        for turns in turn_lists:
+            for t in turns:
+                if t["speaker"] == "patient":
+                    t.pop("text", None)
         return s
 
     def test_world_is_identical(self):
@@ -103,7 +112,7 @@ class Invariants(unittest.TestCase):
     def test_everything_but_wording_is_identical(self):
         for task, items in self.off["scenarios"].items():
             for a, b in zip(items, self.on["scenarios"][task]):
-                if task in ("T4", "T5", "T6"):
+                if task == "T4":
                     self.assertEqual(a, b, a["id"])           # untouched by paraphrasing
                 else:
                     self.assertEqual(self._non_text(a, task), self._non_text(b, task), a["id"])
@@ -112,6 +121,9 @@ class Invariants(unittest.TestCase):
         changed = sum(a["public"] != b["public"] for t in ("T1", "T2", "T3") for a, b in
                       zip(self.off["scenarios"][t], self.on["scenarios"][t]))
         self.assertGreater(changed, 12)
+        changed = sum(a["public"] != b["public"] for t in ("T5", "T6") for a, b in
+                      zip(self.off["scenarios"][t], self.on["scenarios"][t]))
+        self.assertGreater(changed, 8)
 
 
 class RealData(unittest.TestCase):

@@ -6,9 +6,11 @@ An assessment is started by sending the green agent ONE text message containing 
 
     {"participants": {"purple": "http://host:9019"},
      "config": {"tasks": ["T1","T4"], "tiers": ["L1","L2"], "limit": 10, "trials": 1,
-                "max_tool_calls": 25, "split": "dev", "name": "my-agent", "model": "llama3.2:3b"}}
+                "max_tool_calls": 25, "split": "dev", "name": "my-agent", "model": "llama3.2:3b",
+                "shard_index": 0, "num_shards": 1}}
 
-All config keys are optional ("name"/"model" label the run on the leaderboard).  The agent under test (purple agent) is any A2A agent that answers plain
+All config keys are optional ("name"/"model" label the run on the leaderboard; "shard_index"/"num_shards" split one
+assessment over several evaluators, as the AgentBeats leaderboard runner does).  The agent under test (purple agent) is any A2A agent that answers plain
 text using the protocol in docs/AGENT_INTERFACE.md.  The result comes back as text artifacts (report.md,
 report.json, run_id) and is also stored as a run record under --runs-dir for scripts/leaderboard.py.  Hidden test data: start the server with
 --data pointing at a private directory (never serve it from the public repo)."""
@@ -24,20 +26,22 @@ try:
     from a2a.server.apps import A2AStarletteApplication     # removed in a2a-sdk 1.x
 except ImportError as _e:  # pragma: no cover
     raise SystemExit(f"{_e}\nThe A2A servers need a2a-sdk 0.3.x (1.x changed the server API). Use a clean venv:\n"
-                     "  python -m venv .venv && . .venv/bin/activate && pip install -r requirements-a2a.txt")
+                     "  python -m venv .venv && . .venv/bin/activate && pip install -r requirements-a2a.lock")
 from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.events import EventQueue
 from a2a.server.request_handlers import DefaultRequestHandler
 from a2a.server.tasks import InMemoryTaskStore, TaskUpdater
-from a2a.types import AgentCapabilities, AgentCard, AgentSkill, Part, TaskState, TextPart
+from a2a.types import AgentCapabilities, AgentCard, AgentSkill, DataPart, Part, TaskState, TextPart
 from a2a.utils import new_agent_text_message
 
 from medibuddy_bench import VERSION
 from medibuddy_bench.a2a.client import TextTalker
-from medibuddy_bench.a2a_green import evaluate_remote
+from medibuddy_bench.remote import evaluate_remote
 
 HERE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-ALLOWED = {"tasks", "tiers", "limit", "trials", "max_tool_calls", "split", "name", "model"}
+HEARTBEAT_S = float(os.environ.get("MEDIBUDDY_HEARTBEAT_S", "30"))
+ALLOWED = {"tasks", "tiers", "limit", "trials", "max_tool_calls", "split", "name", "model",
+           "shard_index", "num_shards", "num_instances"}      # the last three are set by the AgentBeats leaderboard runner
 
 
 def parse_request(text: str, default_data: str, allow_data_dir: bool = False) -> tuple[str, dict, dict]:
@@ -61,7 +65,33 @@ def parse_request(text: str, default_data: str, allow_data_dir: bool = False) ->
         if split and os.path.isdir(os.path.join(HERE, "data", split)) and default_data == os.path.join(HERE, "data", "dev"):
             data_dir = os.path.join(HERE, "data", split)
     cfg["data_dir"] = data_dir
+    if "num_shards" in cfg or "shard_index" in cfg:
+        n, k = int(cfg.pop("num_shards", 1) or 1), int(cfg.pop("shard_index", 0) or 0)
+        if not (n >= 1 and 0 <= k < n):
+            raise ValueError(f"shard_index must be in 0..num_shards-1 (got {k} of {n})")
+        cfg["shard"] = (k, n) if n > 1 else None
+    cfg.pop("num_instances", None)
     return url, cfg, {}
+
+
+def result_summary(report: dict, cfg: dict, data_dir: str, run_id: str | None) -> dict:
+    """Flat, JSON-only result for platforms that read machine output (the AgentBeats gateway keeps only JSON parts).
+
+    One row per assessment; per-task gated scores are 0-100 like the overall score."""
+    from medibuddy_bench.results import read_manifest
+    man = read_manifest(data_dir)
+    shard = cfg.get("shard")
+    return {
+        "id": run_id or "unsaved", "benchmark": "medibuddy-bench", "data_version": man.get("version"),
+        "world_hash": man.get("world_hash"), "split": os.path.basename(os.path.normpath(data_dir)),
+        "agent": str(cfg.get("name") or "purple"), "model": cfg.get("model"),
+        "overall": round(report["overall"], 2), "overall_ungated": round(report["overall_ungated"], 2),
+        "covered_weight": report["covered_weight"], "n_episodes": report["n_episodes"],
+        "tasks": {t: round(100 * r["gated"], 2) for t, r in report["tasks"].items()},
+        "critical": report["critical"], "trials": int(cfg.get("trials", 1)),
+        "shard_index": shard[0] if shard else 0, "num_shards": shard[1] if shard else 1,
+        "pass_hat_k": {str(k): round(v, 4) for k, v in report.get("pass_hat_k", {}).items()},
+    }
 
 
 class GreenExecutor(AgentExecutor):
@@ -77,7 +107,11 @@ class GreenExecutor(AgentExecutor):
         try:
             url, cfg, _ = parse_request(text, self.data_dir)
         except ValueError as e:
-            await updater.failed(new_agent_text_message(f"Bad request: {e}", context.context_id, context.task_id))
+            msg = new_agent_text_message(f"Bad request: {e}", context.context_id, context.task_id)
+            if hasattr(updater, "reject"):                  # a2a-sdk >= 0.3: the request is refused, not crashed
+                await updater.reject(msg)
+            else:
+                await updater.failed(msg)
             return
         talker = TextTalker()
         loop = asyncio.get_running_loop()
@@ -85,21 +119,39 @@ class GreenExecutor(AgentExecutor):
         def send(msg: str, new: bool) -> str:
             return asyncio.run_coroutine_threadsafe(talker.send(url, msg, new), loop).result()
 
+        state = {"done": 0, "total": None}
+
         def progress(ep, i, total):
+            state["done"], state["total"] = i, total
             if i % 10 == 0 or i == total:
                 asyncio.run_coroutine_threadsafe(
                     updater.update_status(TaskState.working, new_agent_text_message(
                         f"{i}/{total} episodes scored", context.context_id, context.task_id)), loop)
 
+        async def heartbeat():
+            # a status at least every HEARTBEAT_S seconds, even while one long episode runs, so a client or gateway
+            # with an inactivity timeout never sees a silent task
+            while True:
+                await asyncio.sleep(HEARTBEAT_S)
+                total = state["total"]
+                note = f"{state['done']}/{total} episodes scored" if total else "assessment running"
+                await updater.update_status(TaskState.working, new_agent_text_message(
+                    f"{note} (still working)", context.context_id, context.task_id))
+
+        await updater.update_status(TaskState.working, new_agent_text_message(
+            "MediBuddy-Bench: assessment started", context.context_id, context.task_id))
+        beat = asyncio.create_task(heartbeat())
         try:
             out = await asyncio.to_thread(
                 evaluate_remote, send, cfg["data_dir"], "purple", cfg.get("tasks"), cfg.get("tiers"),
-                cfg.get("limit"), int(cfg.get("trials", 1)), int(cfg.get("max_tool_calls", 25)), progress)
+                cfg.get("limit"), int(cfg.get("trials", 1)), int(cfg.get("max_tool_calls", 25)), progress,
+                cfg.get("shard"))
         except Exception as e:                       # purple unreachable, protocol error, ...
             await updater.failed(new_agent_text_message(f"Evaluation failed: {type(e).__name__}: {e}",
                                                         context.context_id, context.task_id))
             return
         finally:
+            beat.cancel()
             await talker.close()
         run_path = None
         if self.runs_dir:
@@ -108,9 +160,14 @@ class GreenExecutor(AgentExecutor):
             run_path = await asyncio.to_thread(
                 save_run, self.runs_dir, name, out["episodes"], out["report"], cfg["data_dir"],
                 {"tasks": cfg.get("tasks"), "tiers": cfg.get("tiers"), "limit": cfg.get("limit"),
-                 "trials": int(cfg.get("trials", 1))}, "a2a", cfg.get("model"))
-        if run_path:
-            await updater.add_artifact([Part(root=TextPart(text=os.path.basename(run_path)))], name="run_id")
+                 "trials": int(cfg.get("trials", 1)), "shard": cfg.get("shard")}, "a2a", cfg.get("model"))
+        run_id = os.path.basename(run_path) if run_path else None
+        summary = result_summary(out["report"], cfg, cfg["data_dir"], run_id)
+        # "result": the machine-readable row (DataPart, plus the same JSON as text for text-only readers)
+        await updater.add_artifact([Part(root=DataPart(data=summary)),
+                                    Part(root=TextPart(text=json.dumps(summary, ensure_ascii=False)))], name="result")
+        if run_id:
+            await updater.add_artifact([Part(root=TextPart(text=run_id))], name="run_id")
         await updater.add_artifact([Part(root=TextPart(text=out["markdown"]))], name="report.md")
         await updater.add_artifact([Part(root=TextPart(text=json.dumps(out["report"], ensure_ascii=False)))],
                                    name="report.json")
@@ -131,7 +188,7 @@ def build_app(host: str, port: int, data_dir: str, public_url: str | None = None
         description="Benchmark for agents that help international residents of Korea choose a hospital, "
                     "interpret a visit, summarise it and remember preferences. Send a JSON assessment request.",
         url=public_url or advertised_url(host, port), default_input_modes=["text"], default_output_modes=["text"],
-        capabilities=AgentCapabilities(streaming=False),
+        capabilities=AgentCapabilities(streaming=True),
         skills=[AgentSkill(id="assess", name="Assess a MediBuddy agent", tags=["benchmark", "healthcare"],
                            description="Runs tasks T1-T8 against the purple agent and returns a gated score report.")])
     handler = DefaultRequestHandler(agent_executor=GreenExecutor(data_dir, runs_dir), task_store=InMemoryTaskStore())

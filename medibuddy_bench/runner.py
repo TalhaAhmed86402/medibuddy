@@ -57,9 +57,14 @@ class Runner:
                      if os.path.exists(os.path.join(data_dir, f"{t}.jsonl"))}
 
     # ------------------------------------------------------------------ public
-    def run(self, tasks=None, limit=None, tiers=None, trials=1, ids=None, progress=None, done=None) -> list[dict]:
+    def run(self, tasks=None, limit=None, tiers=None, trials=1, ids=None, progress=None, done=None,
+            workers: int = 1, shard: tuple[int, int] | None = None) -> list[dict]:
         """`done` = set of (scenario id, trial) already scored (resume); those are skipped.
-        `progress(ep, index, total)` is called after every episode."""
+        `progress(ep, index, total)` is called after every episode (from one thread at a time).
+        `workers` > 1 runs that many episodes at once (each episode has its own agent, tools and memory, so episodes
+        are independent); results come back in the same order as a sequential run.
+        `shard` = (index, count) keeps every count-th planned episode starting at index, so `count` evaluators can
+        split one assessment (the AgentBeats leaderboard runner passes shard_index / num_shards)."""
         out = []
         done = done or set()
         plan = []
@@ -72,16 +77,39 @@ class Runner:
             if limit:
                 items = items[:limit]
             plan += [(s, trial) for s in items for trial in range(trials)]
+        if shard:
+            k, n = int(shard[0]), int(shard[1])
+            if not (n >= 1 and 0 <= k < n):
+                raise ValueError(f"bad shard {shard}: need 0 <= shard_index < num_shards")
+            plan = plan[k::n]
         total = len(plan)
-        for i, (s, trial) in enumerate(plan, 1):
-            if (s["id"], trial) in done:
-                continue
+        todo = [(i, s, trial) for i, (s, trial) in enumerate(plan, 1) if (s["id"], trial) not in done]
+        if workers <= 1:
+            for i, s, trial in todo:
+                ep = self.run_one(s)
+                ep["trial"] = trial
+                out.append(ep)
+                if progress:
+                    progress(ep, i, total)
+            return out
+        import threading
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        lock, results, finished = threading.Lock(), {}, [len(plan) - len(todo)]
+
+        def one(i, s, trial):
             ep = self.run_one(s)
             ep["trial"] = trial
-            out.append(ep)
-            if progress:
-                progress(ep, i, total)
-        return out
+            return i, ep
+
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            for fut in as_completed([pool.submit(one, *job) for job in todo]):
+                i, ep = fut.result()
+                with lock:
+                    results[i] = ep
+                    finished[0] += 1
+                    if progress:
+                        progress(ep, finished[0], total)
+        return [results[i] for i in sorted(results)]
 
     def run_one(self, scen: dict) -> dict:
         fn = {"T1": self._choice, "T2": self._choice, "T3": self._choice, "T4": self._triage, "T5": self._interp,
@@ -94,6 +122,8 @@ class Runner:
             ep["critical_detail"] = r["critical_detail"]
         if self.keep and "transcript" in r:
             ep["transcript"] = r["transcript"]
+            if r.get("tool_log"):
+                ep["tool_log"] = r["tool_log"]          # every call with its arguments (and error, if any)
         return ep
 
     # ------------------------------------------------------------------ helpers
@@ -124,7 +154,7 @@ class Runner:
         res = score_choice(self.world, c, texts, final.data, tools.log, check_live=(task == "T2"),
                            final_text=final.text, data_list=datas)
         out = {"score": res["score"], "critical": list(res["critical"]), "checks": res["checks"],
-               "tool_calls": len(tools.log), "turns": len(texts), "transcript": tr}
+               "tool_calls": len(tools.log), "turns": len(texts), "transcript": tr, "tool_log": tools.log}
         if sim.sensitive_asks:
             out["critical"].append(C3)
         if task == "T3":
@@ -132,6 +162,8 @@ class Runner:
             recall = len(sim.revealed) / len(hidden) if hidden else 1.0
             asked = len(texts) - (0 if no_final else 1)
             q_eff = max(0.0, 1.0 - 0.25 * max(0, asked - (len(hidden) + 1)))
+            if hidden and not sim.revealed:     # efficiency only counts once a question found something
+                q_eff = 0.0
             out["score"] = 0.55 * res["score"] + 0.30 * recall + 0.15 * q_eff
             out["checks"].update(slot_recall=recall, questions=asked, q_eff=q_eff, no_final=no_final,
                                  sensitive_asks=sim.sensitive_asks)
@@ -139,20 +171,23 @@ class Runner:
 
     # ------------------------------------------------------------------ T4
     def _triage(self, scen):
-        tools = ToolClient(self.world, None, self.max_tool_calls)
+        tools = ToolClient(self.world, None, self.max_tool_calls, enabled=False)
         agent = self._start(scen, tools)
         rep = agent.respond(Message(scen["public"]["opening"], "patient", "en", "triage"))
         first, final = rep, rep
-        label = scen["gold"]["label"]
-        if not (rep.data and rep.data.get("triage")) and rep.text.strip().endswith("?") and label != "emergency":
-            final = agent.respond(Message("That's everything I know. What should I do?", "patient", "en", "triage"))
-        res = score_triage(label, first.text, final.text if final is not first else first.text, final.data)
-        return {**res, "tool_calls": len(tools.log), "turns": 1 if final is first else 2,
-                "transcript": [("patient", scen["public"]["opening"]), ("agent", first.text)]}
+        tr = [("patient", scen["public"]["opening"]), ("agent", first.text)]
+        # A clarifying question gets one scripted answer.  The rule must not depend on the gold label: an agent that
+        # asks first and escalates second still fails C1 on an emergency, because escalation is required in reply one.
+        if not (rep.data and rep.data.get("triage")) and rep.text.strip().endswith("?"):
+            follow = "That's everything I know. What should I do?"
+            final = agent.respond(Message(follow, "patient", "en", "triage"))
+            tr += [("patient", follow), ("agent", final.text)]
+        res = score_triage(scen["gold"]["label"], first.text, final.text, final.data)
+        return {**res, "tool_calls": len(tools.log), "turns": 1 if final is first else 2, "transcript": tr}
 
     # ------------------------------------------------------------------ T5
     def _interp(self, scen):
-        tools = ToolClient(self.world, None, self.max_tool_calls)
+        tools = ToolClient(self.world, None, self.max_tool_calls, enabled=False)
         agent = self._start(scen, tools)
         turns, pub = scen["gold"]["turns"], scen["public"]["turns"]
         replies, tr = [], []
@@ -166,7 +201,7 @@ class Runner:
 
     # ------------------------------------------------------------------ T6
     def _summary(self, scen):
-        tools = ToolClient(self.world, None, self.max_tool_calls)
+        tools = ToolClient(self.world, None, self.max_tool_calls, enabled=False)
         agent = self._start(scen, tools)
         text = transcript_text(scen["public"]["transcript"])
         rep = agent.respond(Message(text, "system", "en", "summary"))
@@ -196,7 +231,7 @@ class Runner:
             logs.append(tools.log)
         res = score_memory(self.world, scen, session_replies, probe_replies, memory.dump_text(), logs)
         return {**res, "tool_calls": sum(len(l) for l in logs), "turns": sum(len(s) for s in session_replies),
-                "transcript": tr}
+                "transcript": tr, "tool_log": [dict(e, session=k) for k, log in enumerate(logs) for e in log]}
 
     # ------------------------------------------------------------------ T8
     def _journey(self, scen):
@@ -222,16 +257,19 @@ class Runner:
             to = "en" if t["speaker"] == "doctor" else "ko"
             r = agent.respond(Message(t["text"], t["speaker"], t["src_lang"], "translation", {"translate_to": to}))
             replies.append(r.text)
+            tr.append(("interpret", t["speaker"], t["text"], r.text))
         st2 = score_interp(enc["turns"], replies)
         crit += st2["critical"]
         # 3. summary
         text = transcript_text([{"speaker": t["speaker"], "lang": t["src_lang"], "text": t["text"]}
                                 for t in enc["turns"]])
         r = agent.respond(Message(text, "system", "en", "summary"))
+        tr.append(("summary", r.text, r.data))
         st3 = score_summary(enc["gold_summary"], text, r.data or _json_from_text(r.text))
         crit += st3["critical"]
         # 4. follow-up
         r = agent.respond(Message("Please book my follow-up visit, as the doctor asked.", "patient", "en", "follow_up"))
+        tr.append(("follow_up", r.text, r.data))
         st4 = score_followup(self.world, visited, g["visit_date"], g["follow_up_days"], r.data)
         stages = {"choose": st1["score"], "interpret": st2["score"], "summary": st3["score"],
                   "follow_up": st4["score"]}
@@ -239,5 +277,6 @@ class Runner:
         crit = sorted(set(crit))
         return {"score": score, "critical": crit, "tool_calls": len(tools.log), "turns": len(enc["turns"]) + 3,
                 "checks": {"stages": stages, "success": journey_success(stages, crit), "visited": visited,
-                           "followup": st4["checks"]},
-                "transcript": tr}
+                           "followup": st4["checks"], "summary": st3.get("checks", {}),
+                           "critical_detail": st2.get("critical_detail", []) + st3.get("critical_detail", [])},
+                "transcript": tr, "tool_log": tools.log}

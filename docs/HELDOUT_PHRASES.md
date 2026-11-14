@@ -33,13 +33,23 @@ A JSON object. Each key is a pool name from `POOLS` and each value is a list of 
 | `language.*`, `language.soft.*` | `{lang}` | `{lang}` |
 | `price.*`, `price.soft.*` | `{level}` | `{level}` |
 | `gender.*`, `gender.soft.*` | none | a clear statement about the doctor |
-| `greeting` / `intro` / `complaint` | `{name}` / `{nat}` / `{comp}` and `{dur}` | the fields shown |
-| `lead.terse` | `{name}`, `{nat}`, `{simple}`, `{dur}` | `{name}` `{nat}` `{simple}` |
+| `greeting` / `intro` | `{name}` / `{nat}` | the field shown |
+| `complaint` | `{symptom}` (the complaint sentence below) | `{symptom}` |
+| `symptom.<complaint>` (L1-L3), `symptom.<complaint>.terse` (L4), one pair per key of `COMPLAINTS` | `{dur}` ("3 days") | `{dur}` for symptoms and a child's illness; **no** `{dur}` for services (`checkup`, `blood_pressure`, `skin_wart`) |
+| `lead.terse` | `{name}`, `{nat}`, `{symptom}` | all three |
 | `closing.plain`, `closing.terse`, `referral` | none | nothing required |
 | `avoid` | `{name}` hospital name | `{name}` |
 | `hello.memory`, `allergy` | `{name}` / `{names}` | the field shown |
+| `enc.symptom.plain / casual` (consultation, patient) | `{body}`, `{dur}` | both |
+| `enc.nose.*` | `{dur}` | `{dur}` |
+| `enc.fever.yes.*` / `enc.fever.no.*` | `{temp}` / none | `{temp}` for yes |
+| `enc.allergy.yes.*` / `enc.allergy.no.*` | `{allergen}` / none | `{allergen}` for yes |
+| `enc.curmed.yes.*` / `enc.curmed.no.*` | `{drug}`, `{freq}` ("twice a day") / none | both for yes |
+| `enc.q_meal`, `enc.q_coffee`, `enc.thanks` | none | nothing required; keep the meaning (asking to take the medicine before meals; asking about coffee; thanking the doctor) |
 
-`.plain` is the style of tiers L1-L2, `.formal` of L3 and `.terse` of L4 (lower case, abbreviations, no politeness). Keep each
+`.plain` is the style of tiers L1-L2, `.formal` of L3 and `.terse` of L4 (lower case, abbreviations, no politeness). In the
+consultation pools (`enc.*`), `.plain` is L1-L2 and `.casual` is L3-L4. A consultation paraphrase must mean exactly what the Korean
+reference translation says (the facts are checked in the agent's Korean output), so do not add or drop information. Keep each
 paraphrase in the style of its pool and give it **the same difficulty**: it must still state every fact (district and kilometres, date and
 time, price level, language) plainly. Do not hide a fact or make it ambiguous.
 

@@ -109,7 +109,7 @@ def constraint_lines(d):
     valid = [len(s["gold"]["valid"]) for s in d["choice"]]
     share = lambda f: pct(sum(1 for x in c if f(x)), n)
     return [
-        (f"Maximum distance (km), 3 / 5 / 8 / 12", " / ".join(share(lambda x, k=k: x["max_km"] == k) for k in (3, 5, 8, 12))),
+        ("Maximum distance (km), 3 / 5 / 8 / 12", " / ".join(share(lambda x, k=k: x["max_km"] == k) for k in (3, 5, 8, 12))),
         ("Price cap stated (level 1 / 2 / 3)", " / ".join(share(lambda x, k=k: x.get("max_price_level") == k) for k in (1, 2, 3)) + f"; none: {share(lambda x: not x.get('max_price_level'))}"),
         ("Needs a hospital language", share(lambda x: x.get("language"))),
         ("Needs a female doctor", share(lambda x: x.get("female_doctor"))),
@@ -277,8 +277,23 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", default="data/dev")
     ap.add_argument("--summary", action="store_true", help="print the short block quoted in README.md")
+    ap.add_argument("--write", action="store_true",
+                    help="rewrite docs/DATASET_STATS.md and the README block in place (what tests/test_docs.py checks)")
     a = ap.parse_args()
     d = gather(a.data)
+    if a.write:
+        root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+        with open(os.path.join(root, "docs", "DATASET_STATS.md"), "w", encoding="utf-8") as f:
+            f.write(render_full(d) + "\n")
+        path = os.path.join(root, "README.md")
+        with open(path, encoding="utf-8") as f:
+            r = f.read()
+        a0 = r.index("\n", r.index("<!-- stats:begin")) + 1
+        b0 = r.index("<!-- stats:end -->")
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(r[:a0] + render_summary(d).rstrip("\n") + "\n" + r[b0:])
+        print("updated docs/DATASET_STATS.md and the README block")
+        return
     print(render_summary(d) if a.summary else render_full(d))
 
 

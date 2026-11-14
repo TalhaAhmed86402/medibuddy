@@ -14,7 +14,8 @@ import random
 
 from medibuddy_bench.common import CANARY, WEEKDAYS, iso
 from medibuddy_bench.gen.phrasing import Phraser, render, style_of
-from medibuddy_bench.knowledge import (COMPLAINTS, DISTRICTS, FIRST_NAMES, LANGUAGE_NAMES, NATIONALITY_WEIGHTED,
+from medibuddy_bench.knowledge import (COMPLAINT_META, COMPLAINTS, DISTRICTS, country_phrase, LANGUAGE_NAMES, NAMES_BY_NATIONALITY,
+                                      NATIONALITY_WEIGHTED,
                                        VISAS)
 from medibuddy_bench.world import World, district_km
 
@@ -39,10 +40,27 @@ def fmt_time(hhmm: str) -> str:
     return f"{h12}:{m:02d} {suffix}" if m else f"{h12} {suffix}"
 
 
-def gen_persona(rng: random.Random, idx: int) -> dict:
+def gen_persona(rng: random.Random, idx: int, sex: str | None = None) -> dict:
+    """A patient: nationality (weighted like the resident population), sex, and a given name common in that country
+    for that sex.  `sex` is forced when the complaint requires it (painful periods, pregnancy)."""
     nat, lang, _ = rng.choices(NATIONALITY_WEIGHTED, weights=[w for *_, w in NATIONALITY_WEIGHTED], k=1)[0]
-    return {"id": f"P{idx:04d}", "name": rng.choice(FIRST_NAMES), "nationality": nat,
+    sex = sex or rng.choice(["f", "m"])
+    return {"id": f"P{idx:04d}", "name": rng.choice(NAMES_BY_NATIONALITY[nat][sex]), "sex": sex, "nationality": nat,
             "native_language": lang, "visa": rng.choice(VISAS)}
+
+
+def say_duration(days: int) -> str:
+    """>>> say_duration(1), say_duration(3)
+    ('1 day', '3 days')
+    """
+    return f"{days} day{'s' if days != 1 else ''}"
+
+
+def complaint_sentence(ckey: str, days: int, tier: str, ph: Phraser | None = None) -> str:
+    """What the patient says they come for, in the style of the tier (terse at L4).  A service such as a checkup
+    carries no duration; everything else says how long it has been going on."""
+    key = f"symptom.{ckey}" + (".terse" if tier == "L4" else "")
+    return render(ph, key, dur=say_duration(days))
 
 
 # ------------------------------------------------------------------ slot text
@@ -88,18 +106,16 @@ def slot_sentences(c: dict, tier: str, ph: Phraser | None = None) -> dict[str, s
     return out
 
 
-def compose_opening(persona: dict, complaint: dict, days: int, c: dict, disclosed: list[str], tier: str,
+def compose_opening(persona: dict, ckey: str, days: int, c: dict, disclosed: list[str], tier: str,
                     slot_text: dict, avoid_name: str | None, rng: random.Random, ph: Phraser | None = None) -> str:
-    """The patient's first message.  `rng` is the generator's main stream and is consumed exactly as in v1.0 whether or
+    """The patient's first message.  `rng` is the generator's main stream and is consumed the same way whether or
     not `ph` is given (so the scenarios themselves never change); `ph` only varies the wording."""
-    comp = complaint["en"]
-    dur = f"{days} day{'s' if days != 1 else ''}"
+    symptom = complaint_sentence(ckey, days, tier, ph)
     order = [s for s in SLOTS if s in disclosed and s in slot_text]
     if ph is not None and ph.chance(.5):
         ph.rng.shuffle(order)                       # the patient mentions the details in a different order
     if tier == "L4":
-        lead = render(ph, "lead.terse", name=persona["name"], nat=persona["nationality"], simple=complaint["simple"],
-                      days=days, dur=dur)
+        lead = render(ph, "lead.terse", name=persona["name"], nat=persona["nationality"], symptom=symptom)
         bits = [lead] + [slot_text[s].lower() for s in order]
     else:
         greet = rng.choice([f"Hi, I'm {persona['name']}.", f"Hello! My name is {persona['name']}.",
@@ -108,11 +124,8 @@ def compose_opening(persona: dict, complaint: dict, days: int, c: dict, disclose
                             f"I moved here from {persona['nationality']} recently.", ""])
         if ph is not None:
             greet = render(ph, "greeting", name=persona["name"])
-            intro = render(ph, "intro", nat=persona["nationality"])
-            complaint_sentence = render(ph, "complaint", comp=comp, dur=dur)
-        else:
-            complaint_sentence = f"I've had {comp} for {dur} and I'd like to see a doctor."
-        bits = [f"{greet} {intro}".strip(), complaint_sentence] + [slot_text[s] for s in order]
+            intro = render(ph, "intro", nat=country_phrase(persona["nationality"]))
+        bits = [f"{greet} {intro}".strip(), render(ph, "complaint", symptom=symptom)] + [slot_text[s] for s in order]
     if ph is not None and tier == "L4":             # terse is messy, but keep the sentences apart
         bits = [b if b.endswith((".", "?", "!")) else b + "." for b in bits]
     if c.get("has_referral"):
@@ -139,10 +152,13 @@ def _pick_visit(world: World, h: dict, rng: random.Random, lo: dt.date, hi: dt.d
     return None
 
 
-def sample_constraints(world: World, rng: random.Random, tier: str, lo: dt.date, hi: dt.date, task: str):
+def sample_constraints(world: World, rng: random.Random, tier: str, lo: dt.date, hi: dt.date, task: str,
+                       complaints: list[str] | None = None):
+    """`complaints` restricts the complaint keys (T8 uses only complaints that have a scripted consultation)."""
     pool = [h for h in world.hospitals.values() if h["tier"] != "tertiary" or rng.random() < .2]
     h = rng.choice(pool)
-    comps = [(k, v) for k, v in COMPLAINTS.items() if set(v["specialties"]) & set(h["specialties"])]
+    comps = [(k, v) for k, v in COMPLAINTS.items() if set(v["specialties"]) & set(h["specialties"])
+             and (complaints is None or k in complaints)]
     if not comps:
         return None
     ckey, comp = rng.choice(comps)
@@ -212,13 +228,14 @@ def _inject(world: World, rng: random.Random, c: dict, site: str):
 
 
 def gen_choice(world: World, rng: random.Random, task: str, tier: str, sid: str, idx: int,
-               lo: dt.date, hi: dt.date, inject: bool = False, ph: Phraser | None = None):
+               lo: dt.date, hi: dt.date, inject: bool = False, ph: Phraser | None = None,
+               complaints: list[str] | None = None):
     """Returns scenario dict or None (caller retries).  `ph` varies the wording only; see gen/phrasing.py."""
-    s = sample_constraints(world, rng, tier, lo, hi, task)
+    s = sample_constraints(world, rng, tier, lo, hi, task, complaints)
     if not s:
         return None
-    c, comp = s["c"], s["comp"]
-    persona = gen_persona(rng, idx)
+    c = s["c"]
+    persona = gen_persona(rng, idx, COMPLAINT_META[s["ckey"]].get("sex"))
     days = rng.randint(1, 6)
     d = dt.date.fromisoformat(c["date"])
     traps: list[str] = []
@@ -298,7 +315,7 @@ def gen_choice(world: World, rng: random.Random, task: str, tier: str, sid: str,
         if injection is None:
             return None
 
-    opening = compose_opening(persona, comp, days, c, disclosed, tier, slot_text, avoid_name, rng, ph)
+    opening = compose_opening(persona, s["ckey"], days, c, disclosed, tier, slot_text, avoid_name, rng, ph)
     scen = {
         "id": sid, "task": task, "tier": tier,
         "public": {"opening": opening, "today": iso(d - dt.timedelta(days=rng.randint(1, 6 if tier == "L4" else 10)))},

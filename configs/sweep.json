@@ -6,18 +6,81 @@
     "ollama_ctx": 16384
   },
   "models": [
-    {"name": "llama3.2-3b",       "model": "llama3.2:3b",     "min_vram_gb": 4},
-    {"name": "qwen2.5-3b",        "model": "qwen2.5:3b",      "min_vram_gb": 4},
-    {"name": "qwen2.5-7b",        "model": "qwen2.5:7b",      "min_vram_gb": 7},
-    {"name": "qwen3-4b",          "model": "qwen3:4b",        "min_vram_gb": 5},
-    {"name": "qwen3-8b",          "model": "qwen3:8b",        "min_vram_gb": 7},
-    {"name": "llama3.1-8b",       "model": "llama3.1:8b",     "min_vram_gb": 7},
-    {"name": "gemma3-4b",         "model": "gemma3:4b",       "min_vram_gb": 5},
-    {"name": "gemma3-12b",        "model": "gemma3:12b",      "min_vram_gb": 11},
-    {"name": "mistral-7b",        "model": "mistral:7b",      "min_vram_gb": 7},
-    {"name": "phi4-mini",         "model": "phi4-mini",       "min_vram_gb": 4},
-    {"name": "deepseek-r1-7b",    "model": "deepseek-r1:7b",  "min_vram_gb": 7, "notes": "reasoning model; <think> blocks are stripped"},
-    {"name": "exaone3.5-7.8b",    "model": "exaone3.5:7.8b",  "min_vram_gb": 8, "notes": "Korean-specialised (LG); tag unverified"},
-    {"name": "gpt-oss-20b",       "model": "gpt-oss:20b",     "min_vram_gb": 14, "notes": "needs a larger GPU"}
+    {
+      "name": "llama3.2-3b",
+      "model": "llama3.2:3b",
+      "min_vram_gb": 4
+    },
+    {
+      "name": "qwen2.5-3b",
+      "model": "qwen2.5:3b",
+      "min_vram_gb": 4
+    },
+    {
+      "name": "qwen2.5-7b",
+      "model": "qwen2.5:7b",
+      "min_vram_gb": 7
+    },
+    {
+      "name": "qwen3-4b",
+      "model": "qwen3:4b",
+      "min_vram_gb": 5,
+      "extra_body": {
+        "reasoning_effort": "none"
+      },
+      "notes": "thinking switched off (reasoning_effort none) so runs stay comparable and fast"
+    },
+    {
+      "name": "qwen3-8b",
+      "model": "qwen3:8b",
+      "min_vram_gb": 7,
+      "extra_body": {
+        "reasoning_effort": "none"
+      },
+      "notes": "thinking switched off (reasoning_effort none) so runs stay comparable and fast"
+    },
+    {
+      "name": "llama3.1-8b",
+      "model": "llama3.1:8b",
+      "min_vram_gb": 7
+    },
+    {
+      "name": "gemma3-4b",
+      "model": "gemma3:4b",
+      "min_vram_gb": 5
+    },
+    {
+      "name": "gemma3-12b",
+      "model": "gemma3:12b",
+      "min_vram_gb": 11
+    },
+    {
+      "name": "mistral-7b",
+      "model": "mistral:7b",
+      "min_vram_gb": 7
+    },
+    {
+      "name": "phi4-mini",
+      "model": "phi4-mini",
+      "min_vram_gb": 4
+    },
+    {
+      "name": "deepseek-r1-7b",
+      "model": "deepseek-r1:7b",
+      "min_vram_gb": 7,
+      "notes": "reasoning model; <think> blocks are stripped"
+    },
+    {
+      "name": "exaone3.5-7.8b",
+      "model": "exaone3.5:7.8b",
+      "min_vram_gb": 8,
+      "notes": "Korean-specialised (LG AI Research)"
+    },
+    {
+      "name": "gpt-oss-20b",
+      "model": "gpt-oss:20b",
+      "min_vram_gb": 14,
+      "notes": "needs a larger GPU"
+    }
   ]
 }

@@ -70,3 +70,13 @@ pass^1 .61; 46 pytest checks pass. Saboteurs not rerun after this change. Not ye
 - Dev baselines: null 1.0, naive 15.0, rule 47.1 (was 65.8), oracle 100.0; fairness twins gap 0.0000.
 - Tests: `tests/test_phrasing.py` (pool validation, original wording preserved, invariants, every scenario states its facts, variety, held-out rules).
 - Not changed (needs human review before editing): T4 triage texts, T5/T6 encounter turns, the Korean phrasebook.
+
+## v1.2.0 (2026-11-14) coherence, scoring fixes, first model baselines
+Full list in `CHANGELOG.md`. In short: coherent personas and complaint sentences, T8 journeys whose visit treats the complaint,
+paraphrased consultation turns, grounding tied to tool results, no credit for inaction, the T4 label leak closed, scorer false
+negatives found by the first open-model runs fixed (T6 list polarity, Korean native numerals and day words, "알레르기 반응이
+없습니다", English names inside Korean output, the T8 card's missing summary schema), `--workers`, AgentBeats-compatible results
+and shards. Dev world hash `950858d17f40e76a`; baselines null 0.0, naive 13.2, rule 35.7, oracle 100.0; open models in
+`docs/BASELINES.md`. Verified: full test suite (Linux, Python 3.13 and 3.10), A2A tests in a clean venv with a2a-sdk 0.3.26,
+`verify --rebuild`. Not verified here: the Docker build (no Docker permission on the build machine; CI builds it).
+

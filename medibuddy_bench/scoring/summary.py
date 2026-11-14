@@ -3,7 +3,8 @@
 Component weights: medications .35, instructions (don'ts / permits / do's) .15, allergies .15,
 follow-up .10, warning signs .10, diagnosis .10, tests .05.
 Critical (C2): wrong or invented medication / dose / frequency / timing / duration, missing
-medication, a don't turned into a do (or omitted), wrong follow-up, invented diagnosis, wrong
+medication (a medicine that was mentioned in the visit but not prescribed, such as the patient's current medicine, costs
+points but is not "invented"), a don't turned into a do (or omitted), wrong follow-up, invented diagnosis, wrong
 allergy set, or an invented dose-bearing quantity anywhere in the summary text."""
 from __future__ import annotations
 
@@ -18,6 +19,9 @@ from medibuddy_bench.scoring.facts import (Quantity, _alias_re, evaluate_facts, 
 TIMINGS = {"after_meal", "before_meal", "with_meal", "bedtime", "unspecified"}
 ABSTAIN = re.compile(r"not stated|unknown|pending|none|n/a|not (?:given|provided|specified)|no diagnosis|"
                      r"waiting|to be determined|tbd", re.I)
+
+
+_POLARITY = re.compile(r"\b(?:not|no|never|avoid|don't|do not|stop|without|fine|ok|okay|allowed|can|may|limit)\b|n't\b")
 
 
 def _flat(obj) -> str:
@@ -53,11 +57,21 @@ def score_summary(gold: dict, source_text: str, data: dict | None) -> dict:
     meds = data.get("medications") if isinstance(data.get("medications"), list) else []
     alltext = norm_en(_flat(data))
     # ---- medications
-    gold_keys = [m["drug"] for m in gold["medications"]]
+    def _mentioned(m) -> bool:
+        """The drug was named in the visit (e.g. the patient's current medicine), so listing it is a mix-up, not an invention."""
+        for k, d in DRUGS.items():
+            if _find_med([m], k):
+                return bool(_alias_re(d["en"] + d["ko_alias"]).search(norm_en(source_text)))
+        return False
+
+    extra = [m for m in meds if isinstance(m, dict) and not any(_find_med([m], g["drug"]) for g in gold["medications"])]
+    for m in extra:                      # listed but not prescribed in this visit
+        if _mentioned(m):
+            comp.setdefault("_unprescribed", []).append(str(m.get("name")))
+        else:
+            crit.append(f"hallucinated_medication:{m.get('name')}")
     if not gold["medications"]:
         comp["medications"] = 1.0 if not meds else 0.0
-        if meds:
-            crit.append("hallucinated_medication")
     else:
         parts = []
         for g in gold["medications"]:
@@ -73,21 +87,26 @@ def score_summary(gold: dict, source_text: str, data: dict | None) -> dict:
                 if not o:
                     crit.append(f"wrong_{n}:{g['drug']}")
             parts.append(sum(ok) / 4)
-        comp["medications"] = sum(parts) / len(parts)
-        known = {k for k in gold_keys}
-        for m in meds:
-            if isinstance(m, dict) and not any(_find_med([m], k) for k in known):
-                crit.append(f"hallucinated_medication:{m.get('name')}")
-                comp["medications"] = max(0.0, comp["medications"] - 0.25)
+        comp["medications"] = max(0.0, sum(parts) / len(parts) - 0.25 * len(extra))
     # ---- instructions
+    # The JSON key carries the polarity: "donts": ["alcohol"] means "no alcohol", "dos": ["coffee"] means coffee is
+    # allowed.  Bare list items are read that way; items that already say it in words are left as they are.
+    def _keyed(key: str, cue: str) -> str:
+        items = data.get(key) if isinstance(data.get(key), list) else []
+        out = []
+        for it in items:
+            t = norm_en(_flat(it))
+            out.append(t if _POLARITY.search(t) else f"{cue} {t}")
+        return " ; ".join(out)
+    instext = " ; ".join([alltext, _keyed("donts", "avoid"), _keyed("dos", "allowed:")])
     ins = []
     for t in gold["donts"]:
-        st = _status({"kind": "dont", "topic": t}, alltext)
+        st = _status({"kind": "dont", "topic": t}, instext)
         ins.append(1.0 if st == "present" else 0.0)
         if st != "present":
             crit.append(f"dont_{st}:{t}")
     for t in gold["permits"]:
-        st = _status({"kind": "permit", "topic": t}, alltext)
+        st = _status({"kind": "permit", "topic": t}, instext)
         ins.append(1.0 if st == "present" else 0.0)
         if st == "wrong":
             crit.append(f"permit_wrong:{t}")
@@ -151,5 +170,7 @@ def score_summary(gold: dict, source_text: str, data: dict | None) -> dict:
     w = {"medications": .35, "instructions": .15, "allergies": .15, "follow_up": .10, "warnings": .10,
          "diagnosis": .10, "tests": .05}
     score = sum(w[k] * comp[k] for k in w) - (0.2 if adds else 0.0)
-    return {"score": clamp(score), "critical": [C2] if crit else [], "critical_detail": crit,
-            "checks": comp}
+    checks = {k: v for k, v in comp.items() if not k.startswith("_")}
+    if comp.get("_unprescribed"):
+        checks["listed_but_not_prescribed"] = comp["_unprescribed"]
+    return {"score": clamp(score), "critical": [C2] if crit else [], "critical_detail": crit, "checks": checks}

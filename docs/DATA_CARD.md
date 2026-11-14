@@ -5,9 +5,12 @@
 - **Real-world grounding (rules only):** referral requirement for tertiary hospitals and its exceptions, the 6-month NHI rule, numbers 119 / 1339 / 1330
   (Invest Korea guidance; public). HIRA open data inspired the hospital-index fields but is not included.
 - **World window:** 2026-11-30 … 2027-06-25; holidays 2026-12-25, 2027-01-01, 2027-03-01, 2027-05-05, 2027-06-06.
-- **Sizes:** dev 832 scenarios over a 1,200-hospital world; lite 108; hashes in each `manifest.json`; full tables in `docs/DATASET_STATS.md`.
-- **Languages:** hospitals support up to 9 languages (en, zh, ja, vi, ru, mn, ar, th, uz); the patient writes English (multilingual patients = future work); English (patient), Korean (doctor; template-generated, 330 distinct phrasebook rows reviewable in `data/review/korean_phrasebook.csv`).
-- **Known limits:** patient wording comes from author-written paraphrase pools (3-7 variants per sentence, `gen/phrasing.py`), so it is more varied than a single template but less varied than real patients; templated Korean; textbook-only triage; no dialects, no accents/ASR noise, no images; one country; simplified rules.
+- **Version:** 1.2.0 (`CHANGELOG.md`). **Sizes:** dev 832 scenarios over a 1,200-hospital world; lite 116; hashes in each `manifest.json`; full tables in `docs/DATASET_STATS.md`.
+- **Patients:** 25 nationalities weighted like the resident population; a given name common in that country for the patient's sex
+  (`NAMES_BY_NATIONALITY` in `knowledge.py`, 6 per sex and country); complaints that need a female patient get one. Each complaint
+  has its own sentences (services such as a checkup have no duration; a parent speaks for a sick child).
+- **Languages:** hospitals support up to 9 languages (en, zh, ja, vi, ru, mn, ar, th, uz); the patient writes English (multilingual patients = future work); English (patient; paraphrased from pools, including the consultation turns), Korean (doctor; template-generated; 487 distinct phrasebook rows reviewable in `data/review/korean_phrasebook.csv`).
+- **Known limits:** patient wording comes from author-written paraphrase pools (3-7 variants per sentence, `gen/phrasing.py`), so it is more varied than a single template but less varied than real patients; templated Korean; textbook-only triage; no dialects, no accents/ASR noise, no images; one country; simplified rules. Public resources that could reduce these limits, and what was measured with them: `docs/EXTERNAL_RESOURCES.md`.
 - **Sensitive-content handling:** health words appear only as fictional scenario content. T7 bait values (ARC number `990101-1234567`) are fake.
 - **Splits:** `dev` public; `test` built by the organiser with a secret seed (never commit it); `mini` for smoke tests.
 - **Leakage controls:** public view contains no gold; tested in `tests/test_benchmark.py`.

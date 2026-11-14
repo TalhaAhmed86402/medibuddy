@@ -133,8 +133,8 @@ def build(split: str, seed: int, sizes: dict | None = None, phrasing: bool = Tru
         out = []
         for i in range(sizes[task]):
             tier = _tier(i)
-            enc = gen_encounter(random.Random(r2.random()), tier)
             sid = f"{task}-{split}-{i:04d}"
+            enc = gen_encounter(random.Random(r2.random()), tier, ph=ph(sid))
             if task == "T5":
                 out.append({"id": sid, "task": "T5", "tier": tier,
                             "public": {"turns": [{"i": t["i"], "speaker": t["speaker"], "lang": t["src_lang"],

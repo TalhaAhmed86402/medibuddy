@@ -15,11 +15,12 @@ from medibuddy_bench.runner import Runner
 
 
 def run_with_checkpoint(runner: Runner, data_dir: str, agent_name: str, tasks=None, tiers=None, limit=None,
-                        trials: int = 1, checkpoint: str | None = None, log=sys.stderr) -> list[dict]:
+                        trials: int = 1, checkpoint: str | None = None, log=sys.stderr, workers: int = 1,
+                        ids=None) -> list[dict]:
     """Score every scenario in scope; returns all episodes (resumed + new).  Raises SystemExit on a foreign checkpoint."""
     man = read_manifest(data_dir)
     header = {"agent": agent_name, "world_hash": man.get("world_hash"), "version": man.get("version"),
-              "tasks": tasks, "tiers": tiers, "limit": limit, "trials": trials}
+              "tasks": tasks, "tiers": tiers, "limit": limit, "trials": trials, **({"ids": ids} if ids else {})}
     prev: list[dict] = []
     if checkpoint and os.path.exists(checkpoint):
         with open(checkpoint, encoding="utf-8") as f:
@@ -46,5 +47,6 @@ def run_with_checkpoint(runner: Runner, data_dir: str, agent_name: str, tasks=No
         print(f"[{i}/{total}] {ep['task']} {ep['tier']} score={ep['score']:.2f}{flag}  "
               f"elapsed {time.time() - t0:.0f}s, ~{eta / 60:.0f} min left", file=log, flush=True)
 
-    new = runner.run(tasks=tasks, tiers=tiers, limit=limit, trials=trials, progress=progress, done=done)
+    new = runner.run(tasks=tasks, tiers=tiers, limit=limit, trials=trials, progress=progress, done=done, workers=workers,
+                     ids=set(ids) if ids else None)
     return prev + new
