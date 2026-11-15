@@ -47,8 +47,8 @@ Start an assessment by sending the green agent ONE A2A text message containing J
  "config": {"tasks": ["T1", "T4"], "tiers": ["L1", "L2"], "limit": 10, "trials": 1, "max_tool_calls": 25,
             "name": "my-agent", "model": "qwen2.5:7b", "shard_index": 0, "num_shards": 1}}
 ```
-The task finishes with four artifacts: `result` (one flat JSON row, as a DataPart and as JSON text: what the AgentBeats gateway
-reads), `report.json` (the full machine-readable report), `report.md` (readable) and `run_id`. Malformed requests and unknown config
+The task finishes with four artifacts: `result` (one flat JSON row as a DataPart: what the AgentBeats gateway
+reads, and the only JSON part sent), `report.json` (the full machine-readable report, as a file part), `report.md` (readable) and `run_id`. Malformed requests and unknown config
 keys end the task as `rejected`; an unreachable agent or a crash ends it as `failed`; both carry an explanation. With
 `num_shards` > 1 the service scores only every `num_shards`-th episode starting at `shard_index` (AgentBeats leaderboard runner).
 Details: `docs/AGENTBEATS.md`. A complete example client is in
