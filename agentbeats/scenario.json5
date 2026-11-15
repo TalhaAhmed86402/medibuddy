@@ -18,14 +18,14 @@
       config: {
         // what the benchmark receives as "config" (the runner adds shard_index / num_shards)
         assessment_config: { split: "dev", trials: 1 },
-        participant_roles: { green: "medibuddy_bench", purple: "participant" },
+        participant_roles: { green: "medibuddy_bench", purple1: "purple" },   // gateway slot -> role name
       },
     },
     medibuddy_bench: {
       manifest: "https://raw.githubusercontent.com/TalhaAhmed86402/medibuddy/v1.2.0/amber-manifest.json5",
       config: {},
     },
-    participant: {
+    purple: {
       // the reference purple agent; submitters replace this with their own agent's manifest
       manifest: "https://raw.githubusercontent.com/TalhaAhmed86402/medibuddy/v1.2.0/agentbeats/purple-agent.json5",
       config: {},
@@ -34,7 +34,8 @@
 
   bindings: [
     { to: "#gateway.green", from: "#medibuddy_bench.a2a" },
-    { to: "#gateway.purple", from: "#participant.a2a" },
+    { to: "#gateway.purple1", from: "#purple.a2a" },              // the gateway's participant slots are purple1..purple5
+    { to: "#medibuddy_bench.proxy", from: "#gateway.proxy", weak: true },   // how the benchmark reaches the participant
   ],
 
   exports: { results: "#gateway.results" },
@@ -42,7 +43,7 @@
   metadata: {
     agentbeats_ids: {
       medibuddy_bench: "01a1dc6f-ff30-79c0-8c5b-08b149ef1c3f",   // MediBuddy-Bench on agentbeats.dev
-      participant: "",          // filled in by each submitter
+      purple: "",          // filled in by each submitter
     },
   },
 }
