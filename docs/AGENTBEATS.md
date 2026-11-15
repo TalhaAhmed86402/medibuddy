@@ -7,7 +7,7 @@ returns the scores. This page maps it onto the public AgentBeats conventions (RD
 **Status.** The request format, the result artifact, sharding, the heartbeat and the CLI flags follow those templates and are
 tested locally with a2a-sdk 0.3.26 (`tests/test_a2a.py`). Both images are public on ghcr.io and the green agent
 (`01a1dc6f-ff30-79c0-8c5b-08b149ef1c3f`) and the reference purple agent (`01a1dc71-691f-7811-82b7-49bfcf06ebef`) were registered on
-agentbeats.dev from their manifests on 2026-11-14; **no assessment has run on the platform yet**. If the course runs its own
+agentbeats.dev from their manifests on 2026-11-14. The first platform run (leaderboard repository `TalhaAhmed86402/medibuddy-leaderboard`, 2026-11-15, reference purple agent, dev, one shard) took about 11 minutes and returned one row: overall 0.56, ungated 2.25, C1 58, C2 351. The same assessment run locally gives the same numbers. If the course runs its own
 platform with a different template, check this page against it first.
 
 ## What the platform sends and what the benchmark returns
@@ -41,7 +41,7 @@ AgentBeats runs each query over `read_json_auto('results/*.json') AS results`: o
 `agentbeats/queries.json` (paste its content into the green agent's Leaderboard Config → Queries). It shows one line per complete,
 unsharded dev run of data version 1.2.0:
 ```sql
-SELECT results.participants.participant AS id, r.overall AS "Overall", r.overall_ungated AS "Ungated",
+SELECT results.participants.purple AS id, r.overall AS "Overall", r.overall_ungated AS "Ungated",
        r.tasks.T1 AS "T1 Hospital search", ..., r.tasks.T8 AS "T8 Journey",
        r.critical.C1_missed_red_flag AS "Missed emergencies", r.n_episodes AS "Episodes"
 FROM results CROSS JOIN UNNEST(results.results) AS u(r)
@@ -77,10 +77,10 @@ repository's workflow.
 5. **Create the leaderboard repository** from `RDI-Foundation/agentbeats-leaderboard-template` ("Use this template"). In its
    Settings → Actions → General → Workflow permissions, choose **Read and write permissions**.
 6. **Add the scenario.** Copy `agentbeats/scenario.json5` to the root of the leaderboard repository (its green agent id,
-   `metadata.agentbeats_ids.medibuddy_bench`, is already filled in) and delete the template's old `scenario.toml`. The manifests are read from this repository at the `v1.2.0`
+   `metadata.agentbeats_ids.medibuddy_bench`, is already filled in) and delete the template's old `scenario.toml`. The gateway's participant slots are `purple1`..`purple5` (`purple1` required), and the benchmark's `proxy` slot is bound to `#gateway.proxy` (weak), as in the gateway's own example; the role name `purple` matches `participant_roles` in `amber-manifest.json5`. The manifests are read from this repository at the `v1.2.0`
    tag; if the repository is private, put both manifest files in the leaderboard repository and point `manifest` at
    `./amber-manifest.json5` and `./purple-agent.json5` instead.
-7. **Run it once.** Put the reference purple agent's id in `metadata.agentbeats_ids.participant` and push to a branch other
+7. **Run it once.** Put the reference purple agent's id in `metadata.agentbeats_ids.purple` and push to a branch other
    than `main` (or Actions → Run Scenario → Run workflow). Keep one shard: the query counts only unsharded runs, and one job
    may run 330 minutes. The run summary links a pull
    request with `results/<owner>-<time>.json`; merge it.
