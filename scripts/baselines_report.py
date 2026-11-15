@@ -83,6 +83,11 @@ def _replace(text: str, tag: str, body: str) -> str:
     return text[:i] + body.rstrip("\n") + "\n" + text[j:]
 
 
+def _n(rows) -> int:
+    """Scenarios in a split, from its run records."""
+    return rows[0]["report"]["n_episodes"] if rows else 0
+
+
 def render(dev_rows, lite_rows) -> dict[str, str]:
     blocks = {"dev-table": table(dev_rows), "dev-critical": critical_table(dev_rows), "dev-models": models_table(dev_rows),
               "lite-table": table(lite_rows) if lite_rows else "_no lite records_",
@@ -94,10 +99,11 @@ def render(dev_rows, lite_rows) -> dict[str, str]:
     version = (dev_rows or lite_rows or [{"data": {"version": "?"}}])[0]["data"]["version"]
     models_dev = [r for r in dev_rows if r["agent"] not in SCRIPTED]
     parts = [f"Reference results (data v{version}; generated from the run records by `scripts/baselines_report.py`; setup and "
-             "per-task tables in [`docs/BASELINES.md`](docs/BASELINES.md)).", "", "Dev split (832 scenarios):", "", short(dev_rows)]
+             "per-task tables in [`docs/BASELINES.md`](docs/BASELINES.md)).", "",
+             f"Dev split ({_n(dev_rows)} scenarios):", "", short(dev_rows)]
     lite_models = [r for r in lite_rows if r["agent"] not in SCRIPTED]
     if lite_models and not models_dev:
-        parts += ["", "Open models served locally, lite split (116 scenarios; dev runs not yet made):", "",
+        parts += ["", f"Open models served locally, lite split ({_n(lite_rows)} scenarios; dev runs not yet made):", "",
                   short([r for r in lite_rows if r["agent"] in ("rule", "oracle")] + lite_models)]
     blocks["baselines"] = "\n".join(parts)
     return blocks

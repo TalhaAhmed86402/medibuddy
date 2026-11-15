@@ -61,6 +61,23 @@ POOLS: dict[str, list[str]] = {
         "{pp} area, {km}km at most",
         "near {pp}, no further than {km}km",
     ],
+    # v1.3.0: students at a real campus (data/source/places.json); {pp} is the campus name
+    "location.campus.plain": [
+        "I'm a student at {pp} and I don't want to travel more than {km} km from campus.",
+        "I study at {pp}. Please keep it within {km} km of the campus.",
+        "I'm at {pp} most days, so somewhere no more than {km} km from there.",
+        "My classes are at {pp}; anything within {km} km of the campus is fine.",
+    ],
+    "location.campus.formal": [
+        "I am enrolled at {pp}, and I would prefer a clinic within {km} kilometres of the campus.",
+        "As a student at {pp}, I can manage at most {km} kilometres from campus.",
+        "I spend my days at {pp}; travelling more than {km} kilometres from there would be difficult.",
+    ],
+    "location.campus.terse": [
+        "student at {pp}, max {km}km from campus",
+        "at {pp} campus, {km}km at most",
+        "im at {pp}, nothing over {km} km pls",
+    ],
     # ------------------------------------------------------------ when
     "time.plain": [
         "I'd like to go on {wd} {iso} around {t}.",
@@ -346,6 +363,77 @@ POOLS: dict[str, list[str]] = {
         "I have a small wart on my hand I'd like removed.",
     ],
     "symptom.skin_wart.terse": ['small wart on hand, want it checked', 'wart on my hand, want it off'],
+    # v1.3.0: symptoms from the team's table (data/source/symptoms.json)
+    "symptom.sinusitis": [
+        "I've had pressure in my face and thick nasal discharge for {dur}.",
+        "For {dur} my face has felt full and heavy, and my nose keeps running thick stuff.",
+        "My sinuses have been blocked for {dur}, with pressure around my cheeks.",
+    ],
+    "symptom.sinusitis.terse": ['face pressure + thick snot, {dur}', 'sinus blocked, {dur} now'],
+    "symptom.stye": [
+        "I've had a painful stye on my eyelid for {dur}.",
+        "A red bump came up on my eyelid {dur} ago and it hurts when I blink.",
+        "There's been a sore lump on my upper eyelid for {dur}.",
+    ],
+    "symptom.stye.terse": ['bump on eyelid, hurts, {dur}', 'eyelid swollen, {dur}'],
+    "symptom.athletes_foot": [
+        "The skin between my toes has been itchy and cracked for {dur}.",
+        "For {dur} I've had itchy, peeling skin between my toes.",
+        "My feet itch a lot between the toes and the skin is cracking; it's been {dur}.",
+    ],
+    "symptom.athletes_foot.terse": ['itchy cracked skin between toes, {dur}', 'toes itchy + peeling, {dur}'],
+    "symptom.neck_shoulder": [
+        "My neck and shoulders have been sore for {dur}, probably from studying at my desk.",
+        "I've had a stiff, painful neck and shoulders for {dur}.",
+        "For {dur} my neck and shoulder have hurt, especially in the evening.",
+    ],
+    "symptom.neck_shoulder.terse": ['neck + shoulder pain, {dur}', 'stiff neck and shoulders, {dur} now'],
+    "symptom.irregular_periods": [
+        "My periods have been irregular for a while; the last one was {dur} late.",
+        "My cycle has been irregular and my period is {dur} late this time.",
+    ],
+    "symptom.irregular_periods.terse": ['period irregular, {dur} late', 'cycle not regular, {dur} late now'],
+    "symptom.exam_anxiety": [
+        "I've had strong anxiety before my exams; for {dur} I've barely been able to focus.",
+        "Exam stress is getting to me. For {dur} I've felt very anxious and my heart races.",
+        "For {dur} I've been so nervous about exams that I can't sit still.",
+    ],
+    "symptom.exam_anxiety.terse": ['very anxious about exams, {dur}', 'exam stress, cant focus, {dur}'],
+    "symptom.numbness": [
+        "My hands and feet have often gone numb over the last {dur}.",
+        "For {dur} I keep getting numbness and tingling in my hands and feet.",
+    ],
+    "symptom.numbness.terse": ['hands + feet numb often, {dur}', 'tingling hands and feet, {dur}'],
+    "symptom.boil": [
+        "I've had a painful boil on my arm for {dur}.",
+        "A red, painful lump came up on my arm {dur} ago and it's getting bigger.",
+        "There's been a sore, swollen bump on my arm for {dur}, like a boil.",
+    ],
+    "symptom.boil.terse": ['painful boil on arm, {dur}', 'red lump on arm, hurts, {dur}'],
+    "symptom.ingrown_toenail": [
+        "My big toenail has been growing into the skin for {dur} and it hurts to walk.",
+        "I've had a painful ingrown toenail for {dur}.",
+        "For {dur} the side of my toe has been red and sore where the nail digs in.",
+    ],
+    "symptom.ingrown_toenail.terse": ['ingrown toenail, hurts, {dur}', 'toe nail into skin, {dur}'],
+    "symptom.wisdom_tooth": [
+        "The gum around my wisdom tooth has been swollen and painful for {dur}.",
+        "For {dur} the back of my mouth has hurt where my wisdom tooth is coming in.",
+        "My gum at the very back is swollen and it hurts to chew; it's been {dur}.",
+    ],
+    "symptom.wisdom_tooth.terse": ['wisdom tooth gum swollen, {dur}', 'back gum hurts, {dur}'],
+    "symptom.flu_shot": [
+        "I'd like to get a flu shot.",
+        "I want to get vaccinated against the flu this season.",
+        "I need a flu vaccine.",
+    ],
+    "symptom.flu_shot.terse": ['need flu shot', 'want flu vaccine'],
+    "symptom.med_certificate": [
+        "I missed classes because of a cold and need a medical certificate for my university.",
+        "My professor wants a doctor's note for the classes I missed when I had a cold.",
+        "I need a medical certificate saying I was sick, for school.",
+    ],
+    "symptom.med_certificate.terse": ['need medical certificate for school (had cold)', 'doctor note for missed class'],
     "symptom.blood_pressure": [
         "I'd like to have my blood pressure checked.",
         'I need a blood pressure check.',

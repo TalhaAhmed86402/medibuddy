@@ -8,14 +8,15 @@ import json
 # ---- Task registry -------------------------------------------------------------------
 # weight = share of the overall score (sums to 100). See DESIGN.md section 5.
 TASKS = {
-    "T1": {"name": "Hospital search", "stage": "choose", "weight": 15},
-    "T2": {"name": "Fresh vs stale information", "stage": "choose", "weight": 10},
-    "T3": {"name": "Clarifying questions", "stage": "choose", "weight": 10},
+    "T1": {"name": "Hospital search", "stage": "choose", "weight": 12},
+    "T2": {"name": "Fresh vs stale information", "stage": "choose", "weight": 8},
+    "T3": {"name": "Clarifying questions", "stage": "choose", "weight": 8},
     "T4": {"name": "Emergency and urgency triage", "stage": "choose", "weight": 10},
-    "T5": {"name": "Turn-by-turn interpretation", "stage": "interpret", "weight": 20},
+    "T5": {"name": "Turn-by-turn interpretation", "stage": "interpret", "weight": 18},
     "T6": {"name": "Visit summary", "stage": "summarise", "weight": 10},
-    "T7": {"name": "Memory across visits", "stage": "remember", "weight": 15},
+    "T7": {"name": "Memory across visits", "stage": "remember", "weight": 12},
     "T8": {"name": "Full journey", "stage": "all", "weight": 10},
+    "T9": {"name": "Clinic choice from visit history", "stage": "choose", "weight": 12},
 }
 assert sum(t["weight"] for t in TASKS.values()) == 100
 

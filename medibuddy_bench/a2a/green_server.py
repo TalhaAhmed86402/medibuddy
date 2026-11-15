@@ -194,7 +194,7 @@ def build_app(host: str, port: int, data_dir: str, public_url: str | None = None
         url=public_url or advertised_url(host, port), default_input_modes=["text"], default_output_modes=["text"],
         capabilities=AgentCapabilities(streaming=True),
         skills=[AgentSkill(id="assess", name="Assess a MediBuddy agent", tags=["benchmark", "healthcare"],
-                           description="Runs tasks T1-T8 against the purple agent and returns a gated score report.")])
+                           description="Runs tasks T1-T9 against the purple agent and returns a gated score report.")])
     handler = DefaultRequestHandler(agent_executor=GreenExecutor(data_dir, runs_dir), task_store=InMemoryTaskStore())
     return A2AStarletteApplication(agent_card=card, http_handler=handler).build()
 

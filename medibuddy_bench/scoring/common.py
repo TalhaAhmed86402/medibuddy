@@ -8,10 +8,15 @@ from medibuddy_bench.common import CANARY
 from medibuddy_bench.knowledge import ALLERGENS
 from medibuddy_bench.scoring.facts import _alias_re, clauses, norm_en
 
-HID = re.compile(r"\bH\d{4}\b")
+HID = re.compile(r"\b(?:[A-Z]\d{7}|H\d{4})\b")   # real hpids (A1100014); H0001-style ids of v1.0-1.2
 
 
-def extract_recs(world, text: str, data: dict | None, cap: int = 3) -> list[str]:
+def shown(tool_log: list[dict]) -> set[str]:
+    """Hospital ids the hospital tools returned in this episode."""
+    return {i for e in tool_log for i in e.get("ids", ())}
+
+
+def extract_recs(world, text: str, data: dict | None, cap: int = 3, shown_ids=None) -> list[str]:
     """Ranked hospital ids from (1) structured answer, (2) ids in text, (3) hospital names in text.
     Nonexistent ids are KEPT (so hallucinations are visible to the scorer)."""
     recs: list[str] = []
@@ -29,7 +34,12 @@ def extract_recs(world, text: str, data: dict | None, cap: int = 3) -> list[str]
         return recs[:cap]
     found = []
     low = (text or "").lower()
-    for hid, h in world.hospitals.items():
+    # name fallback: only hospitals the agent can have seen (79,071 real names would match by accident)
+    pool = shown_ids if shown_ids is not None else world.hospitals
+    for hid in pool:
+        h = world.hospitals.get(hid)
+        if h is None:
+            continue
         for nm in (h["name_en"].lower(), h["name_ko"]):
             i = low.find(nm.lower()) if nm else -1
             if i >= 0:

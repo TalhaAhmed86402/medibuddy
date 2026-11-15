@@ -23,7 +23,10 @@ def load_tests(loader, tests, ignore):
     import medibuddy_bench.scoring.facts as facts
     import medibuddy_bench.remote as remote
     import medibuddy_bench.tools as tools
-    for mod in (tools, phrasing, remote, facts, knowledge, encounters, protocol):
+    import medibuddy_bench.romanize as romanize
+    import medibuddy_bench.gen.hospitals as hospitals
+    import medibuddy_bench.gen.choice as choice
+    for mod in (tools, phrasing, remote, facts, knowledge, encounters, protocol, romanize, hospitals, choice):
         tests.addTests(doctest.DocTestSuite(mod, optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE))
     return tests
 

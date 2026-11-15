@@ -1,0 +1,513 @@
+[
+{
+"id": "S01",
+"en": "sore throat, runny nose, cough (common cold)",
+"ko": "목이 아프고 콧물·기침이 남 (감기)",
+"severity": "경증",
+"groups_ko": [
+"내과계",
+"이비인후과"
+],
+"codes": [
+"D001",
+"D022",
+"D013"
+],
+"basis_ko": "1차의료 급성 상기도감염 처방 연구가 가정의학과·내과·소아청소년과·이비인후과 의원을 대상으로 함 (2017)",
+"note_ko": "소아청소년과 단독 의원 제외"
+},
+{
+"id": "S02",
+"en": "fever and body aches",
+"ko": "열이 나고 온몸이 쑤심 (몸살)",
+"severity": "경증",
+"groups_ko": [
+"내과계",
+"이비인후과"
+],
+"codes": [
+"D001",
+"D022",
+"D013"
+],
+"basis_ko": "1차의료 급성 상기도감염 처방 연구가 가정의학과·내과·소아청소년과·이비인후과 의원을 대상으로 함 (2017)",
+"note_ko": "성인 발열은 별표 1 비해당"
+},
+{
+"id": "S03",
+"en": "cough lasting over two weeks",
+"ko": "기침이 2주 넘게 계속됨",
+"severity": "중등도",
+"groups_ko": [
+"내과계",
+"이비인후과"
+],
+"codes": [
+"D001",
+"D022",
+"D013"
+],
+"basis_ko": "1차의료 급성 상기도감염 처방 연구가 가정의학과·내과·소아청소년과·이비인후과 의원을 대상으로 함 (2017)",
+"note_ko": "숨이 차면 별표 1 (호흡곤란) → 제외"
+},
+{
+"id": "S04",
+"en": "persistent nasal congestion and sneezing",
+"ko": "코막힘·재채기가 계속됨 (비염)",
+"severity": "경증",
+"groups_ko": [
+"이비인후과",
+"내과계"
+],
+"codes": [
+"D013",
+"D001",
+"D022"
+],
+"basis_ko": "진료과 진료 범위",
+"note_ko": ""
+},
+{
+"id": "S05",
+"en": "facial pressure and thick nasal discharge",
+"ko": "얼굴이 묵직하고 누런 콧물이 계속됨 (부비동염 의심)",
+"severity": "중등도",
+"groups_ko": [
+"이비인후과"
+],
+"codes": [
+"D013"
+],
+"basis_ko": "진료과 진료 범위",
+"note_ko": ""
+},
+{
+"id": "S06",
+"en": "ear fullness and ear pain",
+"ko": "귀가 먹먹하고 아픔",
+"severity": "경증",
+"groups_ko": [
+"이비인후과"
+],
+"codes": [
+"D013"
+],
+"basis_ko": "진료과 진료 범위",
+"note_ko": "귀 이물은 별표 1 → 제외"
+},
+{
+"id": "S07",
+"en": "red, itchy eyes",
+"ko": "눈이 충혈되고 가려움",
+"severity": "경증",
+"groups_ko": [
+"안과"
+],
+"codes": [
+"D012"
+],
+"basis_ko": "진료과 진료 범위",
+"note_ko": ""
+},
+{
+"id": "S08",
+"en": "stye on the eyelid",
+"ko": "눈꺼풀에 다래끼가 남",
+"severity": "경증",
+"groups_ko": [
+"안과"
+],
+"codes": [
+"D012"
+],
+"basis_ko": "진료과 진료 범위",
+"note_ko": ""
+},
+{
+"id": "S09",
+"en": "persistent dry, gritty eyes",
+"ko": "눈이 계속 건조하고 뻑뻑함",
+"severity": "중등도",
+"groups_ko": [
+"안과"
+],
+"codes": [
+"D012"
+],
+"basis_ko": "진료과 진료 범위",
+"note_ko": "급성 시력소실은 별표 1 → 제외"
+},
+{
+"id": "S10",
+"en": "worsening facial acne",
+"ko": "얼굴에 여드름이 심해짐",
+"severity": "경증",
+"groups_ko": [
+"피부과"
+],
+"codes": [
+"D005"
+],
+"basis_ko": "진료과 진료 범위",
+"note_ko": ""
+},
+{
+"id": "S11",
+"en": "hives on the body (no facial swelling)",
+"ko": "몸에 두드러기가 남 (얼굴 붓기 없음)",
+"severity": "경증",
+"groups_ko": [
+"피부과",
+"내과계"
+],
+"codes": [
+"D005",
+"D001",
+"D022"
+],
+"basis_ko": "진료과 진료 범위",
+"note_ko": "얼굴 부종 동반은 별표 1 → 제외"
+},
+{
+"id": "S12",
+"en": "persistent itchy rash or eczema on hands",
+"ko": "손에 습진·가려운 발진이 계속됨",
+"severity": "중등도",
+"groups_ko": [
+"피부과"
+],
+"codes": [
+"D005"
+],
+"basis_ko": "진료과 진료 범위",
+"note_ko": ""
+},
+{
+"id": "S13",
+"en": "itchy, cracked skin between toes (athlete's foot)",
+"ko": "발가락 사이가 가렵고 갈라짐 (무좀)",
+"severity": "경증",
+"groups_ko": [
+"피부과"
+],
+"codes": [
+"D005"
+],
+"basis_ko": "진료과 진료 범위",
+"note_ko": ""
+},
+{
+"id": "S14",
+"en": "lower back pain without injury",
+"ko": "허리가 뻐근하고 아픔 (다친 적 없음)",
+"severity": "경증",
+"groups_ko": [
+"정형·통증",
+"한의"
+],
+"codes": [
+"D008",
+"D016",
+"D017",
+"D009",
+"D044",
+"D051",
+"D049"
+],
+"basis_ko": "한의원 외래 다빈도 상병 분석 2016–2020 (등통증·염좌류 상위)",
+"note_ko": "외상·골절은 별표 1 → 제외"
+},
+{
+"id": "S15",
+"en": "neck and shoulder pain for months",
+"ko": "목·어깨가 몇 달째 결리고 아픔",
+"severity": "중등도",
+"groups_ko": [
+"정형·통증",
+"한의"
+],
+"codes": [
+"D008",
+"D016",
+"D017",
+"D009",
+"D044",
+"D051",
+"D049"
+],
+"basis_ko": "한의원 외래 다빈도 상병 분석 2016–2020 (등통증·염좌류 상위)",
+"note_ko": ""
+},
+{
+"id": "S16",
+"en": "wrist pain from overuse",
+"ko": "손목이 시큰거림 (과사용)",
+"severity": "경증",
+"groups_ko": [
+"정형·통증",
+"한의"
+],
+"codes": [
+"D008",
+"D016",
+"D017",
+"D009",
+"D044",
+"D051",
+"D049"
+],
+"basis_ko": "한의원 외래 다빈도 상병 분석 2016–2020 (등통증·염좌류 상위)",
+"note_ko": ""
+},
+{
+"id": "S17",
+"en": "long-lasting shoulder pain, shockwave therapy suggested",
+"ko": "어깨 통증이 오래감, 체외충격파 권유받음",
+"severity": "중등도",
+"groups_ko": [
+"정형·통증"
+],
+"codes": [
+"D008",
+"D016",
+"D017",
+"D009"
+],
+"basis_ko": "진료과 진료 범위",
+"note_ko": "비급여: 체외충격파치료"
+},
+{
+"id": "S18",
+"en": "severe menstrual cramps",
+"ko": "생리통이 심함",
+"severity": "경증",
+"groups_ko": [
+"산부인과"
+],
+"codes": [
+"D011"
+],
+"basis_ko": "진료과 진료 범위",
+"note_ko": ""
+},
+{
+"id": "S19",
+"en": "irregular periods for months",
+"ko": "생리 주기가 몇 달째 불규칙함",
+"severity": "중등도",
+"groups_ko": [
+"산부인과"
+],
+"codes": [
+"D011"
+],
+"basis_ko": "진료과 진료 범위",
+"note_ko": ""
+},
+{
+"id": "S20",
+"en": "burning when urinating",
+"ko": "소변 볼 때 따끔거림",
+"severity": "경증",
+"groups_ko": [
+"비뇨",
+"내과계",
+"산부인과"
+],
+"codes": [
+"D014",
+"D001",
+"D022",
+"D011"
+],
+"basis_ko": "진료과 진료 범위",
+"note_ko": "경계: 별표 1 '배뇨장애'와 구분 필요. 배뇨가 어려우면 제외"
+},
+{
+"id": "S21",
+"en": "trouble sleeping and low mood for weeks",
+"ko": "잠을 잘 못 자고 우울함이 몇 주째 계속됨",
+"severity": "중등도",
+"groups_ko": [
+"정신건강"
+],
+"codes": [
+"D004"
+],
+"basis_ko": "진료과 진료 범위",
+"note_ko": "자해·타해 우려는 별표 1 → 제외"
+},
+{
+"id": "S22",
+"en": "strong anxiety during exams",
+"ko": "시험 기간에 불안·두근거림이 심함",
+"severity": "경증",
+"groups_ko": [
+"정신건강",
+"내과계"
+],
+"codes": [
+"D004",
+"D001",
+"D022"
+],
+"basis_ko": "진료과 진료 범위",
+"note_ko": "심장질환성 흉통·심계항진 의심은 별표 1 → 제외"
+},
+{
+"id": "S23",
+"en": "frequent recurring headaches",
+"ko": "두통이 자주 반복됨",
+"severity": "중등도",
+"groups_ko": [
+"신경과",
+"내과계"
+],
+"codes": [
+"D003",
+"D001",
+"D022"
+],
+"basis_ko": "진료과 진료 범위",
+"note_ko": "급성 신경학적 이상은 별표 1 → 제외"
+},
+{
+"id": "S24",
+"en": "frequent numbness in hands and feet",
+"ko": "손발이 자주 저림",
+"severity": "중등도",
+"groups_ko": [
+"신경과",
+"정형·통증"
+],
+"codes": [
+"D003",
+"D008",
+"D016",
+"D017",
+"D009"
+],
+"basis_ko": "진료과 진료 범위",
+"note_ko": ""
+},
+{
+"id": "S25",
+"en": "a boil or skin abscess",
+"ko": "피부에 종기가 나서 부음",
+"severity": "경증",
+"groups_ko": [
+"외과",
+"피부과"
+],
+"codes": [
+"D006",
+"D005"
+],
+"basis_ko": "진료과 진료 범위",
+"note_ko": ""
+},
+{
+"id": "S26",
+"en": "painful ingrown toenail",
+"ko": "발톱이 살을 파고들어 아픔 (내성발톱)",
+"severity": "경증",
+"groups_ko": [
+"외과",
+"피부과"
+],
+"codes": [
+"D006",
+"D005"
+],
+"basis_ko": "진료과 진료 범위",
+"note_ko": ""
+},
+{
+"id": "S27",
+"en": "toothache, sensitive tooth",
+"ko": "이가 시리고 아픔 (충치 의심)",
+"severity": "경증",
+"groups_ko": [
+"치과"
+],
+"codes": [
+"D026",
+"D035",
+"D038",
+"D039",
+"D056"
+],
+"basis_ko": "진료과 진료 범위",
+"note_ko": ""
+},
+{
+"id": "S28",
+"en": "swollen gum around a wisdom tooth",
+"ko": "사랑니 쪽 잇몸이 붓고 아픔",
+"severity": "중등도",
+"groups_ko": [
+"치과"
+],
+"codes": [
+"D026",
+"D035",
+"D038",
+"D039",
+"D056"
+],
+"basis_ko": "진료과 진료 범위",
+"note_ko": ""
+},
+{
+"id": "S29",
+"en": "bleeding gums, needs scaling",
+"ko": "잇몸에서 피가 남, 스케일링 필요",
+"severity": "경증",
+"groups_ko": [
+"치과"
+],
+"codes": [
+"D026",
+"D035",
+"D038",
+"D039",
+"D056"
+],
+"basis_ko": "진료과 진료 범위",
+"note_ko": ""
+},
+{
+"id": "S30",
+"en": "wants a flu shot",
+"ko": "독감 예방접종을 맞고 싶음",
+"severity": "경증",
+"groups_ko": [
+"내과계",
+"이비인후과"
+],
+"codes": [
+"D001",
+"D022",
+"D013"
+],
+"basis_ko": "진료과 진료 범위",
+"note_ko": "비급여: 독감 예방접종"
+},
+{
+"id": "S31",
+"en": "needs a medical certificate for missed class (cold)",
+"ko": "감기로 결석해서 진단서가 필요함",
+"severity": "경증",
+"groups_ko": [
+"내과계",
+"이비인후과"
+],
+"codes": [
+"D001",
+"D022",
+"D013"
+],
+"basis_ko": "1차의료 급성 상기도감염 처방 연구가 가정의학과·내과·소아청소년과·이비인후과 의원을 대상으로 함 (2017)",
+"note_ko": "비급여: 일반진단서"
+}
+]

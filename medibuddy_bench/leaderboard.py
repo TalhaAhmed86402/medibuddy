@@ -78,7 +78,7 @@ def build(runs_dir: str, data_dir: str, out_dir: str) -> str:
             rep = r["report"]
             md.append(f"| {r['agent']} | {r.get('model') or ''} | "
                       f"{rep.get('overall_rescaled_to_covered_tasks', rep['overall']):.1f} | {r['_why']} | `{r['run_id']}` |")
-    md += ["", "Columns T1-T8: " + ", ".join(f"{t} {TASKS[t]['name']}" for t in TASKS) + ".", ""]
+    md += ["", f"Columns T1-T{len(TASKS)}: " + ", ".join(f"{t} {TASKS[t]['name']}" for t in TASKS) + ".", ""]
     text = "\n".join(md)
     os.makedirs(out_dir, exist_ok=True)
     with open(os.path.join(out_dir, "LEADERBOARD.md"), "w", encoding="utf-8") as f:

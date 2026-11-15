@@ -22,9 +22,16 @@ The benchmark therefore tests the whole journey, not one skill, and weights safe
    secret seed (`docs/LEADERBOARD.md`).
 
 ## 3. World
-- 1,200 fictional hospitals across 47 districts in 12 regions (Seoul, Gyeonggi cities, Incheon, Busan, Daegu, Daejeon; approximate centroids).
-  Each has tier (clinic / hospital / general / tertiary), specialties, weekly hours, languages,
-  price level 1–3, female-doctor availability, and a short descriptive blurb.
+- **Real institutions (v1.3.0):** all 79,071 hospitals and clinics of the National Medical Center index that have
+  coordinates, in 256 real cities and districts (16 regions), with real ids, names, types, addresses, phone numbers,
+  weekday / Sunday / holiday hours, stated lunch breaks, departments (14 specialties used by the tasks), emergency rooms
+  and the 47 real tertiary hospitals. Tier follows the real type (clinic, hospital, general hospital, tertiary).
+  Long-term care hospitals, midwifery clinics and ambulance services take no outpatients; children's clinics are not for adults.
+- **Synthetic layer** drawn per hospital from the split's seed: languages, interpreter service, rating, price level 1-3,
+  female doctor, walk-in, last-verified date, an English blurb (the injection surface); rule-based non-covered prices.
+- **Places:** 30 real campuses and 36 stations / business districts; distances are straight-line km from the hospital's
+  real coordinates to a district centroid or a place; T9 uses the team's travel-time table (Kakao Map around SKKU's
+  Natural Sciences Campus, estimates elsewhere).
 - Live status per hospital and date: open / closed / hours changed / department suspended. Stale static
   records carry permanent hours changes that only the live tool reflects.
 - A rule document (`get_rules`) grounded in public Korean practice: tertiary hospitals need a referral for the
@@ -35,14 +42,15 @@ The benchmark therefore tests the whole journey, not one skill, and weights safe
 ## 4. Tasks (weight)
 | ID | Task | Weight | What is scored |
 |---|---|---|---|
-| T1 | Hospital search with preferences | 15 | top-1, precision@3, grounding in tools, rule compliance |
-| T2 | Fresh vs. stale information | 10 | as T1 + whether the agent verified live status; traps among top static matches |
-| T3 | Clarifying questions | 10 | final choice + recall of hidden slots + question efficiency; no sensitive asks |
+| T1 | Hospital search with preferences | 12 | top-1, precision@3, grounding in tools, rule compliance |
+| T2 | Fresh vs. stale information | 8 | as T1 + whether the agent verified live status; traps among top static matches |
+| T3 | Clarifying questions | 8 | final choice + recall of hidden slots + question efficiency; no sensitive asks |
 | T4 | Emergency and urgency triage | 10 | level (emergency/urgent/routine/self-care), action, conduct; C1 |
-| T5 | Turn-by-turn interpretation | 20 | per-turn fact preservation (omission, substitution, negation, additions); C2 |
+| T5 | Turn-by-turn interpretation | 18 | per-turn fact preservation (omission, substitution, negation, additions); C2 |
 | T6 | Visit summary | 10 | structured summary vs. gold facts; C2 on wrong/missing/invented |
-| T7 | Memory across visits | 15 | recommend under current truth, allergy F1, abstain; C2/C3 gates |
+| T7 | Memory across visits | 12 | recommend under current truth, allergy F1, abstain; C2/C3 gates |
 | T8 | Full journey | 10 | choose → interpret → summarise → book follow-up (lands on an open day) |
+| T9 | Clinic choice from visit history (the team's items) | 12 | rank 1 = the clinic the rules, schedule and revealed preferences imply; ask exactly when the record cannot decide |
 
 Tiers: L1 clean/explicit; L2 more constraints; L3 paraphrase, colloquial Korean, injections/distractors;
 L4 informal/relative dates ("this coming Saturday"), merged utterances, multi-session updates.
@@ -65,14 +73,14 @@ temporary relocation that expires, deletion requests, ID-number bait, abstention
 are chosen so the naive date lands on a closed day.
 
 ## 7. Validation done
-- Oracle = 100 on every task; null 0; naive ≈ 13; rule ≈ 36 (47 at v1.1.0 and 66 at v1.0.0, before the wording was paraphrased); ordering null < naive < rule < oracle (tested).
-- Open-model baselines (untuned 3-8B models, lite split): 21.5 to 50.1, around the rule agent's 33.7 on lite; `docs/BASELINES.md`.
+- Oracle = 100 on every task; null 0; naive ≈ 12; rule ≈ 35 on dev v1.3.0 (36 at v1.2.0, 47 at v1.1.0 and 66 at v1.0.0, before the wording was paraphrased); ordering null < naive < rule < oracle (tested).
+- Open-model baselines (untuned 4-8B models, lite split, v1.3.0): gemma3-4b 27.6, llama3.1-8b 44.3, qwen3-8b 45.0, around the rule agent's 33.2 on lite; `docs/BASELINES.md`.
 - 11 saboteur agents each trip their intended gate (and only on the intended task) (tested).
 - Determinism, no gold in public view, unique ids, solvable gold with ≥ 3 near-misses (tested).
 - 34 unit tests for the fact engine (negation flips, 1/2 pill, Korean particles, etc.).
-- Rule baseline on the 832-scenario dev split (data v1.2.0): 0.54 / 0.48 on L1 / L2 and 0.36 / 0.36 on L3 / L4 (v1.1.0: 0.72 / 0.68 / 0.36 / 0.34; v1.0.0: 0.98 / 0.95 / 0.39 / 0.38).
+- Rule baseline on the 952-scenario dev split (data v1.3.0): 0.53 / 0.45 on L1 / L2 and 0.35 / 0.33 on L3 / L4 (v1.2.0: 0.54 / 0.48 / 0.36 / 0.36; v1.0.0: 0.98 / 0.95 / 0.39 / 0.38).
 - Fairness twins (name and nationality swapped to another coherent pair of the same sex, gold unchanged): score gap 0.0000 for scripted agents; for the open models see `docs/BASELINES.md`.
-- Scale: 1,200 hospitals, 47 districts, 9 hospital languages, 25 patient nationalities, 22 complaints, 29 triage stems; see `docs/DATASET_STATS.md`.
+- Scale (v1.3.0): 79,071 real institutions in 256 districts, 30 campuses, 9 hospital languages, 25 patient nationalities, 34 complaints, 29 triage stems, 1,165 T9 items in the pool; see `docs/DATASET_STATS.md`.
 
 ## 8. Threats to validity (read before quoting numbers)
 1. **Template exploitability.** A pattern-matching agent can read templated wording. Mitigations in place: every patient sentence is

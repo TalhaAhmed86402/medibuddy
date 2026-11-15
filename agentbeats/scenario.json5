@@ -1,7 +1,7 @@
 // scenario.json5 for an AgentBeats LEADERBOARD repository made from RDI-Foundation/agentbeats-leaderboard-template.
 // Copy this file to the root of that repository (replacing its example). Fill in the two agentbeats ids after
 // registering the agents on agentbeats.dev. The component manifests are read from this benchmark's repository at the
-// v1.2.0 tag, so a later change to the benchmark cannot silently change a running leaderboard.
+// v1.3.0 tag, so a later change to the benchmark cannot silently change a running leaderboard.
 {
   manifest_version: "0.1.0",
 
@@ -22,12 +22,12 @@
       },
     },
     medibuddy_bench: {
-      manifest: "https://raw.githubusercontent.com/TalhaAhmed86402/medibuddy/v1.2.0/amber-manifest.json5",
+      manifest: "https://raw.githubusercontent.com/TalhaAhmed86402/medibuddy/v1.3.0/amber-manifest.json5",
       config: {},
     },
     purple: {
       // the reference purple agent; submitters replace this with their own agent's manifest
-      manifest: "https://raw.githubusercontent.com/TalhaAhmed86402/medibuddy/v1.2.0/agentbeats/purple-agent.json5",
+      manifest: "https://raw.githubusercontent.com/TalhaAhmed86402/medibuddy/v1.3.0/agentbeats/purple-agent.json5",
       config: {},
     },
   },

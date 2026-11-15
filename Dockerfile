@@ -17,6 +17,7 @@ COPY medibuddy_bench ./medibuddy_bench
 COPY scripts ./scripts
 COPY configs ./configs
 COPY examples ./examples
+COPY data/source ./data/source
 COPY data/lite ./data/lite
 COPY data/dev ./data/dev
 

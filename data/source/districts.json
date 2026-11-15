@@ -1,0 +1,2050 @@
+{
+"Andong": {
+"ko": "경상북도 안동시",
+"lat": 36.5648,
+"lon": 128.7233,
+"n_institutions": 223,
+"region": "Gyeongbuk",
+"short_ko": "안동시"
+},
+"Ansan-Danwon": {
+"ko": "경기도 안산시 단원구",
+"lat": 37.319,
+"lon": 126.808,
+"n_institutions": 515,
+"region": "Gyeonggi",
+"short_ko": "안산시 단원구"
+},
+"Ansan-Sangnok": {
+"ko": "경기도 안산시 상록구",
+"lat": 37.3022,
+"lon": 126.8628,
+"n_institutions": 302,
+"region": "Gyeonggi",
+"short_ko": "안산시 상록구"
+},
+"Anseong": {
+"ko": "경기도 안성시",
+"lat": 37.0075,
+"lon": 127.2677,
+"n_institutions": 220,
+"region": "Gyeonggi",
+"short_ko": "안성시"
+},
+"Anyang-Dongan": {
+"ko": "경기도 안양시 동안구",
+"lat": 37.3924,
+"lon": 126.9568,
+"n_institutions": 626,
+"region": "Gyeonggi",
+"short_ko": "안양시 동안구"
+},
+"Anyang-Manan": {
+"ko": "경기도 안양시 만안구",
+"lat": 37.3991,
+"lon": 126.9206,
+"n_institutions": 312,
+"region": "Gyeonggi",
+"short_ko": "안양시 만안구"
+},
+"Asan": {
+"ko": "충청남도 아산시",
+"lat": 36.7836,
+"lon": 127.0177,
+"n_institutions": 386,
+"region": "Chungnam",
+"short_ko": "아산시"
+},
+"Boeun-gun": {
+"ko": "충청북도 보은군",
+"lat": 36.4835,
+"lon": 127.7196,
+"n_institutions": 55,
+"region": "Chungbuk",
+"short_ko": "보은군"
+},
+"Bonghwa-gun": {
+"ko": "경상북도 봉화군",
+"lat": 36.8912,
+"lon": 128.7965,
+"n_institutions": 36,
+"region": "Gyeongbuk",
+"short_ko": "봉화군"
+},
+"Boryeong": {
+"ko": "충청남도 보령시",
+"lat": 36.3502,
+"lon": 126.5949,
+"n_institutions": 147,
+"region": "Chungnam",
+"short_ko": "보령시"
+},
+"Boseong-gun": {
+"ko": "전남광주통합특별시 보성군",
+"lat": 34.808,
+"lon": 127.1972,
+"n_institutions": 66,
+"region": "Jeonnam-Gwangju",
+"short_ko": "보성군"
+},
+"Buan-gun": {
+"ko": "전북특별자치도 부안군",
+"lat": 35.726,
+"lon": 126.7366,
+"n_institutions": 83,
+"region": "Jeonbuk",
+"short_ko": "부안군"
+},
+"Bucheon": {
+"ko": "경기도 부천시",
+"lat": 37.5015,
+"lon": 126.7819,
+"n_institutions": 189,
+"region": "Gyeonggi",
+"short_ko": "부천시"
+},
+"Bucheon-Ojeong": {
+"ko": "경기도 부천시 오정구",
+"lat": 37.5237,
+"lon": 126.8046,
+"n_institutions": 167,
+"region": "Gyeonggi",
+"short_ko": "부천시 오정구"
+},
+"Bucheon-Sosa": {
+"ko": "경기도 부천시 소사구",
+"lat": 37.4829,
+"lon": 126.7958,
+"n_institutions": 258,
+"region": "Gyeonggi",
+"short_ko": "부천시 소사구"
+},
+"Bucheon-Wonmi": {
+"ko": "경기도 부천시 원미구",
+"lat": 37.5035,
+"lon": 126.766,
+"n_institutions": 598,
+"region": "Gyeonggi",
+"short_ko": "부천시 원미구"
+},
+"Busan-Buk": {
+"ko": "부산광역시 북구",
+"lat": 35.211,
+"lon": 129.0113,
+"n_institutions": 386,
+"region": "Busan",
+"short_ko": "북구"
+},
+"Busan-Busanjin": {
+"ko": "부산광역시 부산진구",
+"lat": 35.1629,
+"lon": 129.0532,
+"n_institutions": 871,
+"region": "Busan",
+"short_ko": "부산진구"
+},
+"Busan-Dong": {
+"ko": "부산광역시 동구",
+"lat": 35.1301,
+"lon": 129.0483,
+"n_institutions": 153,
+"region": "Busan",
+"short_ko": "동구"
+},
+"Busan-Dongnae": {
+"ko": "부산광역시 동래구",
+"lat": 35.203,
+"lon": 129.0818,
+"n_institutions": 531,
+"region": "Busan",
+"short_ko": "동래구"
+},
+"Busan-Gangseo": {
+"ko": "부산광역시 강서구",
+"lat": 35.0978,
+"lon": 128.9099,
+"n_institutions": 132,
+"region": "Busan",
+"short_ko": "강서구"
+},
+"Busan-Geumjeong": {
+"ko": "부산광역시 금정구",
+"lat": 35.2383,
+"lon": 129.0908,
+"n_institutions": 362,
+"region": "Busan",
+"short_ko": "금정구"
+},
+"Busan-Gijang": {
+"ko": "부산광역시 기장군",
+"lat": 35.2661,
+"lon": 129.2158,
+"n_institutions": 210,
+"region": "Busan",
+"short_ko": "기장군"
+},
+"Busan-Haeundae": {
+"ko": "부산광역시 해운대구",
+"lat": 35.1631,
+"lon": 129.1639,
+"n_institutions": 699,
+"region": "Busan",
+"short_ko": "해운대구"
+},
+"Busan-Jung": {
+"ko": "부산광역시 중구",
+"lat": 35.101,
+"lon": 129.0292,
+"n_institutions": 135,
+"region": "Busan",
+"short_ko": "중구"
+},
+"Busan-Nam": {
+"ko": "부산광역시 남구",
+"lat": 35.1366,
+"lon": 129.0843,
+"n_institutions": 411,
+"region": "Busan",
+"short_ko": "남구"
+},
+"Busan-Saha": {
+"ko": "부산광역시 사하구",
+"lat": 35.0995,
+"lon": 128.973,
+"n_institutions": 440,
+"region": "Busan",
+"short_ko": "사하구"
+},
+"Busan-Sasang": {
+"ko": "부산광역시 사상구",
+"lat": 35.1562,
+"lon": 128.9847,
+"n_institutions": 239,
+"region": "Busan",
+"short_ko": "사상구"
+},
+"Busan-Seo": {
+"ko": "부산광역시 서구",
+"lat": 35.1024,
+"lon": 129.018,
+"n_institutions": 137,
+"region": "Busan",
+"short_ko": "서구"
+},
+"Busan-Suyeong": {
+"ko": "부산광역시 수영구",
+"lat": 35.1602,
+"lon": 129.1134,
+"n_institutions": 335,
+"region": "Busan",
+"short_ko": "수영구"
+},
+"Busan-Yeongdo": {
+"ko": "부산광역시 영도구",
+"lat": 35.0912,
+"lon": 129.0442,
+"n_institutions": 131,
+"region": "Busan",
+"short_ko": "영도구"
+},
+"Busan-Yeonje": {
+"ko": "부산광역시 연제구",
+"lat": 35.1857,
+"lon": 129.0817,
+"n_institutions": 394,
+"region": "Busan",
+"short_ko": "연제구"
+},
+"Buyeo-gun": {
+"ko": "충청남도 부여군",
+"lat": 36.2803,
+"lon": 126.9096,
+"n_institutions": 101,
+"region": "Chungnam",
+"short_ko": "부여군"
+},
+"Changnyeong-gun": {
+"ko": "경상남도 창녕군",
+"lat": 35.5342,
+"lon": 128.4928,
+"n_institutions": 92,
+"region": "Gyeongnam",
+"short_ko": "창녕군"
+},
+"Changwon-Jinhae": {
+"ko": "경상남도 창원시 진해구",
+"lat": 35.1516,
+"lon": 128.7057,
+"n_institutions": 195,
+"region": "Gyeongnam",
+"short_ko": "창원시 진해구"
+},
+"Changwon-Masanhappo": {
+"ko": "경상남도 창원시 마산합포구",
+"lat": 35.1964,
+"lon": 128.5655,
+"n_institutions": 236,
+"region": "Gyeongnam",
+"short_ko": "창원시 마산합포구"
+},
+"Changwon-Masanhoewon": {
+"ko": "경상남도 창원시 마산회원구",
+"lat": 35.2335,
+"lon": 128.5797,
+"n_institutions": 258,
+"region": "Gyeongnam",
+"short_ko": "창원시 마산회원구"
+},
+"Changwon-Seongsan": {
+"ko": "경상남도 창원시 성산구",
+"lat": 35.2221,
+"lon": 128.684,
+"n_institutions": 384,
+"region": "Gyeongnam",
+"short_ko": "창원시 성산구"
+},
+"Changwon-Uichang": {
+"ko": "경상남도 창원시 의창구",
+"lat": 35.2573,
+"lon": 128.6275,
+"n_institutions": 263,
+"region": "Gyeongnam",
+"short_ko": "창원시 의창구"
+},
+"Cheonan-Dongnam": {
+"ko": "충청남도 천안시 동남구",
+"lat": 36.8006,
+"lon": 127.155,
+"n_institutions": 323,
+"region": "Chungnam",
+"short_ko": "천안시 동남구"
+},
+"Cheonan-Seobuk": {
+"ko": "충청남도 천안시 서북구",
+"lat": 36.8198,
+"lon": 127.1282,
+"n_institutions": 528,
+"region": "Chungnam",
+"short_ko": "천안시 서북구"
+},
+"Cheongdo-gun": {
+"ko": "경상북도 청도군",
+"lat": 35.6441,
+"lon": 128.7426,
+"n_institutions": 68,
+"region": "Gyeongbuk",
+"short_ko": "청도군"
+},
+"Cheongju-Cheongwon": {
+"ko": "충청북도 청주시 청원구",
+"lat": 36.671,
+"lon": 127.4854,
+"n_institutions": 220,
+"region": "Chungbuk",
+"short_ko": "청주시 청원구"
+},
+"Cheongju-Heungdeok": {
+"ko": "충청북도 청주시 흥덕구",
+"lat": 36.6313,
+"lon": 127.432,
+"n_institutions": 403,
+"region": "Chungbuk",
+"short_ko": "청주시 흥덕구"
+},
+"Cheongju-Sangdang": {
+"ko": "충청북도 청주시 상당구",
+"lat": 36.6277,
+"lon": 127.5037,
+"n_institutions": 280,
+"region": "Chungbuk",
+"short_ko": "청주시 상당구"
+},
+"Cheongju-Seowon": {
+"ko": "충청북도 청주시 서원구",
+"lat": 36.6175,
+"lon": 127.4715,
+"n_institutions": 235,
+"region": "Chungbuk",
+"short_ko": "청주시 서원구"
+},
+"Cheongsong-gun": {
+"ko": "경상북도 청송군",
+"lat": 36.4339,
+"lon": 129.0444,
+"n_institutions": 35,
+"region": "Gyeongbuk",
+"short_ko": "청송군"
+},
+"Cheongyang-gun": {
+"ko": "충청남도 청양군",
+"lat": 36.4506,
+"lon": 126.8037,
+"n_institutions": 48,
+"region": "Chungnam",
+"short_ko": "청양군"
+},
+"Cheorwon-gun": {
+"ko": "강원특별자치도 철원군",
+"lat": 38.2088,
+"lon": 127.3087,
+"n_institutions": 49,
+"region": "Gangwon",
+"short_ko": "철원군"
+},
+"Chilgok-gun": {
+"ko": "경상북도 칠곡군",
+"lat": 35.9965,
+"lon": 128.3993,
+"n_institutions": 121,
+"region": "Gyeongbuk",
+"short_ko": "칠곡군"
+},
+"Chuncheon": {
+"ko": "강원특별자치도 춘천시",
+"lat": 37.8694,
+"lon": 127.7336,
+"n_institutions": 372,
+"region": "Gangwon",
+"short_ko": "춘천시"
+},
+"Chungju": {
+"ko": "충청북도 충주시",
+"lat": 36.9812,
+"lon": 127.929,
+"n_institutions": 275,
+"region": "Chungbuk",
+"short_ko": "충주시"
+},
+"Daegu-Buk": {
+"ko": "대구광역시 북구",
+"lat": 35.9002,
+"lon": 128.581,
+"n_institutions": 585,
+"region": "Daegu",
+"short_ko": "북구"
+},
+"Daegu-Dalseo": {
+"ko": "대구광역시 달서구",
+"lat": 35.837,
+"lon": 128.5353,
+"n_institutions": 852,
+"region": "Daegu",
+"short_ko": "달서구"
+},
+"Daegu-Dalseong": {
+"ko": "대구광역시 달성군",
+"lat": 35.8033,
+"lon": 128.4643,
+"n_institutions": 279,
+"region": "Daegu",
+"short_ko": "달성군"
+},
+"Daegu-Dong": {
+"ko": "대구광역시 동구",
+"lat": 35.8775,
+"lon": 128.6407,
+"n_institutions": 499,
+"region": "Daegu",
+"short_ko": "동구"
+},
+"Daegu-Gunwi": {
+"ko": "대구광역시 군위군",
+"lat": 36.1947,
+"lon": 128.586,
+"n_institutions": 35,
+"region": "Daegu",
+"short_ko": "군위군"
+},
+"Daegu-Jung": {
+"ko": "대구광역시 중구",
+"lat": 35.869,
+"lon": 128.606,
+"n_institutions": 467,
+"region": "Daegu",
+"short_ko": "중구"
+},
+"Daegu-Nam": {
+"ko": "대구광역시 남구",
+"lat": 35.8424,
+"lon": 128.5784,
+"n_institutions": 258,
+"region": "Daegu",
+"short_ko": "남구"
+},
+"Daegu-Seo": {
+"ko": "대구광역시 서구",
+"lat": 35.8708,
+"lon": 128.5622,
+"n_institutions": 266,
+"region": "Daegu",
+"short_ko": "서구"
+},
+"Daegu-Suseong": {
+"ko": "대구광역시 수성구",
+"lat": 35.858,
+"lon": 128.631,
+"n_institutions": 896,
+"region": "Daegu",
+"short_ko": "수성구"
+},
+"Daejeon-Daedeok": {
+"ko": "대전광역시 대덕구",
+"lat": 36.3674,
+"lon": 127.4293,
+"n_institutions": 219,
+"region": "Daejeon",
+"short_ko": "대덕구"
+},
+"Daejeon-Dong": {
+"ko": "대전광역시 동구",
+"lat": 36.3296,
+"lon": 127.4434,
+"n_institutions": 337,
+"region": "Daejeon",
+"short_ko": "동구"
+},
+"Daejeon-Jung": {
+"ko": "대전광역시 중구",
+"lat": 36.322,
+"lon": 127.4096,
+"n_institutions": 356,
+"region": "Daejeon",
+"short_ko": "중구"
+},
+"Daejeon-Seo": {
+"ko": "대전광역시 서구",
+"lat": 36.355,
+"lon": 127.384,
+"n_institutions": 916,
+"region": "Daejeon",
+"short_ko": "서구"
+},
+"Daejeon-Yuseong": {
+"ko": "대전광역시 유성구",
+"lat": 36.362,
+"lon": 127.356,
+"n_institutions": 497,
+"region": "Daejeon",
+"short_ko": "유성구"
+},
+"Damyang-gun": {
+"ko": "전남광주통합특별시 담양군",
+"lat": 35.3152,
+"lon": 126.9835,
+"n_institutions": 78,
+"region": "Jeonnam-Gwangju",
+"short_ko": "담양군"
+},
+"Dangjin": {
+"ko": "충청남도 당진시",
+"lat": 36.8949,
+"lon": 126.635,
+"n_institutions": 205,
+"region": "Chungnam",
+"short_ko": "당진시"
+},
+"Danyang-gun": {
+"ko": "충청북도 단양군",
+"lat": 36.9852,
+"lon": 128.369,
+"n_institutions": 43,
+"region": "Chungbuk",
+"short_ko": "단양군"
+},
+"Dobong": {
+"ko": "도봉구",
+"lat": 37.6688,
+"lon": 127.0471,
+"n_institutions": 378,
+"region": "Seoul",
+"short_ko": "도봉구"
+},
+"Dongdaemun": {
+"ko": "동대문구",
+"lat": 37.5744,
+"lon": 127.0396,
+"n_institutions": 635,
+"region": "Seoul",
+"short_ko": "동대문구"
+},
+"Dongducheon": {
+"ko": "경기도 동두천시",
+"lat": 37.8928,
+"lon": 127.0537,
+"n_institutions": 91,
+"region": "Gyeonggi",
+"short_ko": "동두천시"
+},
+"Donghae": {
+"ko": "강원특별자치도 동해시",
+"lat": 37.5223,
+"lon": 129.1114,
+"n_institutions": 105,
+"region": "Gangwon",
+"short_ko": "동해시"
+},
+"Dongjak": {
+"ko": "동작구",
+"lat": 37.5124,
+"lon": 126.9393,
+"n_institutions": 607,
+"region": "Seoul",
+"short_ko": "동작구"
+},
+"Eumseong-gun": {
+"ko": "충청북도 음성군",
+"lat": 36.9693,
+"lon": 127.5924,
+"n_institutions": 128,
+"region": "Chungbuk",
+"short_ko": "음성군"
+},
+"Eunpyeong": {
+"ko": "은평구",
+"lat": 37.6027,
+"lon": 126.9291,
+"n_institutions": 716,
+"region": "Seoul",
+"short_ko": "은평구"
+},
+"Gangbuk": {
+"ko": "강북구",
+"lat": 37.6396,
+"lon": 127.0257,
+"n_institutions": 463,
+"region": "Seoul",
+"short_ko": "강북구"
+},
+"Gangdong": {
+"ko": "강동구",
+"lat": 37.5301,
+"lon": 127.1238,
+"n_institutions": 947,
+"region": "Seoul",
+"short_ko": "강동구"
+},
+"Gangjin-gun": {
+"ko": "전남광주통합특별시 강진군",
+"lat": 34.6386,
+"lon": 126.7688,
+"n_institutions": 55,
+"region": "Jeonnam-Gwangju",
+"short_ko": "강진군"
+},
+"Gangnam": {
+"ko": "강남구",
+"lat": 37.5172,
+"lon": 127.0473,
+"n_institutions": 3110,
+"region": "Seoul",
+"short_ko": "강남구"
+},
+"Gangneung": {
+"ko": "강원특별자치도 강릉시",
+"lat": 37.7561,
+"lon": 128.8961,
+"n_institutions": 272,
+"region": "Gangwon",
+"short_ko": "강릉시"
+},
+"Gangseo": {
+"ko": "강서구",
+"lat": 37.5509,
+"lon": 126.8495,
+"n_institutions": 972,
+"region": "Seoul",
+"short_ko": "강서구"
+},
+"Gapyeong-gun": {
+"ko": "경기도 가평군",
+"lat": 37.8176,
+"lon": 127.4903,
+"n_institutions": 90,
+"region": "Gyeonggi",
+"short_ko": "가평군"
+},
+"Geochang-gun": {
+"ko": "경상남도 거창군",
+"lat": 35.688,
+"lon": 127.9155,
+"n_institutions": 94,
+"region": "Gyeongnam",
+"short_ko": "거창군"
+},
+"Geoje": {
+"ko": "경상남도 거제시",
+"lat": 34.8896,
+"lon": 128.6247,
+"n_institutions": 233,
+"region": "Gyeongnam",
+"short_ko": "거제시"
+},
+"Geumcheon": {
+"ko": "금천구",
+"lat": 37.4519,
+"lon": 126.902,
+"n_institutions": 364,
+"region": "Seoul",
+"short_ko": "금천구"
+},
+"Geumsan-gun": {
+"ko": "충청남도 금산군",
+"lat": 36.1051,
+"lon": 127.4899,
+"n_institutions": 85,
+"region": "Chungnam",
+"short_ko": "금산군"
+},
+"Gimcheon": {
+"ko": "경상북도 김천시",
+"lat": 36.1226,
+"lon": 128.1182,
+"n_institutions": 156,
+"region": "Gyeongbuk",
+"short_ko": "김천시"
+},
+"Gimhae": {
+"ko": "경상남도 김해시",
+"lat": 35.2338,
+"lon": 128.866,
+"n_institutions": 584,
+"region": "Gyeongnam",
+"short_ko": "김해시"
+},
+"Gimje": {
+"ko": "전북특별자치도 김제시",
+"lat": 35.8034,
+"lon": 126.8874,
+"n_institutions": 142,
+"region": "Jeonbuk",
+"short_ko": "김제시"
+},
+"Gimpo": {
+"ko": "경기도 김포시",
+"lat": 37.6411,
+"lon": 126.6814,
+"n_institutions": 564,
+"region": "Gyeonggi",
+"short_ko": "김포시"
+},
+"Gochang-gun": {
+"ko": "전북특별자치도 고창군",
+"lat": 35.4354,
+"lon": 126.6951,
+"n_institutions": 93,
+"region": "Jeonbuk",
+"short_ko": "고창군"
+},
+"Goesan-gun": {
+"ko": "충청북도 괴산군",
+"lat": 36.8089,
+"lon": 127.7954,
+"n_institutions": 52,
+"region": "Chungbuk",
+"short_ko": "괴산군"
+},
+"Goheung-gun": {
+"ko": "전남광주통합특별시 고흥군",
+"lat": 34.6067,
+"lon": 127.284,
+"n_institutions": 105,
+"region": "Jeonnam-Gwangju",
+"short_ko": "고흥군"
+},
+"Gokseong-gun": {
+"ko": "전남광주통합특별시 곡성군",
+"lat": 35.2759,
+"lon": 127.2537,
+"n_institutions": 51,
+"region": "Jeonnam-Gwangju",
+"short_ko": "곡성군"
+},
+"Gongju": {
+"ko": "충청남도 공주시",
+"lat": 36.4604,
+"lon": 127.1251,
+"n_institutions": 167,
+"region": "Chungnam",
+"short_ko": "공주시"
+},
+"Goryeong-gun": {
+"ko": "경상북도 고령군",
+"lat": 35.7297,
+"lon": 128.2695,
+"n_institutions": 42,
+"region": "Gyeongbuk",
+"short_ko": "고령군"
+},
+"Goseong-gun": {
+"ko": "강원특별자치도 고성군",
+"lat": 38.3792,
+"lon": 128.4706,
+"n_institutions": 33,
+"region": "Gangwon",
+"short_ko": "고성군"
+},
+"Goseong-gun (Gyeongnam)": {
+"ko": "경상남도 고성군",
+"lat": 34.9769,
+"lon": 128.3257,
+"n_institutions": 70,
+"region": "Gyeongnam",
+"short_ko": "고성군"
+},
+"Goyang-Deogyang": {
+"ko": "경기도 고양시 덕양구",
+"lat": 37.6377,
+"lon": 126.832,
+"n_institutions": 610,
+"region": "Gyeonggi",
+"short_ko": "고양시 덕양구"
+},
+"Goyang-Ilsandong": {
+"ko": "경기도 고양시 일산동구",
+"lat": 37.6585,
+"lon": 126.7745,
+"n_institutions": 413,
+"region": "Gyeonggi",
+"short_ko": "고양시 일산동구"
+},
+"Goyang-Ilsanseo": {
+"ko": "경기도 고양시 일산서구",
+"lat": 37.6762,
+"lon": 126.7628,
+"n_institutions": 392,
+"region": "Gyeonggi",
+"short_ko": "고양시 일산서구"
+},
+"Gumi": {
+"ko": "경상북도 구미시",
+"lat": 36.1261,
+"lon": 128.3436,
+"n_institutions": 464,
+"region": "Gyeongbuk",
+"short_ko": "구미시"
+},
+"Gunpo": {
+"ko": "경기도 군포시",
+"lat": 37.3597,
+"lon": 126.9334,
+"n_institutions": 336,
+"region": "Gyeonggi",
+"short_ko": "군포시"
+},
+"Gunsan": {
+"ko": "전북특별자치도 군산시",
+"lat": 35.9682,
+"lon": 126.715,
+"n_institutions": 361,
+"region": "Jeonbuk",
+"short_ko": "군산시"
+},
+"Guri": {
+"ko": "경기도 구리시",
+"lat": 37.6009,
+"lon": 127.1398,
+"n_institutions": 358,
+"region": "Gyeonggi",
+"short_ko": "구리시"
+},
+"Guro": {
+"ko": "구로구",
+"lat": 37.4954,
+"lon": 126.8874,
+"n_institutions": 610,
+"region": "Seoul",
+"short_ko": "구로구"
+},
+"Gurye-gun": {
+"ko": "전남광주통합특별시 구례군",
+"lat": 35.2094,
+"lon": 127.4659,
+"n_institutions": 47,
+"region": "Jeonnam-Gwangju",
+"short_ko": "구례군"
+},
+"Gwacheon": {
+"ko": "경기도 과천시",
+"lat": 37.4267,
+"lon": 126.9915,
+"n_institutions": 125,
+"region": "Gyeonggi",
+"short_ko": "과천시"
+},
+"Gwanak": {
+"ko": "관악구",
+"lat": 37.4784,
+"lon": 126.9516,
+"n_institutions": 706,
+"region": "Seoul",
+"short_ko": "관악구"
+},
+"Gwangjin": {
+"ko": "광진구",
+"lat": 37.5385,
+"lon": 127.0824,
+"n_institutions": 597,
+"region": "Seoul",
+"short_ko": "광진구"
+},
+"Gwangju": {
+"ko": "경기도 광주시",
+"lat": 37.3911,
+"lon": 127.2581,
+"n_institutions": 370,
+"region": "Gyeonggi",
+"short_ko": "광주시"
+},
+"Gwangju-Buk": {
+"ko": "전남광주통합특별시 북구",
+"lat": 35.1809,
+"lon": 126.8982,
+"n_institutions": 633,
+"region": "Jeonnam-Gwangju",
+"short_ko": "북구"
+},
+"Gwangju-Dong": {
+"ko": "전남광주통합특별시 동구",
+"lat": 35.1485,
+"lon": 126.9231,
+"n_institutions": 234,
+"region": "Jeonnam-Gwangju",
+"short_ko": "동구"
+},
+"Gwangju-Gwangsan": {
+"ko": "전남광주통합특별시 광산구",
+"lat": 35.1825,
+"lon": 126.8188,
+"n_institutions": 521,
+"region": "Jeonnam-Gwangju",
+"short_ko": "광산구"
+},
+"Gwangju-Nam": {
+"ko": "전남광주통합특별시 남구",
+"lat": 35.1278,
+"lon": 126.9005,
+"n_institutions": 351,
+"region": "Jeonnam-Gwangju",
+"short_ko": "남구"
+},
+"Gwangju-Seo": {
+"ko": "전남광주통합특별시 서구",
+"lat": 35.1507,
+"lon": 126.8656,
+"n_institutions": 578,
+"region": "Jeonnam-Gwangju",
+"short_ko": "서구"
+},
+"Gwangmyeong": {
+"ko": "경기도 광명시",
+"lat": 37.474,
+"lon": 126.8684,
+"n_institutions": 514,
+"region": "Gyeonggi",
+"short_ko": "광명시"
+},
+"Gwangyang": {
+"ko": "전남광주통합특별시 광양시",
+"lat": 34.9545,
+"lon": 127.6943,
+"n_institutions": 157,
+"region": "Jeonnam-Gwangju",
+"short_ko": "광양시"
+},
+"Gyeongju": {
+"ko": "경상북도 경주시",
+"lat": 35.8456,
+"lon": 129.2162,
+"n_institutions": 300,
+"region": "Gyeongbuk",
+"short_ko": "경주시"
+},
+"Gyeongsan": {
+"ko": "경상북도 경산시",
+"lat": 35.8287,
+"lon": 128.7384,
+"n_institutions": 348,
+"region": "Gyeongbuk",
+"short_ko": "경산시"
+},
+"Gyeryong": {
+"ko": "충청남도 계룡시",
+"lat": 36.2888,
+"lon": 127.2424,
+"n_institutions": 55,
+"region": "Chungnam",
+"short_ko": "계룡시"
+},
+"Hadong-gun": {
+"ko": "경상남도 하동군",
+"lat": 35.0705,
+"lon": 127.7968,
+"n_institutions": 74,
+"region": "Gyeongnam",
+"short_ko": "하동군"
+},
+"Haenam-gun": {
+"ko": "전남광주통합특별시 해남군",
+"lat": 34.5698,
+"lon": 126.5953,
+"n_institutions": 102,
+"region": "Jeonnam-Gwangju",
+"short_ko": "해남군"
+},
+"Haman-gun": {
+"ko": "경상남도 함안군",
+"lat": 35.2787,
+"lon": 128.4096,
+"n_institutions": 70,
+"region": "Gyeongnam",
+"short_ko": "함안군"
+},
+"Hampyeong-gun": {
+"ko": "전남광주통합특별시 함평군",
+"lat": 35.0686,
+"lon": 126.523,
+"n_institutions": 56,
+"region": "Jeonnam-Gwangju",
+"short_ko": "함평군"
+},
+"Hamyang-gun": {
+"ko": "경상남도 함양군",
+"lat": 35.5206,
+"lon": 127.7281,
+"n_institutions": 64,
+"region": "Gyeongnam",
+"short_ko": "함양군"
+},
+"Hanam": {
+"ko": "경기도 하남시",
+"lat": 37.5451,
+"lon": 127.1933,
+"n_institutions": 467,
+"region": "Gyeonggi",
+"short_ko": "하남시"
+},
+"Hapcheon-gun": {
+"ko": "경상남도 합천군",
+"lat": 35.5678,
+"lon": 128.1629,
+"n_institutions": 72,
+"region": "Gyeongnam",
+"short_ko": "합천군"
+},
+"Hoengseong-gun": {
+"ko": "강원특별자치도 횡성군",
+"lat": 37.4901,
+"lon": 127.987,
+"n_institutions": 52,
+"region": "Gangwon",
+"short_ko": "횡성군"
+},
+"Hongcheon-gun": {
+"ko": "강원특별자치도 홍천군",
+"lat": 37.6898,
+"lon": 127.885,
+"n_institutions": 83,
+"region": "Gangwon",
+"short_ko": "홍천군"
+},
+"Hongseong-gun": {
+"ko": "충청남도 홍성군",
+"lat": 36.601,
+"lon": 126.6664,
+"n_institutions": 140,
+"region": "Chungnam",
+"short_ko": "홍성군"
+},
+"Hwacheon-gun": {
+"ko": "강원특별자치도 화천군",
+"lat": 38.1042,
+"lon": 127.7048,
+"n_institutions": 28,
+"region": "Gangwon",
+"short_ko": "화천군"
+},
+"Hwaseong-Byeongjeom": {
+"ko": "경기도 화성시 병점구",
+"lat": 37.2136,
+"lon": 127.0418,
+"n_institutions": 157,
+"region": "Gyeonggi",
+"short_ko": "화성시 병점구"
+},
+"Hwaseong-Dongtan": {
+"ko": "경기도 화성시 동탄구",
+"lat": 37.1993,
+"lon": 127.0982,
+"n_institutions": 485,
+"region": "Gyeonggi",
+"short_ko": "화성시 동탄구"
+},
+"Hwaseong-Hyohaeng": {
+"ko": "경기도 화성시 효행구",
+"lat": 37.2197,
+"lon": 126.9584,
+"n_institutions": 136,
+"region": "Gyeonggi",
+"short_ko": "화성시 효행구"
+},
+"Hwaseong-Manse": {
+"ko": "경기도 화성시 만세구",
+"lat": 37.1317,
+"lon": 126.826,
+"n_institutions": 269,
+"region": "Gyeonggi",
+"short_ko": "화성시 만세구"
+},
+"Hwasun-gun": {
+"ko": "전남광주통합특별시 화순군",
+"lat": 35.0603,
+"lon": 126.986,
+"n_institutions": 105,
+"region": "Jeonnam-Gwangju",
+"short_ko": "화순군"
+},
+"Icheon": {
+"ko": "경기도 이천시",
+"lat": 37.2784,
+"lon": 127.4472,
+"n_institutions": 265,
+"region": "Gyeonggi",
+"short_ko": "이천시"
+},
+"Iksan": {
+"ko": "전북특별자치도 익산시",
+"lat": 35.9575,
+"lon": 126.9615,
+"n_institutions": 401,
+"region": "Jeonbuk",
+"short_ko": "익산시"
+},
+"Imsil-gun": {
+"ko": "전북특별자치도 임실군",
+"lat": 35.61,
+"lon": 127.2802,
+"n_institutions": 61,
+"region": "Jeonbuk",
+"short_ko": "임실군"
+},
+"Incheon-Bupyeong": {
+"ko": "인천광역시 부평구",
+"lat": 37.507,
+"lon": 126.722,
+"n_institutions": 683,
+"region": "Incheon",
+"short_ko": "부평구"
+},
+"Incheon-Ganghwa": {
+"ko": "인천광역시 강화군",
+"lat": 37.7424,
+"lon": 126.4865,
+"n_institutions": 85,
+"region": "Incheon",
+"short_ko": "강화군"
+},
+"Incheon-Geomdan": {
+"ko": "인천광역시 검단구",
+"lat": 37.5942,
+"lon": 126.6909,
+"n_institutions": 264,
+"region": "Incheon",
+"short_ko": "검단구"
+},
+"Incheon-Gyeyang": {
+"ko": "인천광역시 계양구",
+"lat": 37.5384,
+"lon": 126.7318,
+"n_institutions": 377,
+"region": "Incheon",
+"short_ko": "계양구"
+},
+"Incheon-Jemulpo": {
+"ko": "인천광역시 제물포구",
+"lat": 37.4758,
+"lon": 126.6348,
+"n_institutions": 139,
+"region": "Incheon",
+"short_ko": "제물포구"
+},
+"Incheon-Michuhol": {
+"ko": "인천광역시 미추홀구",
+"lat": 37.4566,
+"lon": 126.6744,
+"n_institutions": 521,
+"region": "Incheon",
+"short_ko": "미추홀구"
+},
+"Incheon-Namdong": {
+"ko": "인천광역시 남동구",
+"lat": 37.447,
+"lon": 126.731,
+"n_institutions": 767,
+"region": "Incheon",
+"short_ko": "남동구"
+},
+"Incheon-Ongjin": {
+"ko": "인천광역시 옹진군",
+"lat": 37.2537,
+"lon": 126.1806,
+"n_institutions": 24,
+"region": "Incheon",
+"short_ko": "옹진군"
+},
+"Incheon-Seohae": {
+"ko": "인천광역시 서해구",
+"lat": 37.5254,
+"lon": 126.6726,
+"n_institutions": 432,
+"region": "Incheon",
+"short_ko": "서해구"
+},
+"Incheon-Yeongjong": {
+"ko": "인천광역시 영종구",
+"lat": 37.4895,
+"lon": 126.5575,
+"n_institutions": 91,
+"region": "Incheon",
+"short_ko": "영종구"
+},
+"Incheon-Yeonsu": {
+"ko": "인천광역시 연수구",
+"lat": 37.41,
+"lon": 126.678,
+"n_institutions": 519,
+"region": "Incheon",
+"short_ko": "연수구"
+},
+"Inje-gun": {
+"ko": "강원특별자치도 인제군",
+"lat": 38.0684,
+"lon": 128.2054,
+"n_institutions": 29,
+"region": "Gangwon",
+"short_ko": "인제군"
+},
+"Jangheung-gun": {
+"ko": "전남광주통합특별시 장흥군",
+"lat": 34.6775,
+"lon": 126.9091,
+"n_institutions": 65,
+"region": "Jeonnam-Gwangju",
+"short_ko": "장흥군"
+},
+"Jangseong-gun": {
+"ko": "전남광주통합특별시 장성군",
+"lat": 35.2977,
+"lon": 126.7813,
+"n_institutions": 61,
+"region": "Jeonnam-Gwangju",
+"short_ko": "장성군"
+},
+"Jangsu-gun": {
+"ko": "전북특별자치도 장수군",
+"lat": 35.7,
+"lon": 127.5565,
+"n_institutions": 34,
+"region": "Jeonbuk",
+"short_ko": "장수군"
+},
+"Jecheon": {
+"ko": "충청북도 제천시",
+"lat": 37.1386,
+"lon": 128.2116,
+"n_institutions": 192,
+"region": "Chungbuk",
+"short_ko": "제천시"
+},
+"Jeju": {
+"ko": "제주특별자치도 제주시",
+"lat": 33.4894,
+"lon": 126.5161,
+"n_institutions": 769,
+"region": "Jeju",
+"short_ko": "제주시"
+},
+"Jeongeup": {
+"ko": "전북특별자치도 정읍시",
+"lat": 35.5691,
+"lon": 126.8539,
+"n_institutions": 189,
+"region": "Jeonbuk",
+"short_ko": "정읍시"
+},
+"Jeongseon-gun": {
+"ko": "강원특별자치도 정선군",
+"lat": 37.3792,
+"lon": 128.7208,
+"n_institutions": 39,
+"region": "Gangwon",
+"short_ko": "정선군"
+},
+"Jeonju-Deokjin": {
+"ko": "전북특별자치도 전주시 덕진구",
+"lat": 35.8437,
+"lon": 127.1292,
+"n_institutions": 476,
+"region": "Jeonbuk",
+"short_ko": "전주시 덕진구"
+},
+"Jeonju-Wansan": {
+"ko": "전북특별자치도 전주시 완산구",
+"lat": 35.8134,
+"lon": 127.1207,
+"n_institutions": 632,
+"region": "Jeonbuk",
+"short_ko": "전주시 완산구"
+},
+"Jeungpyeong-gun": {
+"ko": "충청북도 증평군",
+"lat": 36.7845,
+"lon": 127.5817,
+"n_institutions": 47,
+"region": "Chungbuk",
+"short_ko": "증평군"
+},
+"Jinan-gun": {
+"ko": "전북특별자치도 진안군",
+"lat": 35.7922,
+"lon": 127.4291,
+"n_institutions": 44,
+"region": "Jeonbuk",
+"short_ko": "진안군"
+},
+"Jincheon-gun": {
+"ko": "충청북도 진천군",
+"lat": 36.8601,
+"lon": 127.4446,
+"n_institutions": 101,
+"region": "Chungbuk",
+"short_ko": "진천군"
+},
+"Jindo-gun": {
+"ko": "전남광주통합특별시 진도군",
+"lat": 34.4787,
+"lon": 126.2634,
+"n_institutions": 52,
+"region": "Jeonnam-Gwangju",
+"short_ko": "진도군"
+},
+"Jinju": {
+"ko": "경상남도 진주시",
+"lat": 35.1833,
+"lon": 128.0908,
+"n_institutions": 475,
+"region": "Gyeongnam",
+"short_ko": "진주시"
+},
+"Jongno": {
+"ko": "종로구",
+"lat": 37.5735,
+"lon": 126.979,
+"n_institutions": 465,
+"region": "Seoul",
+"short_ko": "종로구"
+},
+"Jung": {
+"ko": "중구",
+"lat": 37.5641,
+"lon": 126.9979,
+"n_institutions": 593,
+"region": "Seoul",
+"short_ko": "중구"
+},
+"Jungnang": {
+"ko": "중랑구",
+"lat": 37.6063,
+"lon": 127.0927,
+"n_institutions": 585,
+"region": "Seoul",
+"short_ko": "중랑구"
+},
+"Mapo": {
+"ko": "마포구",
+"lat": 37.5663,
+"lon": 126.9019,
+"n_institutions": 780,
+"region": "Seoul",
+"short_ko": "마포구"
+},
+"Miryang": {
+"ko": "경상남도 밀양시",
+"lat": 35.486,
+"lon": 128.7514,
+"n_institutions": 135,
+"region": "Gyeongnam",
+"short_ko": "밀양시"
+},
+"Mokpo": {
+"ko": "전남광주통합특별시 목포시",
+"lat": 34.805,
+"lon": 126.4029,
+"n_institutions": 290,
+"region": "Jeonnam-Gwangju",
+"short_ko": "목포시"
+},
+"Muan-gun": {
+"ko": "전남광주통합특별시 무안군",
+"lat": 34.8687,
+"lon": 126.4617,
+"n_institutions": 117,
+"region": "Jeonnam-Gwangju",
+"short_ko": "무안군"
+},
+"Muju-gun": {
+"ko": "전북특별자치도 무주군",
+"lat": 36.0047,
+"lon": 127.662,
+"n_institutions": 38,
+"region": "Jeonbuk",
+"short_ko": "무주군"
+},
+"Mungyeong": {
+"ko": "경상북도 문경시",
+"lat": 36.5982,
+"lon": 128.2001,
+"n_institutions": 109,
+"region": "Gyeongbuk",
+"short_ko": "문경시"
+},
+"Naju": {
+"ko": "전남광주통합특별시 나주시",
+"lat": 35.022,
+"lon": 126.7223,
+"n_institutions": 170,
+"region": "Jeonnam-Gwangju",
+"short_ko": "나주시"
+},
+"Namhae-gun": {
+"ko": "경상남도 남해군",
+"lat": 34.8404,
+"lon": 127.8949,
+"n_institutions": 66,
+"region": "Gyeongnam",
+"short_ko": "남해군"
+},
+"Namwon": {
+"ko": "전북특별자치도 남원시",
+"lat": 35.4095,
+"lon": 127.3865,
+"n_institutions": 137,
+"region": "Jeonbuk",
+"short_ko": "남원시"
+},
+"Namyangju": {
+"ko": "경기도 남양주시",
+"lat": 37.6514,
+"lon": 127.1929,
+"n_institutions": 856,
+"region": "Gyeonggi",
+"short_ko": "남양주시"
+},
+"Nonsan": {
+"ko": "충청남도 논산시",
+"lat": 36.2027,
+"lon": 127.0881,
+"n_institutions": 199,
+"region": "Chungnam",
+"short_ko": "논산시"
+},
+"Nowon": {
+"ko": "노원구",
+"lat": 37.6542,
+"lon": 127.0568,
+"n_institutions": 754,
+"region": "Seoul",
+"short_ko": "노원구"
+},
+"Okcheon-gun": {
+"ko": "충청북도 옥천군",
+"lat": 36.3019,
+"lon": 127.5683,
+"n_institutions": 83,
+"region": "Chungbuk",
+"short_ko": "옥천군"
+},
+"Osan": {
+"ko": "경기도 오산시",
+"lat": 37.149,
+"lon": 127.0687,
+"n_institutions": 264,
+"region": "Gyeonggi",
+"short_ko": "오산시"
+},
+"Paju": {
+"ko": "경기도 파주시",
+"lat": 37.7345,
+"lon": 126.7601,
+"n_institutions": 525,
+"region": "Gyeonggi",
+"short_ko": "파주시"
+},
+"Pocheon": {
+"ko": "경기도 포천시",
+"lat": 37.8965,
+"lon": 127.2025,
+"n_institutions": 158,
+"region": "Gyeonggi",
+"short_ko": "포천시"
+},
+"Pohang-Buk": {
+"ko": "경상북도 포항시 북구",
+"lat": 36.0597,
+"lon": 129.3654,
+"n_institutions": 391,
+"region": "Gyeongbuk",
+"short_ko": "포항시 북구"
+},
+"Pohang-Nam": {
+"ko": "경상북도 포항시 남구",
+"lat": 36.0083,
+"lon": 129.3584,
+"n_institutions": 271,
+"region": "Gyeongbuk",
+"short_ko": "포항시 남구"
+},
+"Pyeongchang-gun": {
+"ko": "강원특별자치도 평창군",
+"lat": 37.5846,
+"lon": 128.4552,
+"n_institutions": 57,
+"region": "Gangwon",
+"short_ko": "평창군"
+},
+"Pyeongtaek": {
+"ko": "경기도 평택시",
+"lat": 37.001,
+"lon": 127.0665,
+"n_institutions": 716,
+"region": "Gyeonggi",
+"short_ko": "평택시"
+},
+"Sacheon": {
+"ko": "경상남도 사천시",
+"lat": 35.0566,
+"lon": 128.0843,
+"n_institutions": 140,
+"region": "Gyeongnam",
+"short_ko": "사천시"
+},
+"Samcheok": {
+"ko": "강원특별자치도 삼척시",
+"lat": 37.4412,
+"lon": 129.1643,
+"n_institutions": 66,
+"region": "Gangwon",
+"short_ko": "삼척시"
+},
+"Sancheong-gun": {
+"ko": "경상남도 산청군",
+"lat": 35.3775,
+"lon": 127.8786,
+"n_institutions": 58,
+"region": "Gyeongnam",
+"short_ko": "산청군"
+},
+"Sangju": {
+"ko": "경상북도 상주시",
+"lat": 36.4155,
+"lon": 128.159,
+"n_institutions": 145,
+"region": "Gyeongbuk",
+"short_ko": "상주시"
+},
+"Sejong": {
+"ko": "세종특별자치시",
+"lat": 36.5042,
+"lon": 127.261,
+"n_institutions": 460,
+"region": "Sejong",
+"short_ko": "세종특별자치시"
+},
+"Seocheon-gun": {
+"ko": "충청남도 서천군",
+"lat": 36.0758,
+"lon": 126.6895,
+"n_institutions": 89,
+"region": "Chungnam",
+"short_ko": "서천군"
+},
+"Seocho": {
+"ko": "서초구",
+"lat": 37.4837,
+"lon": 127.0324,
+"n_institutions": 1525,
+"region": "Seoul",
+"short_ko": "서초구"
+},
+"Seodaemun": {
+"ko": "서대문구",
+"lat": 37.5791,
+"lon": 126.9368,
+"n_institutions": 450,
+"region": "Seoul",
+"short_ko": "서대문구"
+},
+"Seogwipo": {
+"ko": "제주특별자치도 서귀포시",
+"lat": 33.2526,
+"lon": 126.5616,
+"n_institutions": 271,
+"region": "Jeju",
+"short_ko": "서귀포시"
+},
+"Seongbuk": {
+"ko": "성북구",
+"lat": 37.5894,
+"lon": 127.0167,
+"n_institutions": 553,
+"region": "Seoul",
+"short_ko": "성북구"
+},
+"Seongdong": {
+"ko": "성동구",
+"lat": 37.5634,
+"lon": 127.0368,
+"n_institutions": 493,
+"region": "Seoul",
+"short_ko": "성동구"
+},
+"Seongju-gun": {
+"ko": "경상북도 성주군",
+"lat": 35.9183,
+"lon": 128.2862,
+"n_institutions": 61,
+"region": "Gyeongbuk",
+"short_ko": "성주군"
+},
+"Seongnam-Bundang": {
+"ko": "경기도 성남시 분당구",
+"lat": 37.3595,
+"lon": 127.1052,
+"n_institutions": 1087,
+"region": "Gyeonggi",
+"short_ko": "성남시 분당구"
+},
+"Seongnam-Jungwon": {
+"ko": "경기도 성남시 중원구",
+"lat": 37.4306,
+"lon": 127.1378,
+"n_institutions": 334,
+"region": "Gyeonggi",
+"short_ko": "성남시 중원구"
+},
+"Seongnam-Sujeong": {
+"ko": "경기도 성남시 수정구",
+"lat": 37.4438,
+"lon": 127.1427,
+"n_institutions": 505,
+"region": "Gyeonggi",
+"short_ko": "성남시 수정구"
+},
+"Seosan": {
+"ko": "충청남도 서산시",
+"lat": 36.7818,
+"lon": 126.4589,
+"n_institutions": 213,
+"region": "Chungnam",
+"short_ko": "서산시"
+},
+"Siheung": {
+"ko": "경기도 시흥시",
+"lat": 37.3777,
+"lon": 126.7848,
+"n_institutions": 581,
+"region": "Gyeonggi",
+"short_ko": "시흥시"
+},
+"Sinan-gun": {
+"ko": "전남광주통합특별시 신안군",
+"lat": 34.8289,
+"lon": 126.1155,
+"n_institutions": 63,
+"region": "Jeonnam-Gwangju",
+"short_ko": "신안군"
+},
+"Sokcho": {
+"ko": "강원특별자치도 속초시",
+"lat": 38.1993,
+"lon": 128.5826,
+"n_institutions": 135,
+"region": "Gangwon",
+"short_ko": "속초시"
+},
+"Songpa": {
+"ko": "송파구",
+"lat": 37.5145,
+"lon": 127.1059,
+"n_institutions": 1316,
+"region": "Seoul",
+"short_ko": "송파구"
+},
+"Sunchang-gun": {
+"ko": "전북특별자치도 순창군",
+"lat": 35.3768,
+"lon": 127.1413,
+"n_institutions": 58,
+"region": "Jeonbuk",
+"short_ko": "순창군"
+},
+"Suncheon": {
+"ko": "전남광주통합특별시 순천시",
+"lat": 34.9529,
+"lon": 127.5179,
+"n_institutions": 360,
+"region": "Jeonnam-Gwangju",
+"short_ko": "순천시"
+},
+"Suwon-Gwonseon": {
+"ko": "경기도 수원시 권선구",
+"lat": 37.2578,
+"lon": 126.972,
+"n_institutions": 375,
+"region": "Gyeonggi",
+"short_ko": "수원시 권선구"
+},
+"Suwon-Jangan": {
+"ko": "경기도 수원시 장안구",
+"lat": 37.304,
+"lon": 127.01,
+"n_institutions": 353,
+"region": "Gyeonggi",
+"short_ko": "수원시 장안구"
+},
+"Suwon-Paldal": {
+"ko": "경기도 수원시 팔달구",
+"lat": 37.282,
+"lon": 127.02,
+"n_institutions": 526,
+"region": "Gyeonggi",
+"short_ko": "수원시 팔달구"
+},
+"Suwon-Yeongtong": {
+"ko": "경기도 수원시 영통구",
+"lat": 37.2596,
+"lon": 127.0467,
+"n_institutions": 541,
+"region": "Gyeonggi",
+"short_ko": "수원시 영통구"
+},
+"Taean-gun": {
+"ko": "충청남도 태안군",
+"lat": 36.7484,
+"lon": 126.3029,
+"n_institutions": 79,
+"region": "Chungnam",
+"short_ko": "태안군"
+},
+"Taebaek": {
+"ko": "강원특별자치도 태백시",
+"lat": 37.172,
+"lon": 128.9917,
+"n_institutions": 45,
+"region": "Gangwon",
+"short_ko": "태백시"
+},
+"Tongyeong": {
+"ko": "경상남도 통영시",
+"lat": 34.8561,
+"lon": 128.4249,
+"n_institutions": 160,
+"region": "Gyeongnam",
+"short_ko": "통영시"
+},
+"Uijeongbu": {
+"ko": "경기도 의정부시",
+"lat": 37.7397,
+"lon": 127.0514,
+"n_institutions": 626,
+"region": "Gyeonggi",
+"short_ko": "의정부시"
+},
+"Uiryeong-gun": {
+"ko": "경상남도 의령군",
+"lat": 35.3335,
+"lon": 128.2619,
+"n_institutions": 47,
+"region": "Gyeongnam",
+"short_ko": "의령군"
+},
+"Uiseong-gun": {
+"ko": "경상북도 의성군",
+"lat": 36.3555,
+"lon": 128.681,
+"n_institutions": 80,
+"region": "Gyeongbuk",
+"short_ko": "의성군"
+},
+"Uiwang": {
+"ko": "경기도 의왕시",
+"lat": 37.3792,
+"lon": 126.974,
+"n_institutions": 174,
+"region": "Gyeonggi",
+"short_ko": "의왕시"
+},
+"Uljin-gun": {
+"ko": "경상북도 울진군",
+"lat": 36.9921,
+"lon": 129.4025,
+"n_institutions": 64,
+"region": "Gyeongbuk",
+"short_ko": "울진군"
+},
+"Ulsan-Buk": {
+"ko": "울산광역시 북구",
+"lat": 35.6291,
+"lon": 129.3555,
+"n_institutions": 190,
+"region": "Ulsan",
+"short_ko": "북구"
+},
+"Ulsan-Dong": {
+"ko": "울산광역시 동구",
+"lat": 35.5078,
+"lon": 129.4264,
+"n_institutions": 169,
+"region": "Ulsan",
+"short_ko": "동구"
+},
+"Ulsan-Jung": {
+"ko": "울산광역시 중구",
+"lat": 35.5589,
+"lon": 129.329,
+"n_institutions": 237,
+"region": "Ulsan",
+"short_ko": "중구"
+},
+"Ulsan-Nam": {
+"ko": "울산광역시 남구",
+"lat": 35.5389,
+"lon": 129.3217,
+"n_institutions": 614,
+"region": "Ulsan",
+"short_ko": "남구"
+},
+"Ulsan-Ulju": {
+"ko": "울산광역시 울주군",
+"lat": 35.5617,
+"lon": 129.241,
+"n_institutions": 207,
+"region": "Ulsan",
+"short_ko": "울주군"
+},
+"Wando-gun": {
+"ko": "전남광주통합특별시 완도군",
+"lat": 34.3186,
+"lon": 126.7473,
+"n_institutions": 72,
+"region": "Jeonnam-Gwangju",
+"short_ko": "완도군"
+},
+"Wanju-gun": {
+"ko": "전북특별자치도 완주군",
+"lat": 35.9211,
+"lon": 127.1246,
+"n_institutions": 130,
+"region": "Jeonbuk",
+"short_ko": "완주군"
+},
+"Wonju": {
+"ko": "강원특별자치도 원주시",
+"lat": 37.341,
+"lon": 127.9477,
+"n_institutions": 506,
+"region": "Gangwon",
+"short_ko": "원주시"
+},
+"Yangcheon": {
+"ko": "양천구",
+"lat": 37.5169,
+"lon": 126.8664,
+"n_institutions": 689,
+"region": "Seoul",
+"short_ko": "양천구"
+},
+"Yanggu-gun": {
+"ko": "강원특별자치도 양구군",
+"lat": 38.1073,
+"lon": 127.9892,
+"n_institutions": 24,
+"region": "Gangwon",
+"short_ko": "양구군"
+},
+"Yangju": {
+"ko": "경기도 양주시",
+"lat": 37.8189,
+"lon": 127.0685,
+"n_institutions": 254,
+"region": "Gyeonggi",
+"short_ko": "양주시"
+},
+"Yangpyeong-gun": {
+"ko": "경기도 양평군",
+"lat": 37.4903,
+"lon": 127.4957,
+"n_institutions": 146,
+"region": "Gyeonggi",
+"short_ko": "양평군"
+},
+"Yangsan": {
+"ko": "경상남도 양산시",
+"lat": 35.3376,
+"lon": 129.0288,
+"n_institutions": 426,
+"region": "Gyeongnam",
+"short_ko": "양산시"
+},
+"Yangyang-gun": {
+"ko": "강원특별자치도 양양군",
+"lat": 38.0755,
+"lon": 128.6238,
+"n_institutions": 26,
+"region": "Gangwon",
+"short_ko": "양양군"
+},
+"Yecheon-gun": {
+"ko": "경상북도 예천군",
+"lat": 36.6558,
+"lon": 128.4557,
+"n_institutions": 75,
+"region": "Gyeongbuk",
+"short_ko": "예천군"
+},
+"Yeoju": {
+"ko": "경기도 여주시",
+"lat": 37.2959,
+"lon": 127.6359,
+"n_institutions": 141,
+"region": "Gyeonggi",
+"short_ko": "여주시"
+},
+"Yeoncheon-gun": {
+"ko": "경기도 연천군",
+"lat": 38.027,
+"lon": 127.0677,
+"n_institutions": 53,
+"region": "Gyeonggi",
+"short_ko": "연천군"
+},
+"Yeongam-gun": {
+"ko": "전남광주통합특별시 영암군",
+"lat": 34.7954,
+"lon": 126.6089,
+"n_institutions": 77,
+"region": "Jeonnam-Gwangju",
+"short_ko": "영암군"
+},
+"Yeongcheon": {
+"ko": "경상북도 영천시",
+"lat": 35.9637,
+"lon": 128.9368,
+"n_institutions": 148,
+"region": "Gyeongbuk",
+"short_ko": "영천시"
+},
+"Yeongdeok-gun": {
+"ko": "경상북도 영덕군",
+"lat": 36.412,
+"lon": 129.3783,
+"n_institutions": 58,
+"region": "Gyeongbuk",
+"short_ko": "영덕군"
+},
+"Yeongdeungpo": {
+"ko": "영등포구",
+"lat": 37.5264,
+"lon": 126.8963,
+"n_institutions": 836,
+"region": "Seoul",
+"short_ko": "영등포구"
+},
+"Yeongdong-gun": {
+"ko": "충청북도 영동군",
+"lat": 36.1749,
+"lon": 127.7772,
+"n_institutions": 82,
+"region": "Chungbuk",
+"short_ko": "영동군"
+},
+"Yeonggwang-gun": {
+"ko": "전남광주통합특별시 영광군",
+"lat": 35.2759,
+"lon": 126.5015,
+"n_institutions": 91,
+"region": "Jeonnam-Gwangju",
+"short_ko": "영광군"
+},
+"Yeongju": {
+"ko": "경상북도 영주시",
+"lat": 36.8243,
+"lon": 128.6238,
+"n_institutions": 143,
+"region": "Gyeongbuk",
+"short_ko": "영주시"
+},
+"Yeongwol-gun": {
+"ko": "강원특별자치도 영월군",
+"lat": 37.1839,
+"lon": 128.4653,
+"n_institutions": 39,
+"region": "Gangwon",
+"short_ko": "영월군"
+},
+"Yeongyang-gun": {
+"ko": "경상북도 영양군",
+"lat": 36.6624,
+"lon": 129.1166,
+"n_institutions": 21,
+"region": "Gyeongbuk",
+"short_ko": "영양군"
+},
+"Yeosu": {
+"ko": "전남광주통합특별시 여수시",
+"lat": 34.7499,
+"lon": 127.7,
+"n_institutions": 370,
+"region": "Jeonnam-Gwangju",
+"short_ko": "여수시"
+},
+"Yesan-gun": {
+"ko": "충청남도 예산군",
+"lat": 36.6849,
+"lon": 126.8325,
+"n_institutions": 112,
+"region": "Chungnam",
+"short_ko": "예산군"
+},
+"Yongin-Cheoin": {
+"ko": "경기도 용인시 처인구",
+"lat": 37.2352,
+"lon": 127.2073,
+"n_institutions": 292,
+"region": "Gyeonggi",
+"short_ko": "용인시 처인구"
+},
+"Yongin-Giheung": {
+"ko": "경기도 용인시 기흥구",
+"lat": 37.2778,
+"lon": 127.1117,
+"n_institutions": 506,
+"region": "Gyeonggi",
+"short_ko": "용인시 기흥구"
+},
+"Yongin-Suji": {
+"ko": "경기도 용인시 수지구",
+"lat": 37.322,
+"lon": 127.098,
+"n_institutions": 496,
+"region": "Gyeonggi",
+"short_ko": "용인시 수지구"
+},
+"Yongsan": {
+"ko": "용산구",
+"lat": 37.5326,
+"lon": 126.99,
+"n_institutions": 328,
+"region": "Seoul",
+"short_ko": "용산구"
+}
+}

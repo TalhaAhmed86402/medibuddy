@@ -14,7 +14,8 @@ import re
 from medibuddy_bench.agents.base import Agent, Message
 from medibuddy_bench.common import C3, TASKS
 from medibuddy_bench.scoring.choice import score_choice
-from medibuddy_bench.scoring.common import extract_recs
+from medibuddy_bench.scoring.common import extract_recs, shown
+from medibuddy_bench.scoring.t9 import score_t9
 from medibuddy_bench.scoring.interp import score_interp
 from medibuddy_bench.scoring.journey import journey_success, score_followup
 from medibuddy_bench.scoring.memory import score_memory
@@ -113,7 +114,7 @@ class Runner:
 
     def run_one(self, scen: dict) -> dict:
         fn = {"T1": self._choice, "T2": self._choice, "T3": self._choice, "T4": self._triage, "T5": self._interp,
-              "T6": self._summary, "T7": self._memory, "T8": self._journey}[scen["task"]]
+              "T6": self._summary, "T7": self._memory, "T8": self._journey, "T9": self._history}[scen["task"]]
         r = fn(scen)
         ep = {"id": scen["id"], "task": scen["task"], "tier": scen["tier"], "agent": self.agent_name,
               "score": r["score"], "critical": r["critical"], "checks": r.get("checks", {}),
@@ -145,7 +146,7 @@ class Runner:
             texts.append(rep.text)
             datas.append(rep.data)
             tr += [("patient", msg.text), ("agent", rep.text)]
-            if extract_recs(self.world, rep.text, rep.data):   # a reply naming hospitals is a final answer
+            if extract_recs(self.world, rep.text, rep.data, shown_ids=shown(tools.log)):   # a reply naming hospitals is a final answer
                 final = rep
                 break
             msg = Message(sim.respond(rep.text), "patient", "en", "recommendations")
@@ -233,6 +234,27 @@ class Runner:
         return {**res, "tool_calls": sum(len(l) for l in logs), "turns": sum(len(s) for s in session_replies),
                 "transcript": tr, "tool_log": [dict(e, session=k) for k, log in enumerate(logs) for e in log]}
 
+    # ------------------------------------------------------------------ T9
+    def _history(self, scen):
+        """One student, one question; the agent may call ask_student once.  A reply without a recommendation gets
+        one nudge ("please recommend"), as a real student would wait for an answer."""
+        g = scen["gold"]
+        tools = ToolClient(self.world, None, self.max_tool_calls, t9=g)
+        agent = self._start(scen, tools, today=scen["public"]["today"])
+        msg = Message(scen["public"]["message"], "patient", "en", "recommendations")
+        texts, tr, rep = [], [], None
+        for _ in range(3):
+            rep = agent.respond(msg)
+            texts.append(rep.text)
+            tr += [("patient", msg.text), ("agent", rep.text)]
+            if extract_recs(self.world, rep.text, rep.data, shown_ids=shown(tools.log)):
+                break
+            msg = Message("Please use the ask_student tool if you need to ask me something. Which place do you "
+                          "recommend? Give your top 3 in the answer block.", "patient", "en", "recommendations")
+        res = score_t9(self.world, g, rep.text, rep.data, tools.log, tools.asked)
+        return {"score": res["score"], "critical": [], "checks": res["checks"], "tool_calls": len(tools.log),
+                "turns": len(texts), "transcript": tr, "tool_log": tools.log}
+
     # ------------------------------------------------------------------ T8
     def _journey(self, scen):
         g, c = scen["gold"], scen["gold"]["constraints"]
@@ -246,7 +268,7 @@ class Runner:
         st1 = score_choice(self.world, c, [rep.text], rep.data, tools.log, check_live=(g["choice_task"] == "T2"),
                            final_text=rep.text, data_list=[rep.data])
         crit += st1["critical"]
-        recs = extract_recs(self.world, rep.text, rep.data)
+        recs = extract_recs(self.world, rep.text, rep.data, shown_ids=shown(tools.log))
         visited = recs[0] if recs and recs[0] in self.world.hospitals else g["seed_hospital"]
         # 2. interpret
         enc = g["encounter"]

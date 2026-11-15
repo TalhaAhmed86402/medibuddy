@@ -15,6 +15,52 @@ listed as **stale** on the leaderboard instead of being compared with new ones.
 Before tagging a release: full test suite, `verify --data data/dev --rebuild`, baselines regenerated, `docs/DATASET_STATS.md` and the
 README block regenerated (`python scripts/dataset_stats.py --write`), and an entry below.
 
+## 1.3.0 (2026-11-15)
+
+Scores from 1.2.0 are not comparable with this version: the world, five task generators and the weights changed.
+This release merges the team's two packages of 2026-11-14 (the real hospital database and the clinic-choice benchmark)
+into MediBuddy-Bench. Provenance: `data/source/SOURCES.md`.
+
+**A real world with a synthetic layer**
+- The 1,200 fictional hospitals are replaced by every institution of the National Medical Center index: 79,075 records
+  (79,071 with coordinates) in 256 cities and districts, with real ids (hpid), names, types, addresses, coordinates,
+  phone numbers, weekday, Sunday and holiday hours, lunch breaks stated in the record (15,560), cleaned departments,
+  emergency rooms and the 47 real tertiary hospitals. Languages, interpreter service, ratings, price levels, female
+  doctors, walk-in, verification dates, blurbs and notices stay synthetic, drawn per hospital from the split's seed.
+  Non-covered prices (flu shot, medical certificate, shockwave therapy) use the team's rule.
+- Distances are measured from the hospital's real coordinates. Reception closes 30 minutes before closing (the
+  team's rule). Long-term care hospitals, midwifery clinics, "other" institutions and ambulance services take no
+  general outpatients; children's clinics are not for adults (both are hard rules and appear in `get_rules`).
+- English names: known name parts translated, the rest romanized (`medibuddy_bench/romanize.py`).
+- The world file is `world.json.gz` (meta, overlay seed, notices, injected blurbs); the hospitals are rebuilt from
+  `data/source/kr_hospitals.jsonl.gz`, whose SHA-256 the manifest records and `verify` checks.
+
+**Scenarios**
+- Students at real campuses: half of the choice scenarios anchor at one of the 30 campuses of the team's list
+  ("I'm a student at Sungkyunkwan University, Natural Sciences Campus..."), the rest in 69 districts (the 47 of v1.2
+  plus every district with a campus or station). Search radii follow real density (1-3 km in Seoul, 2-5 km in other
+  cities, 3-8 km elsewhere).
+- Visit times follow the team's mix: weekday daytime 40%, weekday evening 22%, Saturday 18%, Sunday 10%, public holiday
+  10%, so real opening hours, lunch breaks and the 30-minute rule decide which hospitals are valid.
+- 12 complaints from the team's symptom table (sinusitis, stye, athlete's foot, neck and shoulder pain, irregular
+  periods, exam anxiety, numbness, boil, ingrown toenail, wisdom-tooth gum, flu shot, medical certificate); 34 in all.
+  Department lists aligned with the table (Korean medicine for back, neck and wrist pain; OB-GYN for burning urination).
+  Two specialties added: general surgery and Korean medicine (14 in all).
+- New task **T9 Clinic choice from visit history**: the team's items (contrast pairs; decisive, ambiguous, rule
+  conflict, schedule conflict and control) with their gold and scoring. dev 120, lite 16; every item with measured
+  Kakao travel times (the 40 around SKKU's Natural Sciences Campus) is used first. Tools: `travel_options`,
+  `travel_minutes`, `get_hospital`, `list_places`, `ask_student` (one question), `get_rules`.
+- Weights: T1 12, T2 8, T3 8, T4 10, T5 18, T6 10, T7 12, T8 10, T9 12.
+
+**Tools**
+- `search_hospitals` takes `near` (a district or a place id such as `C18`; `from_district` still works) and returns
+  `distance_km`, `type` and `er_24h`. `get_hospital` adds type, address, phone, holiday hours, prices, directions and
+  remarks (real Korean text). New `list_places`. `list_districts` covers 256 districts with 16 regions.
+- Recommendation extraction accepts real ids (`A1100014`); the name fallback only matches hospitals the agent was shown.
+
+**Baselines** re-run on 1.3.0 (`docs/BASELINES.md`). The rule baseline answers T9 like the team's "nearest open clinic"
+reference.
+
 ## 1.2.0 (2026-11-14)
 
 Scores from 1.1.0 are not comparable with this version.

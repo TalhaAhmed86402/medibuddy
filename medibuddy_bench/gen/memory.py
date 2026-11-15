@@ -16,7 +16,7 @@ from medibuddy_bench.common import iso
 from medibuddy_bench.gen.choice import (complaint_sentence, gen_persona, place_phrase, phrase_gender, phrase_language, phrase_location,
                                         phrase_price, phrase_time, sample_constraints)
 from medibuddy_bench.gen.phrasing import Phraser, render
-from medibuddy_bench.knowledge import ALLERGEN_SAY, ALLERGENS, COMPLAINT_META, DISTRICTS
+from medibuddy_bench.knowledge import ALLERGEN_SAY, ALLERGENS, ANCHOR_DISTRICTS, COMPLAINT_META, DISTRICTS, PLACES
 from medibuddy_bench.world import World, district_km
 
 SENSITIVE = [
@@ -54,8 +54,13 @@ def _prefs(c: dict, tier: str, ph: Phraser | None = None) -> list[str]:
     return [_end(x, ph) for x in out]
 
 
+def _region(anchor: str) -> str:
+    """Province or metropolitan city of a district or place (moves stay in the same region when possible)."""
+    return DISTRICTS[PLACES[anchor]["district"] if anchor in PLACES else anchor][3]
+
+
 def _alt_anchor(world: World, rng: random.Random, c: dict, avoid: set[str]) -> str | None:
-    cands = [d for d in DISTRICTS if d not in avoid and district_km(d, c["anchor"]) >= 6]
+    cands = [d for d in ANCHOR_DISTRICTS if d not in avoid and 6 <= district_km(d, c["anchor"]) <= 60]
     rng.shuffle(cands)
     for d in cands[:40]:
         c2 = {**c, "anchor": d}
@@ -90,7 +95,7 @@ def gen_memory(world: World, rng: random.Random, tier: str, sid: str, idx: int, 
     temp = None
     effective_anchor = final_home
     if tier in ("L3", "L4"):
-        t_anchor = rng.choice([d for d in DISTRICTS if d not in (final_home, old_home) and district_km(d, final_home) >= 6])
+        t_anchor = rng.choice([d for d in ANCHOR_DISTRICTS if d not in (final_home, old_home) and district_km(d, final_home) >= 6 and _region(d) == _region(final_home)] or [d for d in ANCHOR_DISTRICTS if d not in (final_home, old_home) and district_km(d, final_home) >= 6])
         active = rng.random() < .5
         until = probe_date + dt.timedelta(days=20) if active else probe_date - dt.timedelta(days=3)
         temp = {"anchor": t_anchor, "until": iso(until), "active": active}

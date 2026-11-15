@@ -25,15 +25,16 @@ from medibuddy_bench.gen.phrasing import POOLS, Phraser, load_extra, render, val
 from medibuddy_bench.knowledge import LANGUAGE_NAMES
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PHRASING_OFF_LITE_HASHES = {  # 'lite' split (seed 1) built with phrasing off, pinned at data v1.2.0 (regression guard)
-    "T1": "c5540bf2f1366598",
-    "T2": "4810b57984d2d0bf",
-    "T3": "c2bf56a5652a1cab",
+PHRASING_OFF_LITE_HASHES = {  # 'lite' split (seed 1) built with phrasing off, pinned at data v1.3.0 (regression guard)
+    "T1": "e6514d2459491502",
+    "T2": "147b768429fbbafc",
+    "T3": "d6bc64d93a3f521e",
     "T4": "8f935a48d741e073",
     "T5": "196113797dc0f16e",
     "T6": "278826d7a4def319",
-    "T7": "9fd1c5ce49494d13",
-    "T8": "8c827e5d5076c102",
+    "T7": "c5d8ca9443f0c6a7",
+    "T8": "93369d870d18d1b0",
+    "T9": "e3e714efd2013c31",
 }
 
 
@@ -72,8 +73,8 @@ class Pools(unittest.TestCase):
 class Legacy(unittest.TestCase):
     def test_phrasing_off_build_is_pinned(self):
         """Phrasing off uses the first entry of every pool.  The hashes are pinned so that any change to the generator is
-        noticed.  (Data v1.2.0 changed scenario content, so this no longer equals the v1.0.0 files; use the v1.1.0
-        release of the code to rebuild older data.)"""
+        noticed.  (Data v1.2.0 and v1.3.0 changed scenario content, so this no longer equals older files; use the
+        release of the code that matches a data version to rebuild it.)"""
         ds = build("lite", 1, phrasing=False)
         got = {t: stable_hash(items) for t, items in ds["scenarios"].items()}
         self.assertEqual(got, PHRASING_OFF_LITE_HASHES)
@@ -138,7 +139,7 @@ class RealData(unittest.TestCase):
                 st = g["slot_text"]
                 where = f"{s['id']}"
                 self.assertIn(place_phrase(c["anchor"]), st["location"], where)
-                self.assertRegex(st["location"], rf"\b{c['max_km']}\s?(km|kilometres)", where)
+                self.assertRegex(st["location"], rf"\b{c['max_km']}\s?(km|kilometres?)", where)
                 d, hhmm = dt.date.fromisoformat(c["date"]), c["time"]
                 t = fmt_time(hhmm)
                 self.assertIn(t, st["time"], where)

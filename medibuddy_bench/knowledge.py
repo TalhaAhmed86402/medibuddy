@@ -6,8 +6,13 @@ is NOT medical advice, and must be reviewed by a clinician before any publicatio
 (see docs/REVIEW_GUIDE.md)."""
 from __future__ import annotations
 
-# name -> (Korean, lat, lon, region)   approximate centroids
-DISTRICTS = {
+import json
+import os
+
+# The 47 districts of data versions 1.0-1.2 (approximate centroids).  Since 1.3.0 the world covers every city and
+# district of Korea (data/source/districts.json, built from the real hospital database); these 47 keep their names and
+# centroids there, and scenarios still anchor mostly in them.
+LEGACY_DISTRICTS = {
     "Jongno": ("종로구", 37.5735, 126.9790, "Seoul"),
     "Jung": ("중구", 37.5641, 126.9979, "Seoul"),
     "Yongsan": ("용산구", 37.5326, 126.9900, "Seoul"),
@@ -56,6 +61,39 @@ DISTRICTS = {
     "Daejeon-Yuseong": ("대전 유성구", 36.3620, 127.3560, "Daejeon"),
     "Daejeon-Seo": ("대전 서구", 36.3550, 127.3840, "Daejeon"),
 }
+SOURCE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "source")
+
+
+def _load_districts() -> dict:
+    """name -> (Korean, lat, lon, region) for every district of the real hospital database (falls back to the 47)."""
+    path = os.path.join(SOURCE_DIR, "districts.json")
+    if not os.path.exists(path):
+        return dict(LEGACY_DISTRICTS)
+    with open(path, encoding="utf-8") as f:
+        raw = json.load(f)
+    return {k: (v["ko"], v["lat"], v["lon"], v["region"]) for k, v in sorted(raw.items())}
+
+
+# name -> (Korean, lat, lon, region); region is the province or metropolitan city (Seoul, Gyeonggi, Busan, ...)
+DISTRICTS = _load_districts()
+
+
+def _load_places() -> dict:
+    """Campuses and schedule places from the team's benchmark (id -> record with name_en, lat, lon, district)."""
+    path = os.path.join(SOURCE_DIR, "places.json")
+    if not os.path.exists(path):
+        return {}
+    with open(path, encoding="utf-8") as f:
+        return {p["id"]: p for p in json.load(f)}
+
+
+# C01-C30: the 30 campuses of the 29 universities with the most international students plus the regional flagship
+# national universities; P01-P36: stations and business districts students go to for jobs and internships.
+PLACES = _load_places()
+CAMPUSES = {k: v for k, v in PLACES.items() if v["kind"] == "campus"}
+# Where scenarios anchor: the 47 districts used since v1.0 plus every district with a campus or a schedule place.
+ANCHOR_DISTRICTS = sorted(set(LEGACY_DISTRICTS) | {p["district"] for p in PLACES.values()} & set(DISTRICTS)
+                          | set(LEGACY_DISTRICTS))
 
 # key -> (Korean, English label)
 SPECIALTIES = {
@@ -71,7 +109,30 @@ SPECIALTIES = {
     "urology": ("비뇨의학과", "Urology"),
     "neurology": ("신경과", "Neurology"),
     "psychiatry": ("정신건강의학과", "Psychiatry"),
+    "surgery": ("외과", "General Surgery"),
+    "korean_medicine": ("한의원", "Korean Medicine"),
 }
+# Specialty key -> the National Medical Center department codes (filteredSubjectCodes) that count as that specialty.
+# Groups follow the team's clinic-choice benchmark (spec 3.2): orthopedics includes rehabilitation, pain medicine and
+# neurosurgery; dentistry and Korean medicine also count by institution type (a dental / Korean medicine clinic).
+SPECIALTY_CODES = {
+    "internal_medicine": {"D001"}, "family_medicine": {"D022"}, "pediatrics": {"D002"}, "ent": {"D013"},
+    "dermatology": {"D005"}, "ophthalmology": {"D012"}, "obgyn": {"D011"}, "urology": {"D014"}, "neurology": {"D003"},
+    "psychiatry": {"D004"}, "orthopedics": {"D008", "D016", "D017", "D009"}, "surgery": {"D006"},
+    "dentistry": {"D026", "D034", "D035", "D036", "D037", "D038", "D039", "D040", "D041", "D042", "D043", "D054",
+                  "D055", "D056"},
+    "korean_medicine": {"D044", "D045", "D046", "D047", "D048", "D049", "D050", "D051", "D052"},
+}
+TYPE_SPECIALTY = {"치과의원": "dentistry", "치과병원": "dentistry", "한의원": "korean_medicine", "한방병원": "korean_medicine"}
+# A clinic may show a specialty in its name only if its doctor is a specialist in it (Medical Service Act).
+SPECIALIST_NAME_WORDS = {
+    "internal_medicine": ("내과",), "family_medicine": ("가정의학",), "ent": ("이비인후",), "ophthalmology": ("안과",),
+    "dermatology": ("피부",), "orthopedics": ("정형", "재활", "통증", "신경외과"), "obgyn": ("산부인과", "여성"),
+    "urology": ("비뇨",), "psychiatry": ("정신", "마음"), "neurology": ("신경과",), "surgery": ("외과",),
+    "pediatrics": ("소아", "어린이"),
+}
+CHILDREN_NAME_WORDS = ("아동", "소아", "어린이")       # children's clinics: not for adult patients (team spec 3.1)
+NO_OUTPATIENT_TYPES = ("요양병원", "조산원", "기타", "기타(구급차)")   # long-term care, midwifery, other, ambulance
 
 # Fictional name stems (Korean, romanised). Any overlap with real institutions is accidental.
 NAME_STEMS = [
@@ -136,7 +197,39 @@ COMPLAINTS = {
                   "specialties": ["dermatology", "family_medicine"], "mild": True},
     "blood_pressure": {"en": "a blood pressure check", "simple": "check my blood pressure",
                        "specialties": ["internal_medicine", "family_medicine"], "mild": True},
+    # v1.3.0: from the team's symptom table (data/source/symptoms.json; S-ids in brackets), mild and moderate only,
+    # none on the emergency list of Annex 1 of the Enforcement Rule of the Emergency Medical Service Act
+    "sinusitis": {"en": "facial pressure and thick nasal discharge", "simple": "face pressure, thick snot",
+                  "specialties": ["ent"], "mild": True, "source": "S05"},
+    "stye": {"en": "a stye on my eyelid", "simple": "bump on eyelid", "specialties": ["ophthalmology"], "mild": True,
+             "source": "S08"},
+    "athletes_foot": {"en": "itchy, cracked skin between my toes", "simple": "itchy between toes",
+                      "specialties": ["dermatology"], "mild": True, "source": "S13"},
+    "neck_shoulder": {"en": "neck and shoulder pain", "simple": "neck and shoulder hurt",
+                      "specialties": ["orthopedics", "korean_medicine"], "mild": True, "source": "S15"},
+    "irregular_periods": {"en": "irregular periods for months", "simple": "period not regular",
+                          "specialties": ["obgyn"], "mild": True, "source": "S19"},
+    "exam_anxiety": {"en": "strong anxiety during exams", "simple": "very nervous in exams",
+                     "specialties": ["psychiatry", "internal_medicine", "family_medicine"], "mild": True, "source": "S22"},
+    "numbness": {"en": "frequent numbness in my hands and feet", "simple": "hands and feet numb",
+                 "specialties": ["neurology", "orthopedics"], "mild": True, "source": "S24"},
+    "boil": {"en": "a painful boil on my arm", "simple": "painful lump on arm",
+             "specialties": ["surgery", "dermatology"], "mild": True, "source": "S25"},
+    "ingrown_toenail": {"en": "a painful ingrown toenail", "simple": "toenail grows into skin",
+                        "specialties": ["surgery", "dermatology"], "mild": True, "source": "S26"},
+    "wisdom_tooth": {"en": "a swollen gum around my wisdom tooth", "simple": "gum swollen at back tooth",
+                     "specialties": ["dentistry"], "mild": True, "source": "S28"},
+    "flu_shot": {"en": "a flu shot", "simple": "flu vaccine", "specialties": ["internal_medicine", "family_medicine",
+                 "ent"], "mild": True, "source": "S30", "price_item": "flu_shot"},
+    "med_certificate": {"en": "a medical certificate for the classes I missed with a cold", "simple": "paper for school, I had cold",
+                        "specialties": ["internal_medicine", "family_medicine", "ent"], "mild": True, "source": "S31",
+                        "price_item": "medical_certificate"},
 }
+# Department lists aligned with the team's symptom table: Korean medicine for back, neck and wrist pain (S14-S16),
+# OB-GYN also for burning urination (S20).
+for _k, _add in (("back_pain", "korean_medicine"), ("wrist_pain", "korean_medicine"), ("urinary", "obgyn")):
+    if _add not in COMPLAINTS[_k]["specialties"]:
+        COMPLAINTS[_k]["specialties"].append(_add)
 
 
 # How a complaint is spoken about.  kind: "symptom" (has a duration), "service" (a check or test, no duration) or "child"
@@ -165,6 +258,18 @@ COMPLAINT_META = {
     "period_pain": {"kind": "symptom", "sex": "f", "keywords": r"period|menstrua|cramps"},
     "skin_wart": {"kind": "service", "keywords": r"wart|bump"},
     "blood_pressure": {"kind": "service", "keywords": r"blood pressure"},
+    "sinusitis": {"kind": "symptom", "keywords": r"sinus|nasal discharge|facial pressure|snot"},
+    "stye": {"kind": "symptom", "keywords": r"\bstye|eyelid"},
+    "athletes_foot": {"kind": "symptom", "keywords": r"toes|athlete"},
+    "neck_shoulder": {"kind": "symptom", "keywords": r"neck|shoulder"},
+    "irregular_periods": {"kind": "symptom", "sex": "f", "keywords": r"irregular|period"},
+    "exam_anxiety": {"kind": "symptom", "keywords": r"anxi|nervous|exam"},
+    "numbness": {"kind": "symptom", "keywords": r"numb|tingl"},
+    "boil": {"kind": "symptom", "keywords": r"\bboil|abscess|lump"},
+    "ingrown_toenail": {"kind": "symptom", "keywords": r"toenail|ingrown"},
+    "wisdom_tooth": {"kind": "symptom", "keywords": r"wisdom|gum"},
+    "flu_shot": {"kind": "service", "keywords": r"flu (?:shot|vaccin)|influenza"},
+    "med_certificate": {"kind": "service", "keywords": r"certificate|note for (?:school|class)"},
 }
 assert set(COMPLAINT_META) == set(COMPLAINTS)
 

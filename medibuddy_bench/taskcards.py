@@ -21,7 +21,7 @@ CHOOSE = (
     "and other preferences. If something you need is missing you may ask the patient a short question "
     "(keep questions few and never ask for ID numbers). When you are ready, reply with a short message to "
     "the patient and end with a block:\n"
-    '<answer>{"recommendations": [{"hospital_id": "H0001", "reason": "one sentence"}]}</answer>\n'
+    '<answer>{"recommendations": [{"hospital_id": "A1100014", "reason": "one sentence"}]}</answer>\n'
     "List 1-3 hospitals, best first. Only recommend hospitals that exist in the tools.\n"
     "Requirements the patient states firmly are mandatory: never recommend a hospital that breaks one. "
     "A preference the patient calls flexible (\"ideally\", \"if possible\", \"not a must\") is not mandatory: "
@@ -66,7 +66,7 @@ MEMORY = (
     "they change, honour temporary arrangements and corrections, and delete anything the user asks you to "
     "forget. Do not store ID numbers. If asked something the user never told you, say you do not know. When "
     "asked to recommend a hospital, use the hospital tools and end with the same block as in the hospital task: "
-    '<answer>{"recommendations": [{"hospital_id": "H0001", "reason": "one sentence"}]}</answer>'
+    '<answer>{"recommendations": [{"hospital_id": "A1100014", "reason": "one sentence"}]}</answer>'
 )
 
 JOURNEY = (
@@ -74,23 +74,36 @@ JOURNEY = (
     "visit utterance by utterance, (3) summarise the visit, (4) book the follow-up the doctor asked for. "
     "Each message tells you which step it belongs to via its `expect` field. Formats:\n"
     "- expect=recommendations: use the hospital tools, then end with "
-    '<answer>{"recommendations": [{"hospital_id": "H0001", "reason": "one sentence"}]}</answer> (1-3 hospitals, best first; '
+    '<answer>{"recommendations": [{"hospital_id": "A1100014", "reason": "one sentence"}]}</answer> (1-3 hospitals, best first; '
     "the first one is where the patient goes).\n"
     "- expect=translation: reply with ONLY the translation (doctor -> English, patient -> Korean); keep numbers, "
     "negations, doses, timings and allergies exact.\n"
     "- expect=summary: a short plain-language summary in English, ONLY from what was said, ending with "
     "<answer>{...}</answer> containing JSON with exactly these keys:\n" + SUMMARY_SCHEMA +
     "  (null or an empty list for anything not stated)\n"
-    '- expect=follow_up: end with <answer>{"follow_up": {"hospital_id": "H0001", "date": "YYYY-MM-DD"}}</answer> '
+    '- expect=follow_up: end with <answer>{"follow_up": {"hospital_id": "A1100014", "date": "YYYY-MM-DD"}}</answer> '
     "for the hospital where the visit took place, on the date the doctor asked for, or the first day the hospital "
     "is actually open if that date is closed."
 )
 
-CARDS = {"choose": CHOOSE, "triage": TRIAGE, "interpret": INTERPRET, "summary": SUMMARY, "memory": MEMORY,
+HISTORY = (
+    "TASK: an international student in Korea asks where to get care today. Their message gives their profile, weekly "
+    "schedule, past clinic visits and the question. Recommend the institution that fits THIS student: follow Korean "
+    "healthcare rules (the right department; a tertiary hospital needs a referral letter; reception closes 30 minutes "
+    "before closing, so the student must arrive at least 30 minutes before closing; schedule commitments), avoid "
+    "places that did not cure the student, and respect what their past choices show (did they go farther before for "
+    "their regular clinic, a general hospital or a specialist?). With no such signal, the nearest suitable place is "
+    "right. Only institutions in the travel table of the place the student leaves from are valid (travel_options). "
+    "If the record cannot decide, ask the student ONE question with ask_student; asking when the record decides is a "
+    "mistake. End with:\n"
+    '<answer>{"recommendations": [{"hospital_id": "A1100014", "reason": "one sentence"}]}</answer> (top 3, best first)'
+)
+
+CARDS = {"history": HISTORY, "choose": CHOOSE, "triage": TRIAGE, "interpret": INTERPRET, "summary": SUMMARY, "memory": MEMORY,
          "journey": JOURNEY}
 
 TASK_CARD = {"T1": "choose", "T2": "choose", "T3": "choose", "T4": "triage", "T5": "interpret", "T6": "summary",
-             "T7": "memory", "T8": "journey"}
+             "T7": "memory", "T8": "journey", "T9": "history"}
 
 
 def build_card(task: str, tool_specs: list[dict], today: str | None = None) -> str:

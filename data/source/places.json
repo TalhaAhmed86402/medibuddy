@@ -1,0 +1,596 @@
+[
+{
+"id": "C01",
+"kind": "campus",
+"name_ko": "연세대학교 신촌캠퍼스",
+"name_en": "Yonsei University, Sinchon Campus",
+"lat": 37.567836,
+"lon": 126.939375,
+"district": "Seodaemun"
+},
+{
+"id": "C02",
+"kind": "campus",
+"name_ko": "고려대학교 서울캠퍼스",
+"name_en": "Korea University, Seoul Campus",
+"lat": 37.588038,
+"lon": 127.032393,
+"district": "Seongbuk"
+},
+{
+"id": "C03",
+"kind": "campus",
+"name_ko": "중앙대학교 서울캠퍼스",
+"name_en": "Chung-Ang University, Seoul Campus",
+"lat": 37.504345,
+"lon": 126.956282,
+"district": "Dongjak"
+},
+{
+"id": "C04",
+"kind": "campus",
+"name_ko": "한양대학교 서울캠퍼스",
+"name_en": "Hanyang University, Seoul Campus",
+"lat": 37.556988,
+"lon": 127.047089,
+"district": "Seongdong"
+},
+{
+"id": "C05",
+"kind": "campus",
+"name_ko": "성균관대학교 인문사회과학캠퍼스",
+"name_en": "Sungkyunkwan University, Humanities and Social Sciences Campus",
+"lat": 37.587046,
+"lon": 126.990626,
+"district": "Jongno"
+},
+{
+"id": "C06",
+"kind": "campus",
+"name_ko": "경희대학교 서울캠퍼스",
+"name_en": "Kyung Hee University, Seoul Campus",
+"lat": 37.597121,
+"lon": 127.051987,
+"district": "Dongdaemun"
+},
+{
+"id": "C07",
+"kind": "campus",
+"name_ko": "한국외국어대학교 서울캠퍼스",
+"name_en": "Hankuk University of Foreign Studies, Seoul Campus",
+"lat": 37.597082,
+"lon": 127.058741,
+"district": "Dongdaemun"
+},
+{
+"id": "C08",
+"kind": "campus",
+"name_ko": "세종대학교",
+"name_en": "Sejong University",
+"lat": 37.550848,
+"lon": 127.074607,
+"district": "Gwangjin"
+},
+{
+"id": "C09",
+"kind": "campus",
+"name_ko": "동국대학교 서울캠퍼스",
+"name_en": "Dongguk University, Seoul Campus",
+"lat": 37.558238,
+"lon": 126.999489,
+"district": "Jung"
+},
+{
+"id": "C10",
+"kind": "campus",
+"name_ko": "숭실대학교",
+"name_en": "Soongsil University",
+"lat": 37.496299,
+"lon": 126.95672,
+"district": "Dongjak"
+},
+{
+"id": "C11",
+"kind": "campus",
+"name_ko": "건국대학교 서울캠퍼스",
+"name_en": "Konkuk University, Seoul Campus",
+"lat": 37.541847,
+"lon": 127.077115,
+"district": "Gwangjin"
+},
+{
+"id": "C12",
+"kind": "campus",
+"name_ko": "이화여자대학교",
+"name_en": "Ewha Womans University",
+"lat": 37.564337,
+"lon": 126.946893,
+"district": "Seodaemun"
+},
+{
+"id": "C13",
+"kind": "campus",
+"name_ko": "서강대학교",
+"name_en": "Sogang University",
+"lat": 37.552091,
+"lon": 126.940988,
+"district": "Mapo"
+},
+{
+"id": "C14",
+"kind": "campus",
+"name_ko": "가천대학교 글로벌캠퍼스",
+"name_en": "Gachon University, Global Campus",
+"lat": 37.452798,
+"lon": 127.133777,
+"district": "Seongnam-Sujeong"
+},
+{
+"id": "C15",
+"kind": "campus",
+"name_ko": "한양대학교 ERICA캠퍼스",
+"name_en": "Hanyang University ERICA Campus",
+"lat": 37.296668,
+"lon": 126.835007,
+"district": "Ansan-Sangnok"
+},
+{
+"id": "C16",
+"kind": "campus",
+"name_ko": "아주대학교",
+"name_en": "Ajou University",
+"lat": 37.283002,
+"lon": 127.045378,
+"district": "Suwon-Yeongtong"
+},
+{
+"id": "C17",
+"kind": "campus",
+"name_ko": "명지대학교 자연캠퍼스",
+"name_en": "Myongji University, Natural Science Campus",
+"lat": 37.221054,
+"lon": 127.185604,
+"district": "Yongin-Cheoin"
+},
+{
+"id": "C18",
+"kind": "campus",
+"name_ko": "성균관대학교 자연과학캠퍼스",
+"name_en": "Sungkyunkwan University, Natural Sciences Campus",
+"lat": 37.297274,
+"lon": 126.970963,
+"district": "Suwon-Jangan"
+},
+{
+"id": "C19",
+"kind": "campus",
+"name_ko": "계명대학교 성서캠퍼스",
+"name_en": "Keimyung University, Seongseo Campus",
+"lat": 35.856713,
+"lon": 128.484942,
+"district": "Daegu-Dalseo"
+},
+{
+"id": "C20",
+"kind": "campus",
+"name_ko": "우송대학교",
+"name_en": "Woosong University",
+"lat": 36.335273,
+"lon": 127.452935,
+"district": "Daejeon-Dong"
+},
+{
+"id": "C21",
+"kind": "campus",
+"name_ko": "선문대학교 아산캠퍼스",
+"name_en": "Sun Moon University, Asan Campus",
+"lat": 36.798274,
+"lon": 127.074574,
+"district": "Asan"
+},
+{
+"id": "C22",
+"kind": "campus",
+"name_ko": "강원대학교 춘천캠퍼스",
+"name_en": "Kangwon National University, Chuncheon Campus",
+"lat": 37.867258,
+"lon": 127.744749,
+"district": "Chuncheon"
+},
+{
+"id": "C23",
+"kind": "campus",
+"name_ko": "경북대학교 대구캠퍼스",
+"name_en": "Kyungpook National University, Daegu Campus",
+"lat": 35.89057,
+"lon": 128.610855,
+"district": "Daegu-Buk"
+},
+{
+"id": "C24",
+"kind": "campus",
+"name_ko": "경상국립대학교 가좌캠퍼스",
+"name_en": "Gyeongsang National University, Gajwa Campus",
+"lat": 35.154624,
+"lon": 128.099403,
+"district": "Jinju"
+},
+{
+"id": "C25",
+"kind": "campus",
+"name_ko": "부산대학교 부산캠퍼스",
+"name_en": "Pusan National University, Busan Campus",
+"lat": 35.23435,
+"lon": 129.078407,
+"district": "Busan-Geumjeong"
+},
+{
+"id": "C26",
+"kind": "campus",
+"name_ko": "전남대학교 광주캠퍼스",
+"name_en": "Chonnam National University, Gwangju Campus",
+"lat": 35.17691,
+"lon": 126.906893,
+"district": "Gwangju-Buk"
+},
+{
+"id": "C27",
+"kind": "campus",
+"name_ko": "전북대학교 전주캠퍼스",
+"name_en": "Jeonbuk National University, Jeonju Campus",
+"lat": 35.846675,
+"lon": 127.133721,
+"district": "Jeonju-Deokjin"
+},
+{
+"id": "C28",
+"kind": "campus",
+"name_ko": "제주대학교",
+"name_en": "Jeju National University",
+"lat": 33.459893,
+"lon": 126.561624,
+"district": "Jeju"
+},
+{
+"id": "C29",
+"kind": "campus",
+"name_ko": "충남대학교 대덕캠퍼스",
+"name_en": "Chungnam National University, Daedeok Campus",
+"lat": 36.369879,
+"lon": 127.34483,
+"district": "Daejeon-Yuseong"
+},
+{
+"id": "C30",
+"kind": "campus",
+"name_ko": "충북대학교",
+"name_en": "Chungbuk National University",
+"lat": 36.628169,
+"lon": 127.45384,
+"district": "Cheongju-Heungdeok"
+},
+{
+"id": "P01",
+"kind": "place",
+"name_ko": "강남역",
+"name_en": "Gangnam Station",
+"lat": 37.50023,
+"lon": 127.026805,
+"district": "Gangnam"
+},
+{
+"id": "P02",
+"kind": "place",
+"name_ko": "홍대입구역",
+"name_en": "Hongik University Station",
+"lat": 37.556678,
+"lon": 126.923612,
+"district": "Mapo"
+},
+{
+"id": "P03",
+"kind": "place",
+"name_ko": "광화문역 (종로)",
+"name_en": "Gwanghwamun Station (Jongno)",
+"lat": 37.570173,
+"lon": 126.976591,
+"district": "Jongno"
+},
+{
+"id": "P04",
+"kind": "place",
+"name_ko": "여의도역",
+"name_en": "Yeouido Station",
+"lat": 37.521668,
+"lon": 126.924302,
+"district": "Yeongdeungpo"
+},
+{
+"id": "P05",
+"kind": "place",
+"name_ko": "건대입구역",
+"name_en": "Konkuk University Station",
+"lat": 37.54088,
+"lon": 127.06812,
+"district": "Gwangjin"
+},
+{
+"id": "P06",
+"kind": "place",
+"name_ko": "잠실역",
+"name_en": "Jamsil Station",
+"lat": 37.512745,
+"lon": 127.09734,
+"district": "Songpa"
+},
+{
+"id": "P07",
+"kind": "place",
+"name_ko": "성수역",
+"name_en": "Seongsu Station",
+"lat": 37.543979,
+"lon": 127.056966,
+"district": "Seongdong"
+},
+{
+"id": "P08",
+"kind": "place",
+"name_ko": "왕십리역",
+"name_en": "Wangsimni Station",
+"lat": 37.561378,
+"lon": 127.038414,
+"district": "Seongdong"
+},
+{
+"id": "P09",
+"kind": "place",
+"name_ko": "삼성역 (코엑스)",
+"name_en": "Samseong Station (COEX)",
+"lat": 37.50884,
+"lon": 127.063143,
+"district": "Gangnam"
+},
+{
+"id": "P10",
+"kind": "place",
+"name_ko": "판교역",
+"name_en": "Pangyo Station",
+"lat": 37.394373,
+"lon": 127.111152,
+"district": "Seongnam-Bundang"
+},
+{
+"id": "P11",
+"kind": "place",
+"name_ko": "모란역",
+"name_en": "Moran Station",
+"lat": 37.431655,
+"lon": 127.129,
+"district": "Seongnam-Jungwon"
+},
+{
+"id": "P12",
+"kind": "place",
+"name_ko": "수원역",
+"name_en": "Suwon Station",
+"lat": 37.265506,
+"lon": 127.000215,
+"district": "Suwon-Paldal"
+},
+{
+"id": "P13",
+"kind": "place",
+"name_ko": "광교중앙역",
+"name_en": "Gwanggyo Jungang Station",
+"lat": 37.288562,
+"lon": 127.051519,
+"district": "Suwon-Yeongtong"
+},
+{
+"id": "P14",
+"kind": "place",
+"name_ko": "안산 중앙역",
+"name_en": "Ansan Jungang Station",
+"lat": 37.31603,
+"lon": 126.838529,
+"district": "Ansan-Danwon"
+},
+{
+"id": "P15",
+"kind": "place",
+"name_ko": "기흥역",
+"name_en": "Giheung Station",
+"lat": 37.275972,
+"lon": 127.116686,
+"district": "Yongin-Giheung"
+},
+{
+"id": "P16",
+"kind": "place",
+"name_ko": "용인 김량장동 (처인구 도심)",
+"name_en": "Gimnyangjang-dong, Yongin (Cheoin-gu downtown)",
+"lat": 37.236951,
+"lon": 127.208682,
+"district": "Yongin-Cheoin"
+},
+{
+"id": "P17",
+"kind": "place",
+"name_ko": "서면역",
+"name_en": "Seomyeon Station",
+"lat": 35.157317,
+"lon": 129.059483,
+"district": "Busan-Busanjin"
+},
+{
+"id": "P18",
+"kind": "place",
+"name_ko": "부산역",
+"name_en": "Busan Station",
+"lat": 35.115553,
+"lon": 129.042587,
+"district": "Busan-Dong"
+},
+{
+"id": "P19",
+"kind": "place",
+"name_ko": "반월당역 (동성로)",
+"name_en": "Banwoldang Station (Dongseong-ro)",
+"lat": 35.865486,
+"lon": 128.593837,
+"district": "Daegu-Jung"
+},
+{
+"id": "P20",
+"kind": "place",
+"name_ko": "동대구역",
+"name_en": "Dongdaegu Station",
+"lat": 35.877299,
+"lon": 128.627453,
+"district": "Daegu-Dong"
+},
+{
+"id": "P21",
+"kind": "place",
+"name_ko": "대전 시청역 (둔산동)",
+"name_en": "Daejeon City Hall Station (Dunsan-dong)",
+"lat": 36.351391,
+"lon": 127.387911,
+"district": "Daejeon-Seo"
+},
+{
+"id": "P22",
+"kind": "place",
+"name_ko": "대전역",
+"name_en": "Daejeon Station",
+"lat": 36.331352,
+"lon": 127.433365,
+"district": "Daejeon-Dong"
+},
+{
+"id": "P23",
+"kind": "place",
+"name_ko": "금남로4가역 (충장로)",
+"name_en": "Geumnamno 4-ga Station (Chungjang-ro)",
+"lat": 35.151375,
+"lon": 126.913585,
+"district": "Gwangju-Dong"
+},
+{
+"id": "P24",
+"kind": "place",
+"name_ko": "상무역",
+"name_en": "Sangmu Station",
+"lat": 35.147639,
+"lon": 126.848642,
+"district": "Gwangju-Seo"
+},
+{
+"id": "P25",
+"kind": "place",
+"name_ko": "전주 객사 (중앙동)",
+"name_en": "Jeonju Gaeksa (Jungang-dong)",
+"lat": 35.818519,
+"lon": 127.145301,
+"district": "Jeonju-Wansan"
+},
+{
+"id": "P26",
+"kind": "place",
+"name_ko": "전주역",
+"name_en": "Jeonju Station",
+"lat": 35.850054,
+"lon": 127.162365,
+"district": "Jeonju-Deokjin"
+},
+{
+"id": "P27",
+"kind": "place",
+"name_ko": "청주 성안길",
+"name_en": "Seongan-gil, Cheongju",
+"lat": 36.631621,
+"lon": 127.493196,
+"district": "Cheongju-Sangdang"
+},
+{
+"id": "P28",
+"kind": "place",
+"name_ko": "오송역",
+"name_en": "Osong Station",
+"lat": 36.619239,
+"lon": 127.327692,
+"district": "Cheongju-Heungdeok"
+},
+{
+"id": "P29",
+"kind": "place",
+"name_ko": "춘천 명동",
+"name_en": "Myeong-dong, Chuncheon",
+"lat": 37.877995,
+"lon": 127.72555,
+"district": "Chuncheon"
+},
+{
+"id": "P30",
+"kind": "place",
+"name_ko": "남춘천역",
+"name_en": "Namchuncheon Station",
+"lat": 37.86412,
+"lon": 127.723774,
+"district": "Chuncheon"
+},
+{
+"id": "P31",
+"kind": "place",
+"name_ko": "진주 중앙시장",
+"name_en": "Jinju Central Market",
+"lat": 35.194685,
+"lon": 128.085216,
+"district": "Jinju"
+},
+{
+"id": "P32",
+"kind": "place",
+"name_ko": "진주역",
+"name_en": "Jinju Station",
+"lat": 35.15012,
+"lon": 128.118349,
+"district": "Jinju"
+},
+{
+"id": "P33",
+"kind": "place",
+"name_ko": "제주 노형·연동 (노형오거리)",
+"name_en": "Nohyeong-Yeondong, Jeju (Nohyeong Ogeori)",
+"lat": 33.486656,
+"lon": 126.480573,
+"district": "Jeju"
+},
+{
+"id": "P34",
+"kind": "place",
+"name_ko": "제주시청",
+"name_en": "Jeju City Hall",
+"lat": 33.49978,
+"lon": 126.531255,
+"district": "Jeju"
+},
+{
+"id": "P35",
+"kind": "place",
+"name_ko": "천안아산역",
+"name_en": "Cheonan-Asan Station",
+"lat": 36.79438,
+"lon": 127.104499,
+"district": "Asan"
+},
+{
+"id": "P36",
+"kind": "place",
+"name_ko": "천안 신부동 (종합버스터미널)",
+"name_en": "Sinbu-dong, Cheonan (bus terminal)",
+"lat": 36.819492,
+"lon": 127.155985,
+"district": "Cheonan-Dongnam"
+}
+]

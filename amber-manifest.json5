@@ -19,7 +19,7 @@
   },
 
   program: {
-    image: "ghcr.io/talhaahmed86402/medibuddy-bench:1.2.0",
+    image: "ghcr.io/talhaahmed86402/medibuddy-bench:1.3.0",
     entrypoint: "python -m medibuddy_bench serve --host 0.0.0.0 --port 9009 --data data/dev",
     env: {
       AMBER_HINT_PROXY: "${slots.proxy}",

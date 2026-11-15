@@ -5,7 +5,7 @@ evaluated, with tool use embedded in the text (A2A messages in the AgentBeats te
       <card text and tool list>
       <message from="patient" lang="en" expect="recommendations">text</message>
   agent -> benchmark   either a tool call
-      <tool_call>{"name": "get_live_status", "args": {"hospital_id": "H0042", "date": "2027-01-12"}}</tool_call>
+      <tool_call>{"name": "get_live_status", "args": {"hospital_id": "A1100014", "date": "2027-01-12"}}</tool_call>
   benchmark -> agent
       <tool_result name="get_live_status">{...json...}</tool_result>
   agent -> benchmark   or the final reply: free text + optional  <answer>{json}</answer>
@@ -135,7 +135,7 @@ class RemoteAgent(Agent):
         if self._first:
             prefix = (self._card + "\n\nTool protocol (follow exactly):\n"
                       "- To use a tool, reply with ONE call and nothing else, e.g.\n"
-                      '  <tool_call>{"name": "get_live_status", "args": {"hospital_id": "H0042", "date": "2027-01-12"}}</tool_call>\n'
+                      '  <tool_call>{"name": "get_live_status", "args": {"hospital_id": "A1100014", "date": "2027-01-12"}}</tool_call>\n'
                       "- Then STOP and wait: the result arrives as <tool_result name=\"...\">...</tool_result>. "
                       "Never write a tool result yourself.\n"
                       "- Use as many calls as you need (one per reply), then give your final reply as normal text, "

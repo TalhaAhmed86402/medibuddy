@@ -1,5 +1,8 @@
 """The benchmark world's rule document, served by the `get_rules` tool.
 
+Since v1.3.0 the hospitals are real (National Medical Center index) and the tertiary list is the real 5th designation;
+the 30-minute reception rule follows the team's clinic-choice benchmark.
+
 Grounding: tier / referral / insurance / emergency-number facts follow publicly documented Korean
 practice (Invest Korea guidance for foreign residents; 119 / 1339 / 1330 helplines).  Everything
 else (privacy conduct, holidays) is the *benchmark's* policy and is labelled as such.  Because
@@ -18,7 +21,14 @@ SECTIONS = {
         "without one the initial consultation cost is much higher. Exceptions: emergencies, childbirth, "
         "dental care, rehabilitation medicine and family medicine are exempt.\n"
         "Benchmark policy: for a mild complaint, recommending a tertiary hospital to a patient WITHOUT a "
-        "referral is a rule violation unless the answer explicitly warns about the referral and cost."
+        "referral is a rule violation unless the answer explicitly warns about the referral and cost.\n"
+        "The tertiary hospitals are the 47 of the 5th designation (2024-2026); their records have tier 'tertiary'. "
+        "A general hospital (종합병원) has 100+ beds; a hospital (병원) 30-99 beds.\n"
+        "Institutions that do not take general outpatients: long-term care hospitals (요양병원), midwifery clinics "
+        "(조산원), 'other' institutions and ambulance services. Children's clinics (a name with 소아, 어린이 or 아동; "
+        "'Pediatrics' or 'Children's' in the English name) are for children: do not send an adult there.\n"
+        "Reception closes 30 minutes before closing time: a patient must arrive at least 30 minutes before the "
+        "hospital closes (and not during its lunch break)."
     ),
     "insurance": (
         "Insurance (simplified). Foreign nationals staying in Korea more than 6 months are generally "
@@ -51,9 +61,9 @@ SECTIONS = {
         "7. If you do not know something (e.g. a fact the user never told you), say so and ask."
     ),
     "holidays": (
-        "Benchmark-world public holidays (outpatient clinics are closed unless their record says "
-        "open_on_holidays): " + ", ".join(HOLIDAYS) + ". Clinics are also closed on Sundays unless their "
-        "weekly hours say otherwise. Always check live status for a specific date: notices override the "
+        "Benchmark-world public holidays: " + ", ".join(HOLIDAYS) + ". On a public holiday an institution keeps its "
+        "own holiday hours (holiday_hours in its record; none means closed). On Sundays and Saturdays its weekly "
+        "hours apply (no hours means closed). Always check live status for a specific date: notices override the "
         "weekly hours."
     ),
     "live_vs_static": (

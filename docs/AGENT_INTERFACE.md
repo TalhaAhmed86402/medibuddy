@@ -8,9 +8,14 @@ Subclass `medibuddy_bench.agents.base.Agent`:
 A **fresh agent instance** is created per episode, and per session in T7. T7's only cross-session channel is `memory_*`.
 
 ## Tools (25 calls per episode; every call is logged)
-`search_hospitals(specialty, district, ...)` (static index – may be stale; boolean arguments accept true/false or "true"/"false") · `get_hospital(hospital_id)` ·
-`get_live_status(hospital_id, date)` (**authoritative**) · `list_districts(region?, korean?)` (compact; call once) · `distance_km(from_district, to_district)` ·
+`search_hospitals(specialty, district, near, within_km, ...)` (static index of every real institution – may be stale; `near` is a
+district or a place id such as `C18`; results carry `distance_km`; boolean arguments accept true/false or "true"/"false") ·
+`get_hospital(hospital_id)` (real ids such as `A1100014`: type, address, phone, weekly and holiday hours, lunch break, remarks,
+plus synthetic languages and prices) · `get_live_status(hospital_id, date)` (**authoritative**) · `list_districts(region?, korean?)`
+(256 districts, 16 regions) · `list_places(query?)` (30 campuses, 36 stations) · `distance_km(from, to)` (districts or places) ·
 `get_rules(section?)` · `memory_put / memory_get / memory_list / memory_search / memory_delete` (T7, T8).
+T9 has its own set: `travel_options(from_place, specialty?)`, `travel_minutes(from_place, hospital_id)`, `get_hospital`,
+`list_places`, `ask_student(reason)` (one question: continuity, big or specialist) and `get_rules`.
 T4–T6 provide no tools. T8 has a budget of 50 calls (it contains a hospital choice and a follow-up booking).
 
 World tools are deterministic: repeating an identical call returns a short "already called" note (and still uses budget). Failed calls may be retried.

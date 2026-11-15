@@ -43,7 +43,8 @@ class ToolBehaviour(unittest.TestCase):
     def test_list_districts_is_compact_and_filterable(self):
         import json
         full = self.t.call("list_districts")
-        self.assertLess(len(json.dumps(full)), 1200)
+        self.assertLess(len(json.dumps(full)), 6000)          # 256 districts since v1.3.0, names only
+        self.assertLess(len(json.dumps(self.t.call("list_districts", {"region": "Seoul"}))), 500)
         self.assertIn("Gangdong", full["districts"])
         self.assertTrue(all(d.startswith("Busan") for d in self.t.call("list_districts", {"region": "Busan"})["districts"]))
         self.assertIn("error", self.t.call("list_districts", {"region": "Atlantis"}))

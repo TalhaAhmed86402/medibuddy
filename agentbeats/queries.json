@@ -1,6 +1,6 @@
 [
   {
     "name": "Overall (dev, gated)",
-    "query": "SELECT results.participants.purple AS id, r.overall AS \"Overall\", r.overall_ungated AS \"Ungated\", r.tasks.T1 AS \"T1 Hospital search\", r.tasks.T2 AS \"T2 Fresh info\", r.tasks.T3 AS \"T3 Clarifying\", r.tasks.T4 AS \"T4 Triage\", r.tasks.T5 AS \"T5 Interpretation\", r.tasks.T6 AS \"T6 Visit summary\", r.tasks.T7 AS \"T7 Memory\", r.tasks.T8 AS \"T8 Journey\", r.critical.C1_missed_red_flag AS \"Missed emergencies\", r.n_episodes AS \"Episodes\" FROM results CROSS JOIN UNNEST(results.results) AS u(r) WHERE results.status = 'completed' AND r.benchmark = 'medibuddy-bench' AND r.data_version = '1.2.0' AND r.split = 'dev' AND r.num_shards = 1 AND r.covered_weight = 100 ORDER BY r.overall DESC"
+    "query": "SELECT results.participants.purple AS id, r.overall AS \"Overall\", r.overall_ungated AS \"Ungated\", r.tasks.T1 AS \"T1 Hospital search\", r.tasks.T2 AS \"T2 Fresh info\", r.tasks.T3 AS \"T3 Clarifying\", r.tasks.T4 AS \"T4 Triage\", r.tasks.T5 AS \"T5 Interpretation\", r.tasks.T6 AS \"T6 Visit summary\", r.tasks.T7 AS \"T7 Memory\", r.tasks.T8 AS \"T8 Journey\", r.tasks.T9 AS \"T9 Visit history\", r.critical.C1_missed_red_flag AS \"Missed emergencies\", r.n_episodes AS \"Episodes\" FROM results CROSS JOIN UNNEST(results.results) AS u(r) WHERE results.status = 'completed' AND r.benchmark = 'medibuddy-bench' AND r.data_version = '1.3.0' AND r.split = 'dev' AND r.num_shards = 1 AND r.covered_weight = 100 ORDER BY r.overall DESC"
   }
 ]

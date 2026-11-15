@@ -42,11 +42,11 @@ def table(head, rows):
 
 def gather(data_dir):
     """Read a split and compute every statistic once (the two renderers only format)."""
-    with open(os.path.join(data_dir, "world.json"), encoding="utf-8") as f:
-        world = json.load(f)
+    from medibuddy_bench.world import load_world
+    w = load_world(os.path.join(data_dir, "world.json"))
     with open(os.path.join(data_dir, "manifest.json"), encoding="utf-8") as f:
         man = json.load(f)
-    hs, notices = world["hospitals"], world["notices"]
+    hs, notices = list(w.hospitals.values()), w.notices
     sc = {t: load(os.path.join(data_dir, f"{t}.jsonl")) for t in man["counts"]}
     d = {"split": os.path.basename(data_dir.rstrip("/")), "man": man, "hs": hs, "notices": notices, "sc": sc}
     d["district_hosp"] = collections.Counter(h["district"] for h in hs)

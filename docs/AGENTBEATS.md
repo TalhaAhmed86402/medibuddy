@@ -39,13 +39,13 @@ AgentBeats runs each query over `read_json_auto('results/*.json') AS results`: o
 `status`, `participants` (role → AgentBeats id, from the scenario's `metadata.agentbeats_ids`) and `results` (the rows above).
 **The first column must be the participant's AgentBeats agent id**; `AS` names the columns. The ready-made query is
 `agentbeats/queries.json` (paste its content into the green agent's Leaderboard Config → Queries). It shows one line per complete,
-unsharded dev run of data version 1.2.0:
+unsharded dev run of data version 1.3.0 (the query on agentbeats.dev stays at 1.2.0 until the switch below):
 ```sql
 SELECT results.participants.purple AS id, r.overall AS "Overall", r.overall_ungated AS "Ungated",
-       r.tasks.T1 AS "T1 Hospital search", ..., r.tasks.T8 AS "T8 Journey",
+       r.tasks.T1 AS "T1 Hospital search", ..., r.tasks.T9 AS "T9 Visit history",
        r.critical.C1_missed_red_flag AS "Missed emergencies", r.n_episodes AS "Episodes"
 FROM results CROSS JOIN UNNEST(results.results) AS u(r)
-WHERE results.status = 'completed' AND r.benchmark = 'medibuddy-bench' AND r.data_version = '1.2.0'
+WHERE results.status = 'completed' AND r.benchmark = 'medibuddy-bench' AND r.data_version = '1.3.0'
   AND r.split = 'dev' AND r.num_shards = 1 AND r.covered_weight = 100
 ORDER BY r.overall DESC
 ```
@@ -94,6 +94,17 @@ the official hidden-split leaderboard is run by the maintainers (`docs/LEADERBOA
 
 If a step looks different on the platform (the templates were moving from `scenario.toml` to `scenario.json5` when this was
 written), follow the template's README; the service itself only needs the request and result formats in the table above.
+
+## Moving the live leaderboard from data 1.2.0 to 1.3.0
+
+The live setup (2026-11-15) runs 1.2.0: images `:1.2.0`, manifests read at the `v1.2.0` tag. The repository's main branch is
+prepared for 1.3.0 (manifests name the `:1.3.0` images, `agentbeats/scenario.json5` reads them at the `v1.3.0` tag, the query
+filters `data_version = '1.3.0'` and shows T9). To switch:
+1. Commit, check CI, then `git tag v1.3.0 && git push origin v1.3.0`; wait for `publish-image` (it builds `:1.3.0` of both images).
+2. On agentbeats.dev, Edit Agent for both agents: Amber Manifest URL with `v1.3.0` instead of `v1.2.0`.
+3. In the leaderboard repository, replace `scenario.json5` on `main` with `agentbeats/scenario.json5` (participant left empty).
+4. Paste the new `agentbeats/queries.json` into the green agent's Queries. Old 1.2.0 rows stay in `results/` but no longer match.
+5. Run the reference purple agent once more (as in step 7 above) to put a 1.3.0 row on the board.
 
 ## Purple agents (what students need)
 

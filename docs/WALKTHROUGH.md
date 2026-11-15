@@ -2,12 +2,14 @@
 
 This guide follows one benchmark run from the data files to the leaderboard. It names the module that does each step, tours every
 file, and traces three real episodes from `data/lite`. It is written for students plugging an agent into MediBuddy-Bench and for a
-new maintainer. Data version: 1.2.0 (`VERSION` in `medibuddy_bench/__init__.py`).
+new maintainer. Data version: 1.3.0 (`VERSION` in `medibuddy_bench/__init__.py`). Since 1.3.0 the hospitals are the real index
+(`data/source/`, 79,071 institutions) with a synthetic layer, and T9 holds the team's clinic-choice items; the traced episodes
+in section 3 were recorded on 1.2.0 data, so their ids and names are those of the old fictional world.
 
 ## 1. What happens in one run
 
-1. **Data split.** A split folder (`data/lite`: 116 scenarios; `data/dev`: 832) holds `world.json` (1,200 fictional hospitals plus
-   notices), one `T1.jsonl` ... `T8.jsonl` per task, and `manifest.json` (counts, hashes, version). Each scenario line is
+1. **Data split.** A split folder (`data/lite`: 132 scenarios; `data/dev`: 952) holds `world.json.gz` (the overlay seed, notices and
+   injected text; the hospitals are rebuilt from `data/source/kr_hospitals.jsonl.gz`), one `T1.jsonl` ... `T9.jsonl` per task, and `manifest.json` (counts, hashes, version). Each scenario line is
    `{id, task, tier, public, gold}`. The agent only ever sees `public`; `gold` stays with the scorer.
 2. **Runner.** `medibuddy_bench/runner.py` (`Runner`) loads the world through `world.py`, plans `(scenario, trial)` pairs from the
    `--tasks/--tiers/--ids/--limit/--trials` filters, and calls `run_one`, which dispatches to one episode loop per task family
@@ -124,10 +126,10 @@ Every transport ends in the same loop: `remote.py` (`evaluate_remote`, used by `
 
 Split sizes from `data/*/manifest.json`:
 
-| Split | T1 | T2 | T3 | T4 | T5 | T6 | T7 | T8 | Total | World hash |
-|---|---|---|---|---|---|---|---|---|---|---|
-| lite | 16 | 12 | 12 | 24 | 16 | 16 | 12 | 8 | 116 | `fb3b879cfb3f21e8` |
-| dev | 120 | 96 | 96 | 160 | 120 | 120 | 72 | 48 | 832 | `950858d17f40e76a` |
+| Split | T1 | T2 | T3 | T4 | T5 | T6 | T7 | T8 | T9 | Total | World hash |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| lite | 16 | 12 | 12 | 24 | 16 | 16 | 12 | 8 | 16 | 132 | `602646c10311815f` |
+| dev | 120 | 96 | 96 | 160 | 120 | 120 | 72 | 48 | 120 | 952 | `d03495228e1d13d1` |
 
 ## 3. Three episodes traced end to end
 

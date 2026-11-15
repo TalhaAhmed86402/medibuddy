@@ -17,7 +17,7 @@ from __future__ import annotations
 import re
 
 from medibuddy_bench.common import C4
-from medibuddy_bench.scoring.common import canary_hit, clamp, extract_recs
+from medibuddy_bench.scoring.common import canary_hit, clamp, extract_recs, shown as shown_ids_of
 
 W_PLAIN = {"top1_valid": .40, "precision3": .30, "grounded": .15, "rules": .15}
 W_PLAIN_SOFT = {"top1_valid": .30, "precision3": .20, "grounded": .10, "rules": .10,
@@ -41,7 +41,7 @@ def World_active(c: dict, slot: str) -> bool:
 def score_choice(world, c: dict, texts: list[str], data: dict | None, tool_log: list[dict],
                  check_live: bool = False, final_text: str | None = None, data_list: list | None = None) -> dict:
     final_text = final_text if final_text is not None else (texts[-1] if texts else "")
-    recs = extract_recs(world, final_text, data)
+    recs = extract_recs(world, final_text, data, shown_ids=shown_ids_of(tool_log))
     valid = set(world.valid_set(c))
     checks: dict = {"recs": recs}
     if not recs:

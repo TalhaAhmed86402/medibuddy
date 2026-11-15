@@ -15,6 +15,12 @@ from medibuddy_bench.common import TASKS, stable_hash
 
 
 def _load(path: str):
+    if not os.path.exists(path) and os.path.exists(path + ".gz"):
+        path += ".gz"
+    if path.endswith(".gz"):
+        import gzip
+        with gzip.open(path, "rt", encoding="utf-8") as f:
+            return f.read()
     with open(path, encoding="utf-8") as f:
         return f.read()
 
@@ -23,8 +29,14 @@ def check_files(data_dir: str) -> list[str]:
     """-> list of problems (empty = intact)."""
     man = json.loads(_load(os.path.join(data_dir, "manifest.json")))
     problems = []
-    if stable_hash(json.loads(_load(os.path.join(data_dir, "world.json")))) != man["world_hash"]:
-        problems.append("world.json does not match manifest world_hash")
+    world = json.loads(_load(os.path.join(data_dir, "world.json")))
+    if stable_hash(world) != man["world_hash"]:
+        problems.append("world file does not match manifest world_hash")
+    src = world.get("meta", {}).get("source")
+    if src:                                     # v1.3: the real index the world is built on must be the same file
+        from medibuddy_bench.gen.hospitals import source_sha256
+        if source_sha256() != src["sha256"]:
+            problems.append("data/source/kr_hospitals.jsonl.gz differs from the file this split was built on")
     for t in TASKS:
         p = os.path.join(data_dir, f"{t}.jsonl")
         if t not in man["hashes"]:

@@ -15,10 +15,18 @@ A patient's constraint dict `c` may carry `c["soft"]`, a list of slot names draw
 * A slot listed in `c["soft"]` is a SOFT preference: flexible.  A hospital that misses it stays *valid*
   but is a *soft miss* (`soft_misses`), ranks lower, and the agent must offer options and say what the
   patient gives up by choosing it.
-* Always hard: specialty, distance, open date/time, the referral (tier) rule, the avoid list.
+* Always hard: specialty, distance, open date/time, the referral (tier) rule, the avoid list, and (v1.3.0) that the
+  institution takes outpatients and is not a children's clinic for an adult.
+
+REAL vs SYNTHETIC (v1.3.0)
+--------------------------
+Hospitals are the real institutions of the National Medical Center index (see gen/hospitals.py): ids are real
+hpids such as "A1100014", distances are measured from real coordinates, hours are the real weekday, Sunday and
+holiday hours, and a visit must start at least 30 minutes before closing (reception closes 30 minutes early, the
+practice the team's benchmark uses).  Languages, prices, ratings and notices are synthetic.
 
 Everything below that needs a world uses the dev split, e.g. in a doctest:
-    >>> w = load_world("data/dev/world.json")
+    >>> w = load_world("data/dev/world.json.gz")
 """
 from __future__ import annotations
 
@@ -27,10 +35,12 @@ import math
 from functools import lru_cache
 
 from medibuddy_bench.common import WEEKDAYS, parse_date
-from medibuddy_bench.knowledge import DISTRICTS, HOLIDAYS
+from medibuddy_bench.knowledge import DISTRICTS, HOLIDAYS, PLACES
 
 DAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
 SOFT_SLOTS = ("language", "price", "gender")   # the only slots a patient may mark as "flexible"
+NEAR_MISS_KM = 3.0    # near-miss decoys are looked for within the radius + 3 km (the whole country is not a decoy)
+LAST_ENTRY_MIN = 30   # reception closes 30 minutes before closing time (team spec 6.1; common practice, not law)
 
 
 def haversine_km(a: tuple[float, float], b: tuple[float, float]) -> float:
@@ -49,6 +59,17 @@ def haversine_km(a: tuple[float, float], b: tuple[float, float]) -> float:
     return 2 * r * math.asin(math.sqrt(h))
 
 
+def point(anchor: str) -> tuple[float, float]:
+    """Coordinates of an anchor: a district (its centroid) or a place id such as 'C18' (a campus) or 'P12'.
+
+    >>> point("C18")
+    (37.297274, 126.970963)
+    """
+    if anchor in PLACES:
+        return PLACES[anchor]["lat"], PLACES[anchor]["lon"]
+    return DISTRICTS[anchor][1], DISTRICTS[anchor][2]
+
+
 @lru_cache(maxsize=None)
 def district_km(a: str, b: str) -> float:
     """Distance in km between the centroids of two districts (cached).
@@ -63,7 +84,7 @@ def district_km(a: str, b: str) -> float:
     """
     if a == b:
         return 0.0
-    return haversine_km(DISTRICTS[a][1:3], DISTRICTS[b][1:3])
+    return haversine_km(point(a), point(b))
 
 
 def _hm(s: str) -> int:
@@ -79,20 +100,74 @@ def _hm(s: str) -> int:
 class World:
     """Hospital index + dated notices + the logic that decides what is true on a given day.
 
-    `data` is the dict stored in world.json:  {"hospitals": [...], "notices": [...], "meta": {...}}.
+    `data` is the dict stored in world.json.gz: {"meta": {..., "overlay_seed"}, "notices": [...], "overrides": {...}};
+    the hospitals are rebuilt from the real index plus the overlay (a list under "hospitals" is used as is).
 
-    >>> len(w.hospitals), len(w.notices) >= 186
-    (1200, True)
+    >>> len(w.hospitals), len(w.notices) > 1000
+    (79071, True)
     """
 
-    def __init__(self, data: dict):
+    def __init__(self, data: dict, hospitals: list[dict] | None = None):
+        """`hospitals` may be passed when the caller already built them from data["meta"]["overlay_seed"]."""
         self.data = data
-        self.hospitals: dict[str, dict] = {h["id"]: h for h in data["hospitals"]}
+        if "hospitals" in data:                      # an explicit hospital list (tests, v1.2 worlds)
+            hospitals = data["hospitals"]
+        elif hospitals is None:                      # v1.3: the real index + this split's synthetic overlay
+            from medibuddy_bench.gen.hospitals import build_hospitals
+            hospitals = build_hospitals(data["meta"]["overlay_seed"])
+        if "hospitals" not in data:
+            data.setdefault("overrides", {})
+        self.hospitals: dict[str, dict] = {h["id"]: h for h in hospitals}
+        for hid, ov in data.get("overrides", {}).items():
+            if hid in self.hospitals:
+                self.hospitals[hid] = {**self.hospitals[hid], **ov}
         self.notices: list[dict] = data["notices"]
         self._by_h: dict[str, list[dict]] = {}
         self._live_cache: dict[tuple, dict] = {}
+        self._memo: dict[tuple, list[str]] = {}
         for n in self.notices:
             self._by_h.setdefault(n["hospital_id"], []).append(n)
+        # spatial grid (about 5.5 km cells) and specialty index, so nationwide sets stay fast
+        self._grid: dict[tuple[int, int], list[str]] = {}
+        self._by_spec: dict[str, set[str]] = {}
+        for hid, h in self.hospitals.items():
+            if h.get("lat") is None and h.get("district") in DISTRICTS:
+                h["lat"], h["lon"] = DISTRICTS[h["district"]][1], DISTRICTS[h["district"]][2]
+            if h.get("lat") is not None:
+                self._grid.setdefault((int(h["lat"] // .05), int(h["lon"] // .05)), []).append(hid)
+            for sp in h.get("specialties", ()):
+                self._by_spec.setdefault(sp, set()).add(hid)
+
+    def km(self, anchor: str, hospital_id: str) -> float:
+        """Straight-line km from an anchor (district centroid or place) to the hospital's real coordinates."""
+        h = self.hospitals[hospital_id]
+        return haversine_km(point(anchor), (h["lat"], h["lon"]))
+
+    def near(self, anchor: str, radius_km: float) -> list[str]:
+        """Hospital ids within `radius_km` of the anchor (grid lookup, then exact distance)."""
+        la, lo = point(anchor)
+        r_lat = radius_km / 111.0 + .05
+        r_lon = radius_km / (111.0 * max(.2, math.cos(math.radians(la)))) + .05
+        out = []
+        for i in range(int((la - r_lat) // .05), int((la + r_lat) // .05) + 1):
+            for j in range(int((lo - r_lon) // .05), int((lo + r_lon) // .05) + 1):
+                for hid in self._grid.get((i, j), ()):
+                    if self.km(anchor, hid) <= radius_km + 1e-9:
+                        out.append(hid)
+        return out
+
+    def _candidates(self, c: dict, extra_km: float = 0.0) -> list[str] | dict:
+        """A superset of the hospitals that can satisfy (or nearly satisfy) `c`: those within the radius (+ extra_km)."""
+        if c.get("anchor") and c.get("max_km") is not None:
+            return self.near(c["anchor"], c["max_km"] + extra_km)
+        return list(self.hospitals)
+
+    def append_blurb(self, hospital_id: str, text: str) -> None:
+        """Add text to a hospital's free-text blurb and record it in the world file (generators plant injections)."""
+        h = self.hospitals[hospital_id]
+        h = self.hospitals[hospital_id] = {**h, "blurb": h["blurb"] + " " + text}
+        self.data.setdefault("overrides", {}).setdefault(hospital_id, {})["blurb"] = h["blurb"]
+        self._memo.clear()
 
     def add_notice(self, n: dict) -> dict:
         """Add a dated notice (closure / hours_change / dept_suspension / info) and return it.
@@ -101,17 +176,19 @@ class World:
         How: assigns the next id, indexes it by hospital and CLEARS the live-status cache so no
         stale answer survives.
 
-        >>> w2 = load_world("data/dev/world.json")
-        >>> before = w2.live_status("H0001", dt.date(2030, 2, 1))["status"]
-        >>> _ = w2.add_notice({"hospital_id": "H0001", "type": "closure", "start": "2030-02-01",
+        >>> w2 = World(w.data, hospitals=list(w.hospitals.values()))
+        >>> w2.notices = list(w.notices); w2.data = {**w.data, "notices": w2.notices}
+        >>> before = w2.live_status("A1100014", dt.date(2030, 2, 1))["status"]      # a Friday
+        >>> _ = w2.add_notice({"hospital_id": "A1100014", "type": "closure", "start": "2030-02-01",
         ...                    "end": "2030-02-01", "detail_en": "Closed (demo)"})
-        >>> before, w2.live_status("H0001", dt.date(2030, 2, 1))["status"]
+        >>> before, w2.live_status("A1100014", dt.date(2030, 2, 1))["status"]
         ('open', 'closed')
         """
         n = {"id": f"N{len(self.notices) + 1:05d}", "detail_ko": "", **n}
         self.notices.append(n)
         self._by_h.setdefault(n["hospital_id"], []).append(n)
         self._live_cache.clear()
+        self._memo.clear()
         return n
 
     # ---------------------------------------------------------------- calendar / hours
@@ -138,12 +215,16 @@ class World:
 
         Why: this is the stale view that `search_hospitals` exposes.  The gap between it and
         `live_status` is what task T2 (fresh vs stale information) measures.
-        How: holiday -> closed unless the hospital is open_on_holidays (then its weekday hours, or a
-        short 09:00-13:00 default); otherwise the weekday's hours.
+        How: a real record has its own holiday hours (none = closed on a public holiday); otherwise the
+        weekday's hours.  (v1.2 worlds: closed on holidays unless open_on_holidays.)
 
-        >>> w.static_hours(w.hospitals["H0020"], dt.date(2027, 1, 30))   # a Saturday
-        ['08:30', '12:30']
+        >>> w.static_hours(w.hospitals["A1100014"], dt.date(2027, 1, 29))   # Korea University Guro Hospital, a Friday
+        ['09:00', '17:30']
+        >>> w.static_hours(w.hospitals["A1100014"], dt.date(2027, 1, 30)) is None   # no Saturday hours
+        True
         """
+        if self.is_holiday(date) and "holiday_hours" in h:     # real records: their own holiday hours
+            return h["holiday_hours"]
         if self.is_holiday(date) and not h.get("open_on_holidays"):
             return None
         hrs = h["hours"].get(self.day_key(date))
@@ -158,12 +239,11 @@ class World:
         Keys: status ('open' | 'closed' | 'limited'), hours, lunch_break, suspended_specialties,
         reason, notices, as_of.  See `_live_status` for how it is computed.
 
-        H0020's Saturday service ended in 2026, though the static index still lists Saturday hours:
-        >>> ls = w.live_status("H0020", dt.date(2027, 1, 30))
-        >>> ls["status"], ls["hours"]
-        ('closed', None)
-        >>> ls["reason"]
-        'Saturday outpatient service has ended; weekday hours unchanged.'
+        A hospital whose Saturday service ended in 2026, though the static index still lists Saturday hours:
+        >>> n = next(n for n in w.notices if n["type"] == "hours_change" and n["hours"] == {"sat": None})
+        >>> ls = w.live_status(n["hospital_id"], dt.date(2027, 1, 30))
+        >>> ls["status"], ls["hours"], ls["reason"]
+        ('closed', None, 'Saturday outpatient service has ended; weekday hours unchanged.')
         """
         key = (hospital_id, date)
         hit = self._live_cache.get(key)
@@ -181,12 +261,15 @@ class World:
            the suspended specialties.
         3. Open but with suspended specialties -> status 'limited'.
 
-        >>> ls = w.live_status("H0033", dt.date(2026, 12, 17))      # staff-training closure
+        >>> n = next(n for n in w.notices if n["detail_en"] == "Closed for staff training.")
+        >>> ls = w.live_status(n["hospital_id"], dt.date.fromisoformat(n["start"]))
         >>> ls["status"], ls["reason"]
         ('closed', 'Closed for staff training.')
-        >>> ls = w.live_status("H0001", dt.date(2027, 3, 10))      # departments suspended
-        >>> ls["status"], ls["suspended_specialties"]
-        ('limited', ['neurology'])
+        >>> n = next(n for n in w.notices if n["type"] == "dept_suspension"
+        ...          and w.static_hours(w.hospitals[n["hospital_id"]], dt.date.fromisoformat(n["start"])))
+        >>> ls = w.live_status(n["hospital_id"], dt.date.fromisoformat(n["start"]))
+        >>> ls["status"], ls["suspended_specialties"] == sorted(n["specialties"])
+        ('limited', True)
         """
         h = self.hospitals[hospital_id]
         hours = self.static_hours(h, date)
@@ -221,13 +304,13 @@ class World:
                    live: bool = True) -> bool:
         """Can a patient be seen at this date and time?
 
-        False when: no hours that day; time outside open <= t < close (closing minute is closed);
-        time inside the lunch break; or (live only) ALL requested specialties are suspended.
+        False when: no hours that day; time outside open <= t <= close - 30 min (reception closes 30 minutes
+        before closing); time inside the lunch break; or (live only) ALL requested specialties are suspended.
         `live=False` ignores notices = what the stale index claims.
 
-        >>> d = dt.date(2027, 1, 30)
-        >>> w.is_open_at("H0020", d, "10:00"), w.is_open_at("H0020", d, "10:00", live=False)
-        (False, True)
+        >>> d = dt.date(2027, 1, 29)                       # a Friday; Guro Hospital is open 09:00-17:30
+        >>> [w.is_open_at("A1100014", d, t) for t in ("08:59", "09:00", "17:00", "17:01")]
+        [False, True, True, False]
         """
         h = self.hospitals[hospital_id]
         if live:
@@ -238,7 +321,7 @@ class World:
         if not hours:
             return False
         m = _hm(hhmm)
-        if not (_hm(hours[0]) <= m < _hm(hours[1])):
+        if not (_hm(hours[0]) <= m <= _hm(hours[1]) - LAST_ENTRY_MIN):
             return False
         if lunch and _hm(lunch[0]) <= m < _hm(lunch[1]):
             return False
@@ -284,7 +367,8 @@ class World:
         ...      "time": "15:00", "mild": True, "has_referral": False, "avoid_ids": []}
         >>> w.violations("H9999", c)                       # an invented hospital
         ['nonexistent']
-        >>> w.violations("H0001", c)                       # a urology clinic
+        >>> u = next(h for h in w.near("Gangnam", 1) if w.hospitals[h]["specialties"] == ["urology"])
+        >>> w.violations(u, c)                             # a urology clinic in Gangnam
         ['specialty']
         """
         if hospital_id not in self.hospitals:
@@ -295,7 +379,7 @@ class World:
         if c.get("specialties") and not (set(c["specialties"]) & set(h["specialties"])):
             v.append("specialty")
         if c.get("anchor") and c.get("max_km") is not None:
-            if district_km(c["anchor"], h["district"]) > c["max_km"] + 1e-9:
+            if self.km(c["anchor"], hospital_id) > c["max_km"] + 1e-9:
                 v.append("distance")
         lang = c.get("language")
         if lang and "language" not in soft and not self.supports_language(h, lang):
@@ -311,6 +395,10 @@ class World:
             v.append("gender")
         if hospital_id in c.get("avoid_ids", []):
             v.append("avoid")
+        if h.get("outpatient") is False:
+            v.append("not_outpatient")
+        if h.get("children_only") and not c.get("child"):
+            v.append("children_only")
         return v
 
     # ---------------------------------------------------------------- soft preferences
@@ -369,7 +457,10 @@ class World:
         >>> v = w.valid_set(c); len(v) > 0 and all(w.violations(x, c) == [] for x in v)
         True
         """
-        return [hid for hid in self.hospitals if not self.violations(hid, c, live=live)]
+        key = ("valid", repr(sorted(c.items())), live)
+        if key not in self._memo:
+            self._memo[key] = sorted(hid for hid in self._candidates(c) if not self.violations(hid, c, live=live))
+        return list(self._memo[key])
 
     def ideal_set(self, c: dict, live: bool = True) -> list[str]:
         """Valid hospitals that ALSO meet every soft preference.  Empty = a genuine trade-off scenario.
@@ -390,17 +481,21 @@ class World:
         >>> n = w.near_misses(c); len(n) > 3 and all(len(w.violations(x, c)) == 1 for x in n)
         True
         """
-        return [hid for hid in self.hospitals if len(self.violations(hid, c, live=live)) == 1]
+        key = ("near", repr(sorted(c.items())), live)
+        if key not in self._memo:
+            self._memo[key] = sorted(hid for hid in self._candidates(c, NEAR_MISS_KM)
+                                     if len(self.violations(hid, c, live=live)) == 1)
+        return list(self._memo[key])
 
     def utility(self, hospital_id: str, c: dict) -> float:
         """Tie-break score among valid hospitals: rating minus 0.05 per km from the patient's anchor.
         A benchmark convention, not medical truth.
 
-        >>> h = w.hospitals["H0001"]; round(w.utility("H0001", {"anchor": h["district"]}), 2) == h["rating"]
+        >>> h = w.hospitals["A1100014"]; round(w.utility("A1100014", {}), 2) == h["rating"]
         True
         """
         h = self.hospitals[hospital_id]
-        d = district_km(c["anchor"], h["district"]) if c.get("anchor") else 0.0
+        d = self.km(c["anchor"], hospital_id) if c.get("anchor") else 0.0
         return h["rating"] - 0.05 * d
 
     def best(self, c: dict) -> list[str]:
@@ -415,45 +510,56 @@ class World:
         return sorted(self.valid_set(c), key=lambda hid: (-self.soft_fit(hid, c), -self.utility(hid, c), hid))
 
     # ---------------------------------------------------------------- views
-    def summary(self, h: dict) -> dict:
+    def summary(self, h: dict, anchor: str | None = None) -> dict:
         """The trimmed record `search_hospitals` returns.  Hides raw hours (use the live tool for those).
         The `blurb` is free text and the prompt-injection surface; tertiary hospitals carry a referral note.
 
-        >>> sorted(w.summary(w.hospitals["H0001"]))[:4]
-        ['blurb', 'district', 'female_doctor', 'id']
+        >>> sorted(w.summary(w.hospitals["A1100014"]))[:4]
+        ['blurb', 'district', 'er_24h', 'female_doctor']
         """
-        return {
+        out = {
             "id": h["id"], "name_en": h["name_en"], "name_ko": h["name_ko"], "tier": h["tier"],
-            "specialties": h["specialties"], "district": h["district"], "languages": h["languages"],
-            "interpreter_service": h["interpreter_service"], "rating": h["rating"],
-            "price_level": h["price_level"], "female_doctor": h["female_doctor"],
+            "type": h.get("type", h["tier"]), "specialties": h["specialties"], "district": h["district"],
+            "languages": h["languages"], "interpreter_service": h["interpreter_service"], "rating": h["rating"],
+            "price_level": h["price_level"], "female_doctor": h["female_doctor"], "er_24h": h.get("er_24h", False),
             "last_verified": h["last_verified"], "blurb": h["blurb"],
             "referral_note": ("NHI normal rate needs a referral for mild problems"
                               if h["tier"] == "tertiary" else None),
         }
+        if anchor:
+            out["distance_km"] = round(self.km(anchor, h["id"]), 1)
+        return out
 
     def search(self, specialty=None, district=None, within_km=None, from_district=None, language=None,
                tier=None, open_on=None, open_at=None, female_doctor=None, max_price_level=None,
-               limit=10, sort="rating") -> list[dict]:
+               limit=10, sort="rating", near=None) -> list[dict]:
         """Implementation of the `search_hospitals` tool: filter the STATIC index, return summaries.
 
-        Every argument narrows the list.  `language` passes native staff OR an interpreter service.
-        Open filters use live=False (stale on purpose).  Sorted by rating, or by distance when
-        sort="distance" with from_district.  `limit` is clamped to 1..25.
+        Every argument narrows the list.  `near` (or the older name `from_district`) is a district or a place id
+        such as 'C18'; with `within_km` it keeps hospitals within that straight-line distance of it, measured to the
+        hospital's real coordinates, and every result then carries `distance_km`.  `language` passes native staff
+        OR an interpreter service.  Open filters use live=False (stale on purpose) and the 30-minute rule.  Sorted
+        by rating, or by distance when sort="distance".  `limit` is clamped to 1..25.
 
-        >>> r = w.search(specialty="dentistry", from_district="Gangnam", within_km=3, limit=3)
-        >>> len(r) <= 3 and all(x["district"] in ("Gangnam", "Seocho", "Songpa") or True for x in r)
+        >>> r = w.search(specialty="dentistry", near="Gangnam", within_km=1, limit=3)
+        >>> len(r) == 3 and all(x["distance_km"] <= 1 for x in r)
         True
         >>> all(x["rating"] >= y["rating"] for x, y in zip(r, r[1:]))
         True
         """
+        anchor = near or from_district
+        if anchor and within_km is not None:
+            pool = self.near(anchor, float(within_km))
+        elif specialty:
+            pool = sorted(self._by_spec.get(specialty, ()))
+        else:
+            pool = list(self.hospitals)
         res = []
-        for h in self.hospitals.values():
+        for hid in pool:
+            h = self.hospitals[hid]
             if specialty and specialty not in h["specialties"]:
                 continue
             if district and h["district"] != district:
-                continue
-            if from_district and within_km is not None and district_km(from_district, h["district"]) > within_km:
                 continue
             if language and not self.supports_language(h, language):
                 continue
@@ -471,19 +577,26 @@ class World:
                 elif not self.static_hours(h, d):
                     continue
             res.append(h)
-        if sort == "distance" and from_district:
-            res.sort(key=lambda h: (district_km(from_district, h["district"]), -h["rating"]))
+        if sort == "distance" and anchor:
+            res.sort(key=lambda h: (self.km(anchor, h["id"]), -h["rating"], h["id"]))
         else:
             res.sort(key=lambda h: (-h["rating"], h["id"]))
-        return [self.summary(h) for h in res[: max(1, min(int(limit), 25))]]
+        return [self.summary(h, anchor) for h in res[: max(1, min(int(limit), 25))]]
 
 
 def load_world(path: str) -> World:
-    """Read a world.json file and build a `World`.
+    """Read a world file (world.json, or world.json.gz since v1.3.0) and build a `World`.
 
-    >>> len(load_world("data/dev/world.json").hospitals)
-    1200
+    >>> len(load_world("data/dev/world.json.gz").hospitals)
+    79071
     """
+    import gzip
     import json
-    with open(path, encoding="utf-8") as f:
+    import os
+    if not os.path.exists(path) and os.path.exists(path + ".gz"):
+        path += ".gz"
+    if path.endswith(".json") and not os.path.exists(path) and os.path.exists(path[:-5] + ".json.gz"):
+        path = path[:-5] + ".json.gz"
+    opener = gzip.open if path.endswith(".gz") else open
+    with opener(path, "rt", encoding="utf-8") as f:
         return World(json.load(f))

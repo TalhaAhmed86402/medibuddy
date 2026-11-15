@@ -31,7 +31,7 @@ injected instructions; L4 terse messages, relative dates ("this coming Saturday"
 
 ## Running
 
-**Which split should I use?** `data/lite` (116 scenarios, minutes) while developing; `data/dev` (832) for a full self-reported
+**Which split should I use?** `data/lite` (132 scenarios, minutes) while developing; `data/dev` (952) for a full self-reported
 result. Official scores come from the hidden `test` split, run by the maintainers.
 
 **My run is slow.** Use `--workers 4` (or more) with a server that handles parallel requests: vLLM, Ollama with

@@ -33,6 +33,16 @@ def _loc_to_district(m: re.Match) -> str:
 LOC_RE = r"([A-Za-z]+)-gu(?:, ([A-Za-z]+))?"
 
 
+def _anchor_phrases():
+    from medibuddy_bench.gen.choice import place_phrase
+    from medibuddy_bench.knowledge import ANCHOR_DISTRICTS, CAMPUSES
+    pairs = [(place_phrase(k), k) for k in list(CAMPUSES) + list(ANCHOR_DISTRICTS)]
+    return sorted(pairs, key=lambda kv: -len(kv[0]))
+
+
+_ANCHOR_PHRASES = _anchor_phrases()
+
+
 def to_hhmm(h: str, m: str | None, ap: str) -> str:
     hh = int(h) % 12 + (12 if ap.lower() == "pm" else 0)
     return f"{hh:02d}:{int(m or 0):02d}"
@@ -57,6 +67,12 @@ class NaiveAgent(Agent):
         self.tools = tools
 
     def respond(self, m: Message) -> Reply:
+        if m.expect == "recommendations" and any(t["name"] == "travel_options" for t in self.tools.specs()):
+            place = re.search(r"Now: .*?I am at (\w+)", m.text)
+            res = self.tools.call("travel_options", {"from_place": place.group(1) if place else "C18", "limit": 3})
+            ids = [r["id"] for r in res.get("options", [])]
+            return Reply("The closest places: " + ", ".join(ids),
+                         {"recommendations": [{"hospital_id": i, "reason": "closest"} for i in ids]})
         if m.expect == "recommendations":
             low = m.text.lower()
             specs = ["internal_medicine"]
@@ -107,6 +123,11 @@ class RuleAgent(Agent):
         m = re.search(r"I live in " + LOC_RE, text)
         if m:
             s["anchor"] = _loc_to_district(m)
+        else:
+            for phrase, key in _ANCHOR_PHRASES:          # campuses and districts without "-gu" (v1.3.0)
+                if phrase in text:
+                    s["anchor"] = key
+                    break
         m = re.search(r"(?:up to|more than) (\d+) km", text)
         if m:
             s["max_km"] = int(m.group(1))
@@ -147,7 +168,7 @@ class RuleAgent(Agent):
             return False
         hh = lambda x: int(x[:2]) * 60 + int(x[3:])
         t = hh(s["time"])
-        if not (hh(ls["hours"][0]) <= t < hh(ls["hours"][1])):
+        if not (hh(ls["hours"][0]) <= t <= hh(ls["hours"][1]) - 30):    # reception closes 30 min early
             return False
         if ls.get("lunch_break") and hh(ls["lunch_break"][0]) <= t < hh(ls["lunch_break"][1]):
             return False
@@ -162,7 +183,7 @@ class RuleAgent(Agent):
         for sp in specs:
             args = {"specialty": sp, "limit": 25}
             if s.get("anchor") and s.get("max_km") is not None:
-                args.update(from_district=s["anchor"], within_km=s["max_km"], sort="rating")
+                args.update(near=s["anchor"], within_km=s["max_km"], sort="rating")
             for k_src, k_dst, sl in (("language", "language", "language"),
                                      ("max_price_level", "max_price_level", "price")):
                 if s.get(k_src) and sl not in self.soft:     # soft preferences are not used as filters
@@ -174,8 +195,12 @@ class RuleAgent(Agent):
             res = self.tools.call("search_hospitals", args)
             for r in res.get("results", []):
                 cands[r["id"]] = r
+        child = bool(re.search(COMPLAINT_META["child_fever"]["keywords"], " ".join(str(v) for v in s.values()).lower())) \
+            or s.get("specialties") == COMPLAINTS["child_fever"]["specialties"]
         pool = [r for r in cands.values()
                 if (r["tier"] != "tertiary" or s.get("has_referral"))
+                and r.get("type") not in ("long-term care hospital", "midwifery clinic", "other", "ambulance service")
+                and (child or not re.search(r"Pediatrics|Children's", r["name_en"]))
                 and not (s.get("avoid_name") and r["name_en"] == s["avoid_name"])]
         def misses(r):
             out = []
@@ -209,6 +234,50 @@ class RuleAgent(Agent):
         text = "I recommend: " + "; ".join(parts)
         return Reply(text, {"recommendations": [{"hospital_id": r["id"], "reason": "fits your needs and is open"}
                                                 for r in chosen]})
+
+    # ---------------------------------------------------------------- T9: nearest clinic that is open, no question
+    def _history(self, text: str) -> Reply:
+        """The team's 'nearest with opening hours' reference: the closest institution of a fitting department that
+        the student reaches at least 30 minutes before closing; no tertiary hospital; never asks."""
+        now = re.search(r"Now: (\w{3}) (\d{4}-\d{2}-\d{2}) (\d{2}):(\d{2}), I am at (\w+)[^\"]*\"(.+?)\"", text)
+        if not now:
+            return Reply("Could you tell me where you are and what is wrong?")
+        wd, _, hh, mm, place, ask = now.groups()
+        low = ask.lower()
+        specs = ["internal_medicine", "family_medicine"]
+        for k, v in COMPLAINTS.items():
+            if re.search(COMPLAINT_META[k]["keywords"], low):
+                specs = v["specialties"]
+                break
+        for word, sp in (("ear", ["ent"]), ("eye", ["ophthalmology"]), ("tooth", ["dentistry"]), ("gum", ["dentistry"]),
+                         ("skin", ["dermatology"]), ("rash", ["dermatology"]), ("back", ["orthopedics"]),
+                         ("period", ["obgyn"]), ("sleep", ["psychiatry"]), ("anxiety", ["psychiatry"])):
+            if word in low and not set(specs) & set(sp):
+                specs = sp
+                break
+        day = {"Mon": "mon", "Tue": "tue", "Wed": "wed", "Thu": "thu", "Fri": "fri", "Sat": "sat", "Sun": "sun"}[wd]
+        holiday = now.group(2) in ("2026-12-25", "2027-01-01")
+        t0 = int(hh) * 60 + int(mm)
+        cands = {}
+        for sp in specs:
+            for r in self.tools.call("travel_options", {"from_place": place, "specialty": sp, "limit": 30}).get("options", []):
+                cands.setdefault(r["id"], r)
+        ok = []
+        for r in sorted(cands.values(), key=lambda r: (r["minutes"], r["id"])):
+            if r["tier"] == "tertiary" or len(ok) >= 3:
+                continue
+            h = self.tools.call("get_hospital", {"hospital_id": r["id"]})
+            hrs = h.get("holiday_hours") if holiday else (h.get("hours") or {}).get(day)
+            if not hrs:
+                continue
+            o, c = (int(x[:2]) * 60 + int(x[3:]) for x in hrs)
+            start = max(t0 + r["minutes"], o)
+            if c - start >= 30:
+                ok.append(r)
+        if not ok:
+            return Reply("I could not find an open clinic nearby.")
+        return Reply("Nearest suitable: " + ", ".join(f"{r['name_en']} ({r['id']}, {r['minutes']} min)" for r in ok),
+                     {"recommendations": [{"hospital_id": r["id"], "reason": "nearest open"} for r in ok]})
 
     # ---------------------------------------------------------------- memory
     def _mem_put(self, key, val):
@@ -356,6 +425,8 @@ class RuleAgent(Agent):
             return self._follow_up()
         if m.sender == "system":
             return Reply("Understood.")
+        if any(t["name"] == "travel_options" for t in self.tools.specs()):
+            return self._history(m.text)
         if self.mem:
             return self._respond_memory(m)
         # hospital choice with optional clarification
@@ -440,6 +511,13 @@ class OracleAgent(Agent):
     def respond(self, m: Message) -> Reply:
         task = self.scen["task"]
         g = self.scen["gold"]
+        if task == "T9":
+            if g["type"] == "ambiguous" and not self.asked:
+                self.asked = True
+                self.tools.call("ask_student", {"reason": g["deciding_reason"]})
+            target = g["gold_after_ask"] if g["type"] == "ambiguous" else g["gold"]
+            self.tools.call("get_hospital", {"hospital_id": target})
+            return Reply(f"Go to {target}.", {"recommendations": [{"hospital_id": target, "reason": "fits you"}]})
         if m.expect == "recommendations" and task in ("T1", "T2", "T3", "T8"):
             if task == "T3" and g["hidden_slots"] and not self.asked:
                 self.asked = True

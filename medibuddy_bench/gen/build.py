@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime as dt
+import gzip
 import json
 import os
 import random
@@ -24,18 +25,20 @@ from medibuddy_bench import VERSION
 from medibuddy_bench.common import WORLD_END, WORLD_START, stable_hash
 from medibuddy_bench.gen.choice import finalize_choice, gen_choice
 from medibuddy_bench.gen.encounters import gen_encounter
-from medibuddy_bench.gen.hospitals import gen_background_notices, gen_hospitals
+from medibuddy_bench.gen.hospitals import OVERLAY_VERSION, build_hospitals, gen_background_notices, source_sha256
+from medibuddy_bench.knowledge import ANCHOR_DISTRICTS
 from medibuddy_bench.gen.journey import gen_journey
 from medibuddy_bench.gen.memory import gen_memory
 from medibuddy_bench.gen.phrasing import POOLS, Phraser, load_extra
+from medibuddy_bench.gen.t9 import gen_t9
 from medibuddy_bench.gen.triage import CASES, gen_triage
 from medibuddy_bench.world import World
 
 SIZES = {
-    "dev": {"T1": 120, "T2": 96, "T3": 96, "T4": 160, "T5": 120, "T6": 120, "T7": 72, "T8": 48},
-    "test": {"T1": 160, "T2": 128, "T3": 128, "T4": 200, "T5": 160, "T6": 160, "T7": 96, "T8": 64},
-    "lite": {"T1": 16, "T2": 12, "T3": 12, "T4": 24, "T5": 16, "T6": 16, "T7": 12, "T8": 8},  # fast subset for CI / first runs
-    "mini": {"T1": 8, "T2": 8, "T3": 8, "T4": 8, "T5": 8, "T6": 8, "T7": 8, "T8": 8},  # for tests / smoke runs
+    "dev": {"T1": 120, "T2": 96, "T3": 96, "T4": 160, "T5": 120, "T6": 120, "T7": 72, "T8": 48, "T9": 120},
+    "test": {"T1": 160, "T2": 128, "T3": 128, "T4": 200, "T5": 160, "T6": 160, "T7": 96, "T8": 64, "T9": 160},
+    "lite": {"T1": 16, "T2": 12, "T3": 12, "T4": 24, "T5": 16, "T6": 16, "T7": 12, "T8": 8, "T9": 16},  # fast subset
+    "mini": {"T1": 8, "T2": 8, "T3": 8, "T4": 8, "T5": 8, "T6": 8, "T7": 8, "T8": 8, "T9": 8},  # for tests / smoke runs
 }
 TIERS = ["L1", "L2", "L3", "L4"]
 
@@ -57,11 +60,20 @@ def build(split: str, seed: int, sizes: dict | None = None, phrasing: bool = Tru
         """Wording chooser for one scenario id (its own random stream, so no gold answer can change)."""
         return Phraser(sid, extra_phrases) if phrasing else None
 
-    hospitals = gen_hospitals(random.Random(rng.random()), 1200)
-    notices = gen_background_notices(random.Random(rng.random()), hospitals, WORLD_START, WORLD_END)
+    overlay_seed = random.Random(rng.random()).randrange(2 ** 31)
+    hospitals = build_hospitals(overlay_seed)
+    anchors = set(ANCHOR_DISTRICTS)
+    notices = gen_background_notices(random.Random(rng.random()), [h for h in hospitals if h["district"] in anchors],
+                                     WORLD_START, WORLD_END)
     world = World({"meta": {"as_of": "2026-10-29", "split": split, "seed_hash": stable_hash(seed),
-                            "version": VERSION, "synthetic": True},
-                   "hospitals": hospitals, "notices": notices})
+                            "version": VERSION, "overlay_seed": overlay_seed, "overlay_version": OVERLAY_VERSION,
+                            "source": {"file": "data/source/kr_hospitals.jsonl.gz", "sha256": source_sha256(),
+                                       "institutions": len(hospitals)},
+                            "real": ["id", "name_ko", "type", "address", "coordinates", "phone", "hours",
+                                     "holiday_hours", "lunch", "specialties", "er_24h", "tertiary"],
+                            "synthetic": ["languages", "interpreter_service", "rating", "price_level", "female_doctor",
+                                          "walk_in", "last_verified", "blurb", "prices", "notices"]},
+                   "notices": notices, "overrides": {}}, hospitals=hospitals)
     lo, hi = WORLD_START + dt.timedelta(days=50), WORLD_END - dt.timedelta(days=5)
     scen: dict[str, list[dict]] = {}
 
@@ -147,14 +159,19 @@ def build(split: str, seed: int, sizes: dict | None = None, phrasing: bool = Tru
                             "gold": {"summary": enc["gold_summary"], "spec": enc["spec"],
                                      "turns": enc["turns"]}})
         scen[task] = out
+    if sizes.get("T9"):
+        scen["T9"] = gen_t9(random.Random(stable_hash([seed, "T9"])), sizes["T9"], f"T9-{split}")
     return {"world": world.data, "scenarios": scen,
             "phrasing": {"enabled": phrasing, "held_out": bool(extra_phrases), "pools_hash": stable_hash(POOLS)}}
 
 
 def write(ds: dict, out: str) -> dict:
     os.makedirs(out, exist_ok=True)
-    with open(os.path.join(out, "world.json"), "w", encoding="utf-8") as f:
-        json.dump(ds["world"], f, ensure_ascii=False, sort_keys=True, indent=1)
+    old = os.path.join(out, "world.json")
+    if os.path.exists(old):                     # v1.2 layout
+        os.remove(old)
+    with gzip.GzipFile(os.path.join(out, "world.json.gz"), "wb", mtime=0) as f:
+        f.write(json.dumps(ds["world"], ensure_ascii=False, sort_keys=True, indent=1).encode("utf-8"))
     manifest = {"version": VERSION, "world_hash": stable_hash(ds["world"]), "counts": {}, "hashes": {}}
     if "phrasing" in ds:
         manifest["phrasing"] = dict(ds["phrasing"])

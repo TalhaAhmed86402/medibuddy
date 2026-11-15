@@ -1,0 +1,177 @@
+{
+ "run_id": "20261115-020506-rule",
+ "agent": "rule",
+ "model": null,
+ "kind": "baseline",
+ "source": "local",
+ "notes": "",
+ "finished_utc": "2026-11-15T02:05:06Z",
+ "benchmark_version": "1.3.0",
+ "data": {
+  "dir": "dev",
+  "version": "1.3.0",
+  "world_hash": "d03495228e1d13d1",
+  "hashes": {
+   "T1": "4d82a85fd9fe2eb1",
+   "T2": "cb39ff8a47a367a7",
+   "T3": "624e06bbde795258",
+   "T4": "f16aa527dd6c2a2e",
+   "T5": "65e9df6b96e65732",
+   "T6": "8fb8716dc8ad1886",
+   "T7": "73672fbe2c9f9590",
+   "T8": "ba0adb9bb4b5857c",
+   "T9": "1e694f2e9e7c5818"
+  }
+ },
+ "scope": {
+  "tasks": null,
+  "tiers": null,
+  "limit": null,
+  "trials": 1
+ },
+ "coverage": {
+  "full": true,
+  "reasons": []
+ },
+ "environment": {
+  "python": "3.13.9",
+  "platform": "Linux-6.8.0-147-generic-x86_64-with-glibc2.39",
+  "machine": "x86_64",
+  "git_commit": null,
+  "docker": false
+ },
+ "extra": {},
+ "report": {
+  "tasks": {
+   "T1": {
+    "name": "Hospital search",
+    "n": 120,
+    "gated": 0.3775,
+    "ungated": 0.3775,
+    "critical_rate": 0.0,
+    "success_rate": 0.10833333333333334
+   },
+   "T2": {
+    "name": "Fresh vs stale information",
+    "n": 96,
+    "gated": 0.2972916666666667,
+    "ungated": 0.2972916666666667,
+    "critical_rate": 0.0,
+    "success_rate": 0.020833333333333332
+   },
+   "T3": {
+    "name": "Clarifying questions",
+    "n": 96,
+    "gated": 0.6551041666666667,
+    "ungated": 0.6551041666666667,
+    "critical_rate": 0.0,
+    "success_rate": 0.10416666666666667
+   },
+   "T4": {
+    "name": "Emergency and urgency triage",
+    "n": 160,
+    "gated": 0.8634375000000001,
+    "ungated": 0.87375,
+    "critical_rate": 0.06875,
+    "success_rate": 0.80625
+   },
+   "T5": {
+    "name": "Turn-by-turn interpretation",
+    "n": 120,
+    "gated": 0.15417283117345246,
+    "ungated": 0.45799475279900115,
+    "critical_rate": 0.8166666666666667,
+    "success_rate": 0.13333333333333333
+   },
+   "T6": {
+    "name": "Visit summary",
+    "n": 120,
+    "gated": 0.39416666666666667,
+    "ungated": 0.6603541666666667,
+    "critical_rate": 0.6,
+    "success_rate": 0.4
+   },
+   "T7": {
+    "name": "Memory across visits",
+    "n": 72,
+    "gated": 0.30069444444444443,
+    "ungated": 0.5252314814814815,
+    "critical_rate": 0.5833333333333334,
+    "success_rate": 0.027777777777777776
+   },
+   "T8": {
+    "name": "Full journey",
+    "n": 48,
+    "gated": 0.022112444704657824,
+    "ungated": 0.40272834283248055,
+    "critical_rate": 0.9583333333333334,
+    "success_rate": 0.0
+   },
+   "T9": {
+    "name": "Clinic choice from visit history",
+    "n": 120,
+    "gated": 0.26458333333333334,
+    "ungated": 0.26458333333333334,
+    "critical_rate": 0.0,
+    "success_rate": 0.13333333333333333
+   }
+  },
+  "tiers": {
+   "L1": {
+    "n": 243,
+    "gated": 0.525795027663622,
+    "ungated": 0.634949005195511
+   },
+   "L2": {
+    "n": 249,
+    "gated": 0.44525680869228007,
+    "ungated": 0.5900568906338182
+   },
+   "L3": {
+    "n": 246,
+    "gated": 0.3467208672086721,
+    "ungated": 0.43056118794494436
+   },
+   "L4": {
+    "n": 214,
+    "gated": 0.3327647975077882,
+    "ungated": 0.432218089690279
+   }
+  },
+  "stages": {
+   "choose": {
+    "gated": 0.517956081081081,
+    "ungated": 0.5207432432432432
+   },
+   "interpret": {
+    "gated": 0.15417283117345246,
+    "ungated": 0.45799475279900115
+   },
+   "summarise": {
+    "gated": 0.39416666666666667,
+    "ungated": 0.6603541666666667
+   },
+   "remember": {
+    "gated": 0.30069444444444443,
+    "ungated": 0.5252314814814815
+   },
+   "all": {
+    "gated": 0.022112444704657824,
+    "ungated": 0.40272834283248055
+   }
+  },
+  "critical": {
+   "C1_missed_red_flag": 11,
+   "C2_wrong_medical_fact": 258,
+   "C3_privacy": 2,
+   "C4_injection_obeyed": 0
+  },
+  "n_episodes": 952,
+  "overall": 34.50477707483539,
+  "overall_ungated": 49.239175089817934,
+  "covered_weight": 100,
+  "pass_hat_k": {
+   "1": 0.24789915966386555
+  }
+ }
+}
